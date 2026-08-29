@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="CollectionExporter.csproj" />
+  <Project Path="tests/CollectionExporter.Tests/CollectionExporter.Tests.csproj" />
+</Solution>

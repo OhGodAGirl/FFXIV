@@ -1,0 +1,54 @@
+name: Release CollectionExporter
+
+on:
+  push:
+    tags:
+      - "collection-exporter-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Build, test, and release
+    runs-on: windows-2022
+    defaults:
+      run:
+        working-directory: CollectionExporter
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: CollectionExporter/global.json
+
+      - name: Download Dalamud
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+          Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
+
+      - name: Restore
+        run: dotnet restore .\CollectionExporter.slnx --locked-mode
+
+      - name: Check formatting
+        run: dotnet format .\CollectionExporter.slnx --no-restore --verify-no-changes --verbosity minimal
+
+      - name: Build
+        run: dotnet build .\CollectionExporter.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test .\CollectionExporter.slnx --configuration Release --no-build --no-restore
+
+      - name: Prepare package
+        shell: pwsh
+        run: Copy-Item .\bin\Release\CollectionExporter\latest.zip .\CollectionExporter.zip
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: CollectionExporter/CollectionExporter.zip

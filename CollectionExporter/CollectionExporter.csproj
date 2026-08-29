@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <Version>1.0.0.0</Version>
+    <Author>OhGodAGirl</Author>
+    <Name>CollectionExporter</Name>
+    <Punchline>Export your collections to FFXIV Collect.</Punchline>
+    <Description>Creates FFXIV Collect import data from your character's collections.</Description>
+    <RepoUrl>https://github.com/OhGodAGirl/FFXIV</RepoUrl>
+    <IconUrl>https://raw.githubusercontent.com/OhGodAGirl/FFXIV/main/CollectionExporter/images/icon.png</IconUrl>
+    <Tags>collection;export;ffxivcollect;qol</Tags>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="tests\**\*.cs" />
+  </ItemGroup>
+</Project>

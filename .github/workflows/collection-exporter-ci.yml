@@ -1,0 +1,56 @@
+name: Collection Exporter
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "CollectionExporter/**"
+      - ".github/workflows/collection-exporter-ci.yml"
+  pull_request:
+    paths:
+      - "CollectionExporter/**"
+      - ".github/workflows/collection-exporter-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  windows:
+    name: Build and test
+    runs-on: windows-2022
+    defaults:
+      run:
+        working-directory: CollectionExporter
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: CollectionExporter/global.json
+
+      - name: Download Dalamud
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+          Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
+
+      - name: Restore
+        run: dotnet restore .\CollectionExporter.slnx --locked-mode
+
+      - name: Check formatting
+        run: dotnet format .\CollectionExporter.slnx --no-restore --verify-no-changes --verbosity minimal
+
+      - name: Build
+        run: dotnet build .\CollectionExporter.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test .\CollectionExporter.slnx --configuration Release --no-build --no-restore
+
+      - name: Store plugin package
+        uses: actions/upload-artifact@v4
+        with:
+          name: CollectionExporter
+          path: CollectionExporter/bin/Release/CollectionExporter/latest.zip
+          if-no-files-found: error
+          retention-days: 7

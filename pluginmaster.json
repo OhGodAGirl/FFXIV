@@ -1,0 +1,25 @@
+[
+  {
+    "Author": "OhGodAGirl",
+    "Name": "CollectionExporter",
+    "InternalName": "CollectionExporter",
+    "AssemblyVersion": "1.0.0.0",
+    "Description": "Creates FFXIV Collect import data from your character's collections.",
+    "ApplicableVersion": "any",
+    "RepoUrl": "https://github.com/OhGodAGirl/FFXIV",
+    "Tags": [
+      "collection",
+      "export",
+      "ffxivcollect",
+      "qol"
+    ],
+    "DalamudApiLevel": 15,
+    "IconUrl": "https://raw.githubusercontent.com/OhGodAGirl/FFXIV/main/CollectionExporter/images/icon.png",
+    "Punchline": "Export your collections to FFXIV Collect.",
+    "DownloadLinkInstall": "https://github.com/OhGodAGirl/FFXIV/releases/download/collection-exporter-v1.0.0/CollectionExporter.zip",
+    "DownloadLinkUpdate": "https://github.com/OhGodAGirl/FFXIV/releases/download/collection-exporter-v1.0.0/CollectionExporter.zip",
+    "IsHide": false,
+    "IsTestingExclusive": false,
+    "AcceptsFeedback": true
+  }
+]
