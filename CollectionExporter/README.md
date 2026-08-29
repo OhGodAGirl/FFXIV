@@ -27,15 +27,20 @@ A Dalamud plugin that exports your character's collection progress for
 
 ## Basic export
 
-1. Run `/collectionexporter` in game.
-2. Click **Generate**, then **Copy JSON**.
-3. Paste the JSON into [FFXIV Collect's Import page](https://ffxivcollect.com/import).
-4. Review the changes, then submit the import.
+1. On FFXIV Collect, sign in and select your character. If **Import Progress**
+   is missing from the account menu, select **Verify Character** and complete
+   the character-verification steps first.
+2. Run `/collectionexporter` in game.
+3. Click **Generate**, then **Copy JSON**.
+4. Open [FFXIV Collect's Import page](https://ffxivcollect.com/import), paste
+   the JSON, and select **Verify**.
+5. Review the changes, then select **Import** on the confirmation page.
 
 ## Optional FFXIV Collect profile
 
-A profile is only needed for Outfits and Relics. Everything else works without
-one.
+The FFXIV Collect profile entered in CollectionExporter is only needed for
+Outfits and Relics. Everything else works without one. This is separate from
+the FFXIV Collect character verification required to access **Import Progress**.
 
 1. Go to [FFXIV Collect](https://ffxivcollect.com/), sign in, and add or search
    for your character.
