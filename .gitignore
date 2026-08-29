@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/TestResults/
+**/artifacts/
+/CollectionExporter/latest.zip
+/CollectionExporter/CollectionExporter.zip
+.vs/
+.idea/
+*.user
+*.suo
