@@ -31,6 +31,10 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IPlayerState PlayerState { get; private set; } = null!;
     [PluginService] internal static IPluginLog Log { get; private set; } = null!;
     [PluginService] internal static IGameInventory GameInventory { get; private set; } = null!;
+    [PluginService] internal static IFramework Framework { get; private set; } = null!;
+    [PluginService] internal static IGameGui GameGui { get; private set; } = null!;
+    [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
+    [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
 
     private readonly Configuration configuration;
     private readonly HttpClient httpClient;
@@ -49,23 +53,25 @@ public sealed class Plugin : IDalamudPlugin
             BaseAddress = new Uri($"https://{FfxivCollectProfile.Host}/"),
             Timeout = TimeSpan.FromSeconds(30)
         };
-        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("CollectionExporter/0.4.1");
+        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("CollectionExporter/1.0.1");
         ExportWindow = new ExportWindow(this);
         WindowSystem.AddWindow(ExportWindow);
 
         CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
         {
-            HelpMessage = "Open CollectionExporter."
+            HelpMessage = "Open Collection Exporter."
         });
 
         PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
         PluginInterface.UiBuilder.OpenConfigUi += ToggleMainUi;
+        Framework.Update += OnFrameworkUpdate;
     }
 
     public void Dispose()
     {
         disposeTokenSource.Cancel();
+        Framework.Update -= OnFrameworkUpdate;
         PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUi;
         PluginInterface.UiBuilder.OpenConfigUi -= ToggleMainUi;
@@ -77,6 +83,7 @@ public sealed class Plugin : IDalamudPlugin
     }
 
     private void OnCommand(string command, string args) => ToggleMainUi();
+    private unsafe void OnFrameworkUpdate(IFramework _) => ExportWindow.UpdateGuidedExport();
     public void ToggleMainUi() => ExportWindow.Toggle();
 
     internal string ConfiguredProfile => configuration.FfxivCollectCharacterId is ulong id
@@ -97,6 +104,22 @@ public sealed class Plugin : IDalamudPlugin
         onlineOmissionReason = "FFXIV Collect profile has not been refreshed yet.";
         message = "Profile saved. Generate will verify it against the logged-in character.";
         return true;
+    }
+
+    internal void ClearProfile()
+    {
+        configuration.FfxivCollectCharacterId = null;
+        PluginInterface.SavePluginConfig(configuration);
+        onlineCollections = null;
+        onlineOmissionReason = "No public FFXIV Collect character profile is configured.";
+    }
+
+    internal void ResetOnlineCollectionCache()
+    {
+        onlineCollections = null;
+        onlineOmissionReason = configuration.FfxivCollectCharacterId is null
+            ? "No public FFXIV Collect character profile is configured."
+            : "FFXIV Collect profile has not been refreshed yet.";
     }
 
     internal async Task RefreshOnlineCollectionsAsync()

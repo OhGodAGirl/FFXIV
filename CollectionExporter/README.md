@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="images/icon.png" width="128" alt="CollectionExporter icon">
+  <img src="images/icon.png" width="128" alt="Collection Exporter icon">
 </p>
 
-# CollectionExporter
+# Collection Exporter
 
 A Dalamud plugin that exports your character's collection progress for
 [FFXIV Collect](https://ffxivcollect.com/).
@@ -23,7 +23,7 @@ A Dalamud plugin that exports your character's collection progress for
    `https://raw.githubusercontent.com/OhGodAGirl/FFXIV/main/pluginmaster.json`
 
 4. Open the Plugin Installer with `/xlplugins`.
-5. Search for **CollectionExporter** and select **Install**.
+5. Search for **Collection Exporter** and select **Install**.
 
 ## Basic export
 
@@ -31,14 +31,19 @@ A Dalamud plugin that exports your character's collection progress for
    is missing from the account menu, select **Verify Character** and complete
    the character-verification steps first.
 2. Run `/collectionexporter` in game.
-3. Click **Generate**, then **Copy JSON**.
-4. Open [FFXIV Collect's Import page](https://ffxivcollect.com/import), paste
+3. Select **Start Guided Export**.
+4. Move near the Glamour Dresser and Armoire when prompted. Collection Exporter
+   targets and opens each furnishing when it is in interaction range, captures
+   its collection state, and combines both passes automatically. It never moves
+   your character and does not require vnavmesh.
+5. Select **Copy JSON** when both steps are complete.
+6. Open [FFXIV Collect's Import page](https://ffxivcollect.com/import), paste
    the JSON, and select **Verify**.
-5. Review the changes, then select **Import** on the confirmation page.
+7. Review the changes, then select **Import** on the confirmation page.
 
 ## Optional FFXIV Collect profile
 
-The FFXIV Collect profile entered in CollectionExporter is only needed for
+The FFXIV Collect profile entered in Collection Exporter is only needed for
 Outfits and Relics. Everything else works without one. This is separate from
 the FFXIV Collect character verification required to access **Import Progress**.
 
@@ -47,18 +52,19 @@ the FFXIV Collect character verification required to access **Import Progress**.
 2. Make sure the character profile is public.
 3. Open the character's profile and copy its URL. It will look like
    `https://ffxivcollect.com/characters/12345678`.
-4. Paste the URL into CollectionExporter and select **Save Profile**.
+4. Paste the URL into Collection Exporter and select **Save Profile**.
 
 If you skip this, Outfits and Relics are left out of the JSON and are not changed
 on FFXIV Collect.
 
-## Armoire and Glamour Dresser
+## Manual capture
 
 FFXIV only makes these inventories available while you are using them. Import
-them in two passes:
+them in two passes if you do not use the guided export:
 
-1. Open the **Armoire**. While it is open, generate, copy, and submit an import.
-2. Open the **Glamour Dresser**. While it is open, repeat the export and import.
+1. Open the **Glamour Dresser** and select **Generate Current View**.
+2. Open the **Armoire** and select **Generate Current View** again.
+3. Copy and submit the final JSON.
 
 Keep the plugin loaded between passes. It remembers Outfit and Relic matches from
 the first pass and includes them in the second.

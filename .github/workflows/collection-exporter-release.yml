@@ -25,6 +25,16 @@ jobs:
         with:
           global-json-file: CollectionExporter/global.json
 
+      - name: Verify release version
+        shell: pwsh
+        run: |
+          $tagVersion = "${{ github.ref_name }}" -replace '^collection-exporter-v', ''
+          $projectVersion = [Version]([xml](Get-Content .\CollectionExporter.csproj)).Project.PropertyGroup.Version
+          $releaseVersion = "$($projectVersion.Major).$($projectVersion.Minor).$($projectVersion.Build)"
+          if ($projectVersion.Revision -ne 0 -or $tagVersion -ne $releaseVersion) {
+            throw "Tag version $tagVersion does not match project version $projectVersion."
+          }
+
       - name: Download Dalamud
         shell: pwsh
         run: |
