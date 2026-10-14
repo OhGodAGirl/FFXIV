@@ -7,5 +7,6 @@
   "DalamudApiLevel": 15,
   "Punchline": "Local collection snapshots and sharing.",
   "Tags": ["collections", "glamour", "export", "FFXIV Collect"],
+  "IconUrl": "https://raw.githubusercontent.com/OhGodAGirl/FFXIV/main/Exportaramus/images/icon.png",
   "AcceptsFeedback": false
 }

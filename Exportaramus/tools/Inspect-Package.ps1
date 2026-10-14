@@ -8,6 +8,7 @@ $assembly = [Reflection.AssemblyName]::GetAssemblyName("$output/Exportaramus.dll
 $manifest = Get-Content -LiteralPath "$output/Exportaramus.json" -Raw | ConvertFrom-Json
 if (@($manifest.Tags | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }).Count -eq 0) { throw 'Plugin manifest must include search tags.' }
 if ($assembly.Name -ne 'Exportaramus' -or $assembly.Version.ToString() -ne $version -or $manifest.InternalName -ne 'Exportaramus' -or $manifest.Name -ne 'Exportaramus' -or $manifest.AssemblyVersion -ne $version -or $manifest.DalamudApiLevel -ne 15) { throw 'Assembly/manifest/project identity mismatch.' }
+if ($manifest.IconUrl -ne "https://raw.githubusercontent.com/OhGodAGirl/FFXIV/main/Exportaramus/images/icon.png") { throw "Packaged manifest must include the public plugin icon URL." }
 $assemblyStream = [IO.File]::OpenRead("$output/Exportaramus.dll")
 $pe = [System.Reflection.PortableExecutable.PEReader]::new($assemblyStream)
 try {
