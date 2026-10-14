@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://exportaramus.local/schemas/1.2/snapshot-changed.schema.json",
+  "title": "Exportaramus CollectionData SnapshotChanged Notice 1.2",
+  "type": "object",
+  "required": ["eventType", "schemaVersion", "providerSessionId", "revision", "contentId", "capturedAtUtc", "changedDataTypes", "changedSources"],
+  "properties": {
+    "eventType": { "type": "string", "const": "SnapshotChanged" },
+    "schemaVersion": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "providerSessionId": { "$ref": "common.schema.json#/$defs/providerSessionId" },
+    "revision": { "$ref": "common.schema.json#/$defs/revision" },
+    "contentId": { "$ref": "common.schema.json#/$defs/contentId" },
+    "capturedAtUtc": { "$ref": "common.schema.json#/$defs/utcDateTime" },
+    "changedDataTypes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["Unlocks", "CurrentItemPresence", "ReportedOwnership", "SourceCapabilities", "SourceHealth"]
+      }
+    },
+    "changedSources": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/sourceKey" }
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Exportaramus.csproj" />
+  <Project Path="../tests/Exportaramus.ApiContractTests/Exportaramus.ApiContractTests.csproj" />
+  <Project Path="../tests/Exportaramus.Testable/Exportaramus.Testable.csproj" />
+  <Project Path="../tests/Exportaramus.Tests/Exportaramus.Tests.csproj" />
+</Solution>

@@ -1,0 +1,379 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://exportaramus.local/schemas/diagnostics/1.0/exportaramus-diagnostics.schema.json",
+  "title": "Exportaramus Diagnostics Report 1.0",
+  "type": "object",
+  "required": [
+    "format",
+    "schemaVersion",
+    "generatedAtUtc",
+    "reportStatus",
+    "fingerprintSha256",
+    "incompleteSections",
+    "build",
+    "runtime",
+    "lifecycle",
+    "operations",
+    "collectionPipeline",
+    "sourceHealth",
+    "storage",
+    "ipc",
+    "performance",
+    "ui",
+    "recentFailures",
+    "redaction"
+  ],
+  "properties": {
+    "format": { "type": "string", "const": "exportaramus-diagnostics" },
+    "schemaVersion": { "type": "string", "const": "1.0" },
+    "generatedAtUtc": { "$ref": "#/$defs/utcDateTime" },
+    "reportStatus": { "type": "string", "enum": ["Ready", "Partial", "Failed"] },
+    "fingerprintSha256": { "$ref": "#/$defs/sha256" },
+    "incompleteSections": {
+      "type": "array",
+      "maxItems": 11,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["build", "runtime", "lifecycle", "operations", "collectionPipeline", "sourceHealth", "storage", "ipc", "performance", "ui", "redaction"]
+      }
+    },
+    "build": {
+      "type": "object",
+      "required": ["pluginVersion", "buildConfiguration", "assemblyInformationalVersion"],
+      "properties": {
+        "pluginVersion": { "$ref": "#/$defs/boundedText" },
+        "buildConfiguration": { "type": "string", "enum": ["Debug", "Release"] },
+        "sourceRevision": { "type": ["string", "null"], "maxLength": 128 },
+        "assemblyInformationalVersion": { "$ref": "#/$defs/boundedText" },
+        "packageSha256": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] }
+      },
+      "additionalProperties": true
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["dalamudApiVersion", "dotnetRuntimeVersion", "osVersion", "ffxivClientVersion", "gameDataVersion", "clientLanguage", "dependencies"],
+      "properties": {
+        "dalamudApiVersion": { "$ref": "#/$defs/boundedText" },
+        "dotnetRuntimeVersion": { "$ref": "#/$defs/boundedText" },
+        "osVersion": { "$ref": "#/$defs/boundedText" },
+        "ffxivClientVersion": { "$ref": "#/$defs/boundedText" },
+        "gameDataVersion": { "$ref": "#/$defs/boundedText" },
+        "clientLanguage": { "type": "string", "enum": ["Japanese", "English", "German", "French"] },
+        "dependencies": {
+          "type": "object",
+          "maxProperties": 32,
+          "additionalProperties": { "$ref": "#/$defs/boundedText" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "lifecycle": {
+      "type": "object",
+      "required": ["state", "providerSessionId", "revision", "registrations", "ownedTasks", "cancellationRequested"],
+      "properties": {
+        "state": { "type": "string", "enum": ["Constructed", "Running", "Stopping", "Disposed"] },
+        "providerSessionId": { "type": ["string", "null"], "format": "uuid" },
+        "revision": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "registrations": {
+          "type": "object",
+          "required": ["frameworkUpdate", "conditionChange", "command", "draw", "openMainUi", "openConfigUi", "ipcGates", "windows"],
+          "additionalProperties": { "type": "boolean" }
+        },
+        "ownedTasks": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "required": ["name", "state"],
+            "properties": {
+              "name": { "$ref": "#/$defs/boundedText" },
+              "state": { "type": "string", "enum": ["NotStarted", "Waiting", "Running", "Completed", "Cancelled", "Faulted"] }
+            },
+            "additionalProperties": true
+          }
+        },
+        "cancellationRequested": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "operations": {
+      "type": "object",
+      "required": ["controllerState", "captureGeneration", "elapsedMilliseconds", "retryCount", "pendingRequestPriority", "staleCompletionRejected"],
+      "properties": {
+        "controllerState": { "$ref": "#/$defs/boundedText" },
+        "captureType": { "type": ["string", "null"], "enum": ["Full", "Lightweight", "Restored", "Reported", null] },
+        "captureGeneration": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "elapsedMilliseconds": { "$ref": "#/$defs/nonnegativeNumber" },
+        "deadlineAtUtc": { "oneOf": [{ "$ref": "#/$defs/utcDateTime" }, { "type": "null" }] },
+        "retryCount": { "type": "integer", "minimum": 0, "maximum": 1000 },
+        "pendingRequestPriority": { "type": "string", "enum": ["None", "AutomaticLightweight", "AutomaticFull", "ManualFull", "GuidedExport"] },
+        "staleCompletionRejected": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "collectionPipeline": {
+      "type": "object",
+      "required": ["catalogCache", "acceptedCaptureGeneration", "fingerprints", "serializers", "omissions", "outputBytes", "ffxivCollect"],
+      "properties": {
+        "catalogCache": {
+          "type": "object",
+          "required": ["keyHash", "status", "buildMilliseconds"],
+          "properties": {
+            "keyHash": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+            "status": { "type": "string", "enum": ["Empty", "Building", "Ready", "Failed", "Invalidated"] },
+            "buildMilliseconds": { "$ref": "#/$defs/nonnegativeNumber" }
+          },
+          "additionalProperties": true
+        },
+        "acceptedCaptureGeneration": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "fingerprints": {
+          "type": "object",
+          "maxProperties": 64,
+          "additionalProperties": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] }
+        },
+        "serializers": {
+          "type": "object",
+          "required": ["compact", "compendium", "ffxivCollect"],
+          "additionalProperties": { "type": "string", "enum": ["NotBuilt", "Ready", "Unavailable", "Failed"] }
+        },
+        "omissions": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "required": ["sourceKey", "reasonCode"],
+            "properties": {
+              "sourceKey": { "$ref": "#/$defs/sourceKey" },
+              "reasonCode": { "$ref": "#/$defs/stableCode" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "outputBytes": {
+          "type": "object",
+          "required": ["compact", "compendium", "ffxivCollect"],
+          "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 16777216 }
+        },
+        "ffxivCollect": {
+          "type": "object",
+          "required": ["upstreamCommit", "verifiedAtUtc", "contractSha256", "mappingSha256", "includedKeyCount", "omittedKeyCount"],
+          "properties": {
+            "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+            "verifiedAtUtc": { "$ref": "#/$defs/utcDateTime" },
+            "contractSha256": { "$ref": "#/$defs/sha256" },
+            "mappingSha256": { "$ref": "#/$defs/sha256" },
+            "includedKeyCount": { "type": "integer", "minimum": 0, "maximum": 16 },
+            "omittedKeyCount": { "type": "integer", "minimum": 0, "maximum": 16 }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "sourceHealth": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "required": ["sourceKey", "capabilityState", "sourceStatus", "completeness", "provenanceType", "observationAgeSeconds", "captureMilliseconds", "reasonCode"],
+        "properties": {
+          "sourceKey": { "$ref": "#/$defs/sourceKey" },
+          "capabilityState": { "type": "string", "enum": ["Supported", "Degraded", "UnavailablePendingValidation"] },
+          "sourceStatus": { "type": "string", "enum": ["Fresh", "Stale", "Unavailable", "NeverObserved"] },
+          "completeness": { "type": "string", "enum": ["Complete", "Partial", "Unknown"] },
+          "provenanceType": { "type": "string", "enum": ["None", "Observed", "Restored", "Reported", "Derived"] },
+          "observationAgeSeconds": { "type": ["number", "null"], "minimum": 0 },
+          "captureMilliseconds": { "$ref": "#/$defs/nonnegativeNumber" },
+          "reasonCode": { "$ref": "#/$defs/stableCode" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "storage": {
+      "type": "object",
+      "required": ["canonicalAvailable", "historyFileCount", "historyBytes", "lastRead", "lastWrite", "recoveryState"],
+      "properties": {
+        "canonicalAvailable": { "type": "boolean" },
+        "canonicalBytes": { "type": "integer", "minimum": 0, "maximum": 16777216 },
+        "historyFileCount": { "type": "integer", "minimum": 0, "maximum": 25 },
+        "historyBytes": { "type": "integer", "minimum": 0, "maximum": 419430400 },
+        "lastRead": { "$ref": "#/$defs/ioResult" },
+        "lastWrite": { "$ref": "#/$defs/ioResult" },
+        "recoveryState": { "type": "string", "enum": ["None", "Pending", "Recovered", "Discarded", "Failed"] }
+      },
+      "additionalProperties": true
+    },
+    "ipc": {
+      "type": "object",
+      "required": ["gatesRegistered", "payloadBytes", "changedNoticePending", "reportQueue", "reportCounters", "lastWithdrawalReason"],
+      "properties": {
+        "gatesRegistered": {
+          "type": "object",
+          "maxProperties": 5,
+          "additionalProperties": { "type": "boolean" }
+        },
+        "payloadBytes": {
+          "type": "object",
+          "required": ["capabilities", "snapshot", "pendingEvent"],
+          "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 4194304 }
+        },
+        "changedNoticePending": { "type": "boolean" },
+        "reportQueue": {
+          "type": "object",
+          "required": ["depth", "capacity"],
+          "properties": {
+            "depth": { "type": "integer", "minimum": 0, "maximum": 256 },
+            "capacity": { "type": "integer", "const": 256 }
+          },
+          "additionalProperties": true
+        },
+        "reportCounters": {
+          "type": "object",
+          "required": ["accepted", "rejected", "throttled"],
+          "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 }
+        },
+        "lastWithdrawalReason": { "type": ["string", "null"], "enum": ["LoggedOut", "CharacterChanged", "IdentityUnavailable", "ProviderStopping", null] }
+      },
+      "additionalProperties": true
+    },
+    "performance": {
+      "type": "object",
+      "maxProperties": 64,
+      "additionalProperties": { "$ref": "#/$defs/performanceMetric" }
+    },
+    "ui": {
+      "type": "object",
+      "required": ["windowPosition", "windowSize", "contentWidth", "uiScale", "wideActions", "collectionColumnCount", "fontReady", "pushedStyleVarCount", "pushedColorCount", "reduceMotion", "viewStateRevision"],
+      "properties": {
+        "windowPosition": { "$ref": "#/$defs/vector2" },
+        "windowSize": { "$ref": "#/$defs/vector2" },
+        "contentWidth": { "$ref": "#/$defs/nonnegativeNumber" },
+        "uiScale": { "type": "number", "exclusiveMinimum": 0, "maximum": 16 },
+        "wideActions": { "type": "boolean" },
+        "collectionColumnCount": { "type": "integer", "minimum": 1, "maximum": 3 },
+        "fontReady": { "type": "boolean" },
+        "pushedStyleVarCount": { "type": "integer", "minimum": 0, "maximum": 64 },
+        "pushedColorCount": { "type": "integer", "minimum": 0, "maximum": 128 },
+        "reduceMotion": { "type": "boolean" },
+        "viewStateRevision": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 }
+      },
+      "additionalProperties": true
+    },
+    "recentFailures": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "required": ["occurredAtUtc", "component", "operation", "code", "exceptionType", "message", "frames"],
+        "properties": {
+          "occurredAtUtc": { "$ref": "#/$defs/utcDateTime" },
+          "component": { "$ref": "#/$defs/boundedText" },
+          "operation": { "$ref": "#/$defs/boundedText" },
+          "code": { "$ref": "#/$defs/stableCode" },
+          "exceptionType": { "type": ["string", "null"], "maxLength": 256 },
+          "message": { "type": "string", "maxLength": 512 },
+          "frames": {
+            "type": "array",
+            "maxItems": 32,
+            "items": {
+              "type": "object",
+              "required": ["assembly", "type", "method"],
+              "properties": {
+                "assembly": { "$ref": "#/$defs/boundedText" },
+                "type": { "$ref": "#/$defs/boundedText" },
+                "method": { "$ref": "#/$defs/boundedText" },
+                "sourceFileName": { "type": ["string", "null"], "maxLength": 128, "pattern": "^[^/\\\\]*$" },
+                "line": { "type": ["integer", "null"], "minimum": 1, "maximum": 2147483647 }
+              },
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "redaction": {
+      "type": "object",
+      "required": ["schemaVersion", "appliedRules", "droppedFieldCount", "truncatedFieldCount", "prohibitedDataAssertions"],
+      "properties": {
+        "schemaVersion": { "type": "string", "const": "1.0" },
+        "appliedRules": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/stableCode" }
+        },
+        "droppedFieldCount": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "truncatedFieldCount": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "prohibitedDataAssertions": {
+          "type": "object",
+          "required": ["characterIdentity", "collectionOrItemData", "retainerIdentity", "chat", "nativeAddresses", "processInputs", "fullPaths", "personalIdentifiers", "secrets", "clipboard"],
+          "properties": {
+            "characterIdentity": { "type": "boolean", "const": false },
+            "collectionOrItemData": { "type": "boolean", "const": false },
+            "retainerIdentity": { "type": "boolean", "const": false },
+            "chat": { "type": "boolean", "const": false },
+            "nativeAddresses": { "type": "boolean", "const": false },
+            "processInputs": { "type": "boolean", "const": false },
+            "fullPaths": { "type": "boolean", "const": false },
+            "personalIdentifiers": { "type": "boolean", "const": false },
+            "secrets": { "type": "boolean", "const": false },
+            "clipboard": { "type": "boolean", "const": false }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "utcDateTime": { "type": "string", "format": "date-time", "pattern": "Z$", "maxLength": 64 },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "boundedText": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "stableCode": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9]{0,63}$" },
+    "sourceKey": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$" },
+    "nonnegativeNumber": { "type": "number", "minimum": 0, "maximum": 3600000 },
+    "vector2": {
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number", "minimum": -100000, "maximum": 100000 },
+        "y": { "type": "number", "minimum": -100000, "maximum": 100000 }
+      },
+      "additionalProperties": false
+    },
+    "ioResult": {
+      "type": "object",
+      "required": ["status", "byteCount", "elapsedMilliseconds", "failureCode"],
+      "properties": {
+        "status": { "type": "string", "enum": ["Never", "Succeeded", "Failed"] },
+        "byteCount": { "type": "integer", "minimum": 0, "maximum": 419430400 },
+        "elapsedMilliseconds": { "$ref": "#/$defs/nonnegativeNumber" },
+        "failureCode": { "oneOf": [{ "$ref": "#/$defs/stableCode" }, { "type": "null" }] }
+      },
+      "additionalProperties": true
+    },
+    "performanceMetric": {
+      "type": "object",
+      "required": ["sampleCount", "durationMilliseconds", "allocatedBytes"],
+      "properties": {
+        "sampleCount": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "durationMilliseconds": { "$ref": "#/$defs/percentiles" },
+        "allocatedBytes": { "$ref": "#/$defs/percentiles" }
+      },
+      "additionalProperties": true
+    },
+    "percentiles": {
+      "type": "object",
+      "required": ["p50", "p95", "maximum"],
+      "properties": {
+        "p50": { "$ref": "#/$defs/nonnegativeNumber" },
+        "p95": { "$ref": "#/$defs/nonnegativeNumber" },
+        "maximum": { "$ref": "#/$defs/nonnegativeNumber" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

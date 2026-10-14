@@ -1,0 +1,6 @@
+# Preserve embedded contract bytes and schema fingerprints.
+/data/Contracts/** -text whitespace=cr-at-eol
+/data/FFXIVCollect/** -text whitespace=cr-at-eol
+/data/Diagnostics/** -text whitespace=cr-at-eol
+/src/Contracts/** -text whitespace=cr-at-eol
+/tests/fixtures/** -text whitespace=cr-at-eol

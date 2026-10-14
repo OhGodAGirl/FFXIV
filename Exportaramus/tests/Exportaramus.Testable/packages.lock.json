@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "exportaramus.consumerkit.v1_1": {
+        "type": "Project"
+      },
+      "exportaramus.consumerkit.v1_2": {
+        "type": "Project"
+      }
+    }
+  }
+}

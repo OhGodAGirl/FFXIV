@@ -1,0 +1,11 @@
+{
+  "format": "exportaramus-consumer-ordering-vectors",
+  "schemaVersion": "1.0",
+  "vectors": [
+    { "name": "LowerRevision", "firstRevision": 7, "nextRevision": 6, "newSession": false, "changePayload": false, "expected": "LowerRevision" },
+    { "name": "EqualIdentical", "firstRevision": 7, "nextRevision": 7, "newSession": false, "changePayload": false, "expected": "None" },
+    { "name": "EqualConflicting", "firstRevision": 7, "nextRevision": 7, "newSession": false, "changePayload": true, "expected": "EqualRevisionConflict" },
+    { "name": "NewerRevision", "firstRevision": 7, "nextRevision": 8, "newSession": false, "changePayload": true, "expected": "None" },
+    { "name": "NewProviderSession", "firstRevision": 7, "nextRevision": 1, "newSession": true, "changePayload": true, "expected": "None" }
+  ]
+}

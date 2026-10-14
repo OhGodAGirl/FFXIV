@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/**/*.cs" Exclude="../../src/**/*.Dalamud.cs" />
+    <Compile Remove="../../src/Features/Wardrobe/**/*.cs;../../src/Contracts/**/*.cs" />
+    <Compile Include="../../src/Contracts/1.0/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../project/Contracts/1.1/Exportaramus.ConsumerKit.V1_1.Runtime.csproj" />
+    <ProjectReference Include="../../project/Contracts/1.2/Exportaramus.ConsumerKit.V1_2.Runtime.csproj" />
+    <EmbeddedResource Include="../../data/*.json" />
+    <EmbeddedResource Include="../../data/Contracts/1.0/schemas/*.json" />
+    <EmbeddedResource Include="../../data/FFXIVCollect/1.0/*.json" />
+    <EmbeddedResource Include="../../data/FFXIVCollect/1.2/*.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="../../data/Diagnostics/1.0/*.schema.json" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,758 @@
+{
+  "schemaVersion": "1.2",
+  "providerInternalName": "Exportaramus",
+  "providerVersion": "0.2.1.2",
+  "providerSessionId": "7be5461e-8975-4c7a-9f13-4bb33af9c82d",
+  "revision": 1,
+  "contentId": "12345678901234567",
+  "capturedAtUtc": "2026-09-06T12:00:00.0000000Z",
+  "captureType": "Full",
+  "captureGeneration": 1,
+  "consistency": "Coherent",
+  "unlocks": {
+    "achievements": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "aetherytes": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "bardings": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "cards": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "chocobo_routes": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "emotes": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "fashions": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "field_records": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "frames": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "hairstyles": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "leves": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "minions": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "mounts": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "npcs": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "occult_records": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "orchestrions": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "quests": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "spells": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "survey_records": {
+      "unlockedIds": [
+        1,
+        2
+      ]
+    },
+    "facewear": {
+      "unlockedIds": [
+        59,
+        61
+      ]
+    }
+  },
+  "currentItemPresence": {
+    "armoire": {
+      "items": [
+        {
+          "itemId": 100
+        }
+      ]
+    },
+    "armoryChest": {
+      "items": [
+        {
+          "itemId": 100,
+          "quantity": 2
+        }
+      ]
+    },
+    "chocoboSaddlebag": {
+      "items": [
+        {
+          "itemId": 100,
+          "quantity": 2
+        }
+      ]
+    },
+    "glamourDresser": {
+      "items": [
+        {
+          "itemId": 100
+        },
+        {
+          "itemId": 2642
+        }
+      ],
+      "dresserEntries": [
+        {
+          "entryIndex": 0,
+          "rawItemId": 100,
+          "baseItemId": 100,
+          "outfitId": null,
+          "components": [
+            {
+              "slotIndex": 0,
+              "itemId": 100
+            }
+          ]
+        },
+        {
+          "entryIndex": 4,
+          "rawItemId": 1000900,
+          "baseItemId": 900,
+          "outfitId": 900,
+          "components": [
+            {
+              "slotIndex": 2,
+              "itemId": 100
+            },
+            {
+              "slotIndex": 3,
+              "itemId": 2642
+            }
+          ]
+        },
+        {
+          "entryIndex": 5,
+          "rawItemId": 100,
+          "baseItemId": 100,
+          "outfitId": null,
+          "components": [
+            {
+              "slotIndex": 0,
+              "itemId": 100
+            }
+          ]
+        }
+      ]
+    },
+    "inventory": {
+      "items": [
+        {
+          "itemId": 100,
+          "quantity": 2
+        }
+      ]
+    },
+    "premiumSaddlebag": {
+      "items": [
+        {
+          "itemId": 100,
+          "quantity": 2
+        }
+      ]
+    },
+    "retainers": {
+      "items": [
+        {
+          "itemId": 100,
+          "quantity": 2
+        }
+      ]
+    }
+  },
+  "reportedOwnership": {
+    "items": [
+      {
+        "itemId": 200,
+        "reportedAtUtc": "2026-09-06T12:00:00.0000000Z",
+        "reporter": "FixtureConsumer"
+      }
+    ]
+  },
+  "sourceCapabilities": {
+    "achievements": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "aetherytes": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "armoire": {
+      "dataType": "CurrentItemPresence",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "armoryChest": {
+      "dataType": "CurrentItemPresence",
+      "capabilityState": "Supported",
+      "supportsQuantity": true,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "bardings": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "cards": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "chocoboSaddlebag": {
+      "dataType": "CurrentItemPresence",
+      "capabilityState": "Supported",
+      "supportsQuantity": true,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "chocobo_routes": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "emotes": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "fashions": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "field_records": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "frames": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "glamourDresser": {
+      "dataType": "CurrentItemPresence",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "hairstyles": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "inventory": {
+      "dataType": "CurrentItemPresence",
+      "capabilityState": "Supported",
+      "supportsQuantity": true,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "leves": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "minions": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "mounts": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "npcs": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "occult_records": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "orchestrions": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "premiumSaddlebag": {
+      "dataType": "CurrentItemPresence",
+      "capabilityState": "Supported",
+      "supportsQuantity": true,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "quests": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "reportedOwnership": {
+      "dataType": "ReportedOwnership",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "retainers": {
+      "dataType": "CurrentItemPresence",
+      "capabilityState": "Supported",
+      "supportsQuantity": true,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "spells": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "survey_records": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "facewear": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "beasts": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "UnavailablePendingValidation",
+      "supportsQuantity": false,
+      "reasonCode": "PatchValidationRequired",
+      "reason": "Beast collection reader requires validation."
+    }
+  },
+  "sourceHealth": {
+    "achievements": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "aetherytes": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "armoire": {
+      "dataType": "CurrentItemPresence",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "armoryChest": {
+      "dataType": "CurrentItemPresence",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "bardings": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "cards": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "chocoboSaddlebag": {
+      "dataType": "CurrentItemPresence",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "chocobo_routes": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "emotes": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "fashions": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "field_records": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "frames": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "glamourDresser": {
+      "dataType": "CurrentItemPresence",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "hairstyles": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "inventory": {
+      "dataType": "CurrentItemPresence",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "leves": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "minions": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "mounts": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "npcs": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "occult_records": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "orchestrions": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "premiumSaddlebag": {
+      "dataType": "CurrentItemPresence",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "quests": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "reportedOwnership": {
+      "dataType": "ReportedOwnership",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Reported",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "retainers": {
+      "dataType": "CurrentItemPresence",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "spells": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "survey_records": {
+      "dataType": "PermanentUnlock",
+      "observedAtUtc": "2026-09-06T12:00:00.0000000Z",
+      "captureGeneration": 1,
+      "sourceStatus": "Fresh",
+      "completeness": "Complete",
+      "provenanceType": "Observed",
+      "capabilityState": "Supported",
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "beasts": {
+      "dataType": "PermanentUnlock",
+      "captureGeneration": 0,
+      "sourceStatus": "Unavailable",
+      "completeness": "Unknown",
+      "provenanceType": "None",
+      "capabilityState": "UnavailablePendingValidation",
+      "reasonCode": "PatchValidationRequired",
+      "reason": "Beast collection reader requires validation."
+    }
+  }
+}

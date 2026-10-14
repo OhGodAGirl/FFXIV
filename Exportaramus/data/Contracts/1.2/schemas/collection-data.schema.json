@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://exportaramus.local/schemas/1.2/collection-data.schema.json",
+  "title": "Exportaramus CollectionData Snapshot 1.2",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "providerInternalName",
+    "providerVersion",
+    "providerSessionId",
+    "revision",
+    "contentId",
+    "capturedAtUtc",
+    "captureType",
+    "captureGeneration",
+    "consistency",
+    "unlocks",
+    "currentItemPresence",
+    "reportedOwnership",
+    "sourceCapabilities",
+    "sourceHealth"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
+    "providerInternalName": {
+      "type": "string",
+      "const": "Exportaramus"
+    },
+    "providerVersion": {
+      "$ref": "common.schema.json#/$defs/providerVersion"
+    },
+    "providerSessionId": {
+      "$ref": "common.schema.json#/$defs/providerSessionId"
+    },
+    "revision": {
+      "$ref": "common.schema.json#/$defs/revision"
+    },
+    "contentId": {
+      "$ref": "common.schema.json#/$defs/contentId"
+    },
+    "capturedAtUtc": {
+      "$ref": "common.schema.json#/$defs/utcDateTime"
+    },
+    "captureType": {
+      "$ref": "common.schema.json#/$defs/captureType"
+    },
+    "captureGeneration": {
+      "$ref": "common.schema.json#/$defs/captureGeneration"
+    },
+    "consistency": {
+      "$ref": "common.schema.json#/$defs/consistency"
+    },
+    "unlocks": {
+      "type": "object",
+      "properties": {
+        "mounts": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "minions": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "emotes": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "bardings": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "cards": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "npcs": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "fashions": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "frames": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "occult_records": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "orchestrions": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "spells": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "aetherytes": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "chocobo_routes": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "leves": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "hairstyles": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "field_records": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "survey_records": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "quests": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "achievements": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "facewear": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        },
+        "beasts": {
+          "$ref": "common.schema.json#/$defs/unlockSet"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "common.schema.json#/$defs/unlockSet"
+      }
+    },
+    "currentItemPresence": {
+      "type": "object",
+      "properties": {
+        "inventory": {
+          "$ref": "common.schema.json#/$defs/quantifiedPresenceSource"
+        },
+        "armoryChest": {
+          "$ref": "common.schema.json#/$defs/quantifiedPresenceSource"
+        },
+        "chocoboSaddlebag": {
+          "$ref": "common.schema.json#/$defs/quantifiedPresenceSource"
+        },
+        "premiumSaddlebag": {
+          "$ref": "common.schema.json#/$defs/quantifiedPresenceSource"
+        },
+        "retainers": {
+          "$ref": "common.schema.json#/$defs/quantifiedPresenceSource"
+        },
+        "armoire": {
+          "$ref": "common.schema.json#/$defs/setPresenceSource"
+        },
+        "glamourDresser": {
+          "$ref": "common.schema.json#/$defs/dresserPresenceSource"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "common.schema.json#/$defs/setPresenceSource"
+      }
+    },
+    "reportedOwnership": {
+      "type": "object",
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 10000,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "common.schema.json#/$defs/reportedEvidence"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "sourceCapabilities": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "common.schema.json#/$defs/sourceCapability"
+      },
+      "required": [
+        "beasts"
+      ],
+      "properties": {
+        "beasts": {
+          "$ref": "common.schema.json#/$defs/beastSourceCapability"
+        }
+      }
+    },
+    "sourceHealth": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "common.schema.json#/$defs/sourceHealth"
+      },
+      "required": [
+        "beasts"
+      ],
+      "properties": {
+        "beasts": {
+          "$ref": "common.schema.json#/$defs/beastSourceHealth"
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

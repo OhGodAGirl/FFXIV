@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://exportaramus.local/schemas/1.0/capabilities.schema.json",
+  "title": "Exportaramus CollectionData Capabilities 1.0",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "providerInternalName",
+    "providerVersion",
+    "providerSessionId",
+    "clientLanguage",
+    "gameDataVersion",
+    "gates",
+    "unlockKeys",
+    "currentPresenceSources",
+    "sourceCapabilities",
+    "collectionDataSchema",
+    "limits",
+    "reportedOwnershipEvidence"
+  ],
+  "properties": {
+    "schemaVersion": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "providerInternalName": { "type": "string", "const": "Exportaramus" },
+    "providerVersion": { "$ref": "common.schema.json#/$defs/providerVersion" },
+    "providerSessionId": { "$ref": "common.schema.json#/$defs/providerSessionId" },
+    "clientLanguage": { "$ref": "common.schema.json#/$defs/clientLanguage" },
+    "gameDataVersion": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "gates": {
+      "type": "object",
+      "required": ["getCapabilities", "getSnapshot", "snapshotChanged", "snapshotWithdrawn", "reportOwnershipEvidence"],
+      "properties": {
+        "getCapabilities": { "type": "string", "const": "Exportaramus.CollectionData.GetCapabilities" },
+        "getSnapshot": { "type": "string", "const": "Exportaramus.CollectionData.GetSnapshot" },
+        "snapshotChanged": { "type": "string", "const": "Exportaramus.CollectionData.SnapshotChanged" },
+        "snapshotWithdrawn": { "type": "string", "const": "Exportaramus.CollectionData.SnapshotWithdrawn" },
+        "reportOwnershipEvidence": { "type": "string", "const": "Exportaramus.CollectionData.ReportOwnershipEvidence" }
+      },
+      "additionalProperties": true
+    },
+    "unlockKeys": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/sourceKey" }
+    },
+    "currentPresenceSources": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/sourceKey" }
+    },
+    "sourceCapabilities": {
+      "type": "object",
+      "additionalProperties": { "$ref": "common.schema.json#/$defs/sourceCapability" }
+    },
+    "collectionDataSchema": {
+      "type": "object",
+      "required": ["id", "sha256"],
+      "properties": {
+        "id": { "type": "string", "const": "https://exportaramus.local/schemas/1.0/collection-data.schema.json" },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      },
+      "additionalProperties": true
+    },
+    "limits": {
+      "type": "object",
+      "required": [
+        "snapshotUtf8Bytes",
+        "capabilitiesUtf8Bytes",
+        "eventUtf8Bytes",
+        "idsPerCollection",
+        "reportedEvidenceRecordsPerCharacter",
+        "reporterUtf8Bytes",
+        "pendingReportsTotal",
+        "pendingReportsPerReporter",
+        "quantityMaximum",
+        "globalReportRate",
+        "reporterReportRate"
+      ],
+      "properties": {
+        "snapshotUtf8Bytes": { "type": "integer", "const": 4194304 },
+        "capabilitiesUtf8Bytes": { "type": "integer", "const": 16384 },
+        "eventUtf8Bytes": { "type": "integer", "const": 4096 },
+        "idsPerCollection": { "type": "integer", "const": 50000 },
+        "reportedEvidenceRecordsPerCharacter": { "type": "integer", "const": 10000 },
+        "reporterUtf8Bytes": { "type": "integer", "const": 64 },
+        "pendingReportsTotal": { "type": "integer", "const": 256 },
+        "pendingReportsPerReporter": { "type": "integer", "const": 32 },
+        "quantityMaximum": { "type": "integer", "const": 4294967295 },
+        "globalReportRate": { "$ref": "#/$defs/rateLimit" },
+        "reporterReportRate": { "$ref": "#/$defs/rateLimit" }
+      },
+      "additionalProperties": true
+    },
+    "reportedOwnershipEvidence": {
+      "type": "object",
+      "required": ["available", "resultCodes"],
+      "properties": {
+        "available": { "type": "boolean" },
+        "resultCodes": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["Accepted", "InvalidRequest", "WrongCharacter", "RateLimited", "CapacityReached", "QueueFull", "Unavailable", "ProviderStopping"]
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "rateLimit": {
+      "type": "object",
+      "required": ["acceptedPerMinute", "burst"],
+      "properties": {
+        "acceptedPerMinute": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "burst": { "type": "integer", "minimum": 1, "maximum": 10000 }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

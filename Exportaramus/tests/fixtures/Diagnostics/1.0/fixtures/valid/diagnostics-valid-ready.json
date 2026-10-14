@@ -1,0 +1,166 @@
+{
+  "format": "exportaramus-diagnostics",
+  "schemaVersion": "1.0",
+  "generatedAtUtc": "2026-09-03T19:00:00.0000000Z",
+  "reportStatus": "Ready",
+  "fingerprintSha256": "2c4a599e1c9adfe6759c4c1e4d77fa5c017de8db7a9fd78639b7d2f72c8a1a13",
+  "incompleteSections": [],
+  "build": {
+    "pluginVersion": "0.1.0.0",
+    "buildConfiguration": "Release",
+    "sourceRevision": null,
+    "assemblyInformationalVersion": "0.1.0.0",
+    "packageSha256": null
+  },
+  "runtime": {
+    "dalamudApiVersion": "15",
+    "dotnetRuntimeVersion": "10.0.0",
+    "osVersion": "Windows",
+    "ffxivClientVersion": "2026.09.03.0000.0000",
+    "gameDataVersion": "2026.09.03.0000.0000",
+    "clientLanguage": "English",
+    "dependencies": {
+      "Dalamud": "15.0.3.2"
+    }
+  },
+  "lifecycle": {
+    "state": "Running",
+    "providerSessionId": "7be5461e-8975-4c7a-9f13-4bb33af9c82d",
+    "revision": 17,
+    "registrations": {
+      "frameworkUpdate": true,
+      "conditionChange": true,
+      "command": true,
+      "draw": true,
+      "openMainUi": true,
+      "openConfigUi": true,
+      "ipcGates": true,
+      "windows": true
+    },
+    "ownedTasks": [],
+    "cancellationRequested": false
+  },
+  "operations": {
+    "controllerState": "Idle",
+    "captureType": null,
+    "captureGeneration": 81,
+    "elapsedMilliseconds": 0,
+    "deadlineAtUtc": null,
+    "retryCount": 0,
+    "pendingRequestPriority": "None",
+    "staleCompletionRejected": false
+  },
+  "collectionPipeline": {
+    "catalogCache": {
+      "keyHash": null,
+      "status": "Ready",
+      "buildMilliseconds": 0
+    },
+    "acceptedCaptureGeneration": 81,
+    "fingerprints": {},
+    "serializers": {
+      "compact": "Ready",
+      "compendium": "Ready",
+      "ffxivCollect": "Ready"
+    },
+    "omissions": [],
+    "outputBytes": {
+      "compact": 0,
+      "compendium": 0,
+      "ffxivCollect": 0
+    },
+    "ffxivCollect": {
+      "upstreamCommit": "7eda07857e89b7dba81453135b44bc33bf3457b1",
+      "verifiedAtUtc": "2026-09-03T19:00:00.0000000Z",
+      "contractSha256": "20625bd055796ce8ea26e475db5e22bbdff46653d1b6443918d2cde386eb5f36",
+      "mappingSha256": "847b4d36d43487f8dd7b477fc1748f2c9f72bb3d646f1e0d95b388a187cfe90e",
+      "includedKeyCount": 0,
+      "omittedKeyCount": 15
+    }
+  },
+  "sourceHealth": [],
+  "storage": {
+    "canonicalAvailable": false,
+    "historyFileCount": 0,
+    "historyBytes": 0,
+    "lastRead": {
+      "status": "Never",
+      "byteCount": 0,
+      "elapsedMilliseconds": 0,
+      "failureCode": null
+    },
+    "lastWrite": {
+      "status": "Never",
+      "byteCount": 0,
+      "elapsedMilliseconds": 0,
+      "failureCode": null
+    },
+    "recoveryState": "None"
+  },
+  "ipc": {
+    "gatesRegistered": {
+      "getCapabilities": true,
+      "getSnapshot": true,
+      "snapshotChanged": true,
+      "snapshotWithdrawn": true,
+      "reportOwnershipEvidence": true
+    },
+    "payloadBytes": {
+      "capabilities": 0,
+      "snapshot": 0,
+      "pendingEvent": 0
+    },
+    "changedNoticePending": false,
+    "reportQueue": {
+      "depth": 0,
+      "capacity": 256
+    },
+    "reportCounters": {
+      "accepted": 0,
+      "rejected": 0,
+      "throttled": 0
+    },
+    "lastWithdrawalReason": null
+  },
+  "performance": {},
+  "ui": {
+    "windowPosition": {
+      "x": 0,
+      "y": 0
+    },
+    "windowSize": {
+      "x": 820,
+      "y": 680
+    },
+    "contentWidth": 796,
+    "uiScale": 1,
+    "wideActions": true,
+    "collectionColumnCount": 3,
+    "fontReady": true,
+    "pushedStyleVarCount": 8,
+    "pushedColorCount": 31,
+    "reduceMotion": false,
+    "viewStateRevision": 17
+  },
+  "recentFailures": [],
+  "redaction": {
+    "schemaVersion": "1.0",
+    "appliedRules": [
+      "TypedAllowlist"
+    ],
+    "droppedFieldCount": 0,
+    "truncatedFieldCount": 0,
+    "prohibitedDataAssertions": {
+      "characterIdentity": false,
+      "collectionOrItemData": false,
+      "retainerIdentity": false,
+      "chat": false,
+      "nativeAddresses": false,
+      "processInputs": false,
+      "fullPaths": false,
+      "personalIdentifiers": false,
+      "secrets": false,
+      "clipboard": false
+    }
+  }
+}

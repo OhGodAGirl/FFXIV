@@ -1,0 +1,8 @@
+{
+  "eventType": "SnapshotWithdrawn",
+  "schemaVersion": "1.0",
+  "providerSessionId": "7be5461e-8975-4c7a-9f13-4bb33af9c82d",
+  "contentId": "12345678901234567",
+  "withdrawnAtUtc": "2026-09-06T12:00:00.0000000Z",
+  "reasonCode": "ProviderStopping"
+}

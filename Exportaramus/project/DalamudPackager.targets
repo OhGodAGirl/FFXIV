@@ -1,0 +1,8 @@
+<Project>
+  <Target Name="PackageExportaramus" AfterTargets="Build">
+    <DalamudPackager ProjectDir="$(ProjectDir)" OutputPath="$(OutputPath)" AssemblyName="$(AssemblyName)"
+      ManifestType="json" MakeZip="false" />
+    <Exec Command="pwsh -NoProfile -File &quot;$(ProjectDir)../tools/Build-Package.ps1&quot; -OutputDirectory &quot;$(ProjectDir)$(OutputPath).&quot;" />
+    <Exec Command="pwsh -NoProfile -File &quot;$(ProjectDir)../tools/Inspect-Package.ps1&quot; -OutputDirectory &quot;$(ProjectDir)$(OutputPath).&quot;" />
+  </Target>
+</Project>

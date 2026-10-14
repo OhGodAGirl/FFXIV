@@ -1,0 +1,6 @@
+<RunSettings><DataCollectionRunSettings><DataCollectors><DataCollector friendlyName="XPlat Code Coverage"><Configuration>
+  <Format>cobertura,json</Format><Include>[Exportaramus.Testable]*,[Exportaramus.ConsumerKit.V1_1]*,[Exportaramus.ConsumerKit.V1_2]*</Include>
+  <ExcludeByAttribute>GeneratedCodeAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
+  <SingleHit>false</SingleHit><UseSourceLink>false</UseSourceLink>
+</Configuration></DataCollector></DataCollectors></DataCollectionRunSettings></RunSettings>
+

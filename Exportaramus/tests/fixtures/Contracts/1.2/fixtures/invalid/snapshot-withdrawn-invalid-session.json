@@ -1,0 +1,8 @@
+{
+  "eventType": "SnapshotWithdrawn",
+  "schemaVersion": "1.2",
+  "providerSessionId": "bad",
+  "contentId": "12345678901234567",
+  "withdrawnAtUtc": "2026-09-06T12:00:00.0000000Z",
+  "reasonCode": "LoggedOut"
+}

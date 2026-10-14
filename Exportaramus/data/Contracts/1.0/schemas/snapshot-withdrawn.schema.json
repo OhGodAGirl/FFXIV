@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://exportaramus.local/schemas/1.0/snapshot-withdrawn.schema.json",
+  "title": "Exportaramus CollectionData SnapshotWithdrawn Notice 1.0",
+  "type": "object",
+  "required": ["eventType", "schemaVersion", "providerSessionId", "contentId", "withdrawnAtUtc", "reasonCode"],
+  "properties": {
+    "eventType": { "type": "string", "const": "SnapshotWithdrawn" },
+    "schemaVersion": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "providerSessionId": { "$ref": "common.schema.json#/$defs/providerSessionId" },
+    "contentId": { "$ref": "common.schema.json#/$defs/contentId" },
+    "withdrawnAtUtc": { "$ref": "common.schema.json#/$defs/utcDateTime" },
+    "reasonCode": {
+      "type": "string",
+      "enum": ["LoggedOut", "CharacterChanged", "IdentityUnavailable", "ProviderStopping"]
+    },
+    "explanation": { "type": "string", "maxLength": 160 }
+  },
+  "additionalProperties": true
+}

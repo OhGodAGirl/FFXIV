@@ -1,0 +1,280 @@
+{
+  "schemaVersion": "1.1",
+  "providerInternalName": "Exportaramus",
+  "providerVersion": "0.2.1.1",
+  "providerSessionId": "7be5461e-8975-4c7a-9f13-4bb33af9c82d",
+  "clientLanguage": "English",
+  "gameDataVersion": "2026.08.11.0000.0000",
+  "gates": {
+    "getCapabilities": "Exportaramus.CollectionData.V1_1.GetCapabilities",
+    "getSnapshot": "Exportaramus.CollectionData.V1_1.GetSnapshot",
+    "snapshotChanged": "Exportaramus.CollectionData.V1_1.SnapshotChanged",
+    "snapshotWithdrawn": "Exportaramus.CollectionData.V1_1.SnapshotWithdrawn",
+    "reportOwnershipEvidence": "Exportaramus.CollectionData.V1_1.ReportOwnershipEvidence"
+  },
+  "unlockKeys": [
+    "achievements",
+    "aetherytes",
+    "bardings",
+    "cards",
+    "chocobo_routes",
+    "emotes",
+    "facewear",
+    "fashions",
+    "field_records",
+    "frames",
+    "hairstyles",
+    "leves",
+    "minions",
+    "mounts",
+    "npcs",
+    "occult_records",
+    "orchestrions",
+    "quests",
+    "spells",
+    "survey_records"
+  ],
+  "currentPresenceSources": [
+    "armoire",
+    "armoryChest",
+    "chocoboSaddlebag",
+    "glamourDresser",
+    "inventory",
+    "premiumSaddlebag",
+    "retainers"
+  ],
+  "sourceCapabilities": {
+    "achievements": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "aetherytes": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "armoire": {
+      "dataType": "CurrentItemPresence",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "armoryChest": {
+      "dataType": "CurrentItemPresence",
+      "capabilityState": "Supported",
+      "supportsQuantity": true,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "bardings": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "cards": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "chocoboSaddlebag": {
+      "dataType": "CurrentItemPresence",
+      "capabilityState": "Supported",
+      "supportsQuantity": true,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "chocobo_routes": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "emotes": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "fashions": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "field_records": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "frames": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "glamourDresser": {
+      "dataType": "CurrentItemPresence",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "hairstyles": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "inventory": {
+      "dataType": "CurrentItemPresence",
+      "capabilityState": "Supported",
+      "supportsQuantity": true,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "leves": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "minions": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "mounts": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "npcs": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "occult_records": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "orchestrions": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "premiumSaddlebag": {
+      "dataType": "CurrentItemPresence",
+      "capabilityState": "Supported",
+      "supportsQuantity": true,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "quests": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "reportedOwnership": {
+      "dataType": "ReportedOwnership",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "retainers": {
+      "dataType": "CurrentItemPresence",
+      "capabilityState": "Supported",
+      "supportsQuantity": true,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "spells": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "survey_records": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    },
+    "facewear": {
+      "dataType": "PermanentUnlock",
+      "capabilityState": "Supported",
+      "supportsQuantity": false,
+      "reasonCode": "None",
+      "reason": ""
+    }
+  },
+  "collectionDataSchema": {
+    "id": "https://exportaramus.local/schemas/1.1/collection-data.schema.json",
+    "sha256": "5f9480e864e5d4bd694e94d37cfdfcf51f6076b62113dd148914f1d929de7764"
+  },
+  "limits": {
+    "snapshotUtf8Bytes": 4194304,
+    "capabilitiesUtf8Bytes": 16384,
+    "eventUtf8Bytes": 4096,
+    "idsPerCollection": 50000,
+    "reportedEvidenceRecordsPerCharacter": 10000,
+    "reporterUtf8Bytes": 64,
+    "pendingReportsTotal": 256,
+    "pendingReportsPerReporter": 32,
+    "quantityMaximum": 4294967295,
+    "globalReportRate": {
+      "acceptedPerMinute": 60,
+      "burst": 20
+    },
+    "reporterReportRate": {
+      "acceptedPerMinute": 30,
+      "burst": 10
+    }
+  },
+  "reportedOwnershipEvidence": {
+    "available": true,
+    "resultCodes": [
+      "Accepted",
+      "InvalidRequest",
+      "WrongCharacter",
+      "RateLimited",
+      "CapacityReached",
+      "QueueFull",
+      "Unavailable",
+      "ProviderStopping"
+    ]
+  }
+}

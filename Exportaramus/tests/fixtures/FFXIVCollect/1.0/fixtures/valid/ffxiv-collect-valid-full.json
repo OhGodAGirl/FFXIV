@@ -1,0 +1,62 @@
+{
+  "armoires": [
+    1,
+    2
+  ],
+  "bardings": [
+    1,
+    2
+  ],
+  "cards": [
+    1,
+    2
+  ],
+  "fashions": [
+    1,
+    2
+  ],
+  "field_records": [
+    1,
+    2
+  ],
+  "frames": [
+    124,
+    125
+  ],
+  "hairstyles": [
+    66,
+    67
+  ],
+  "leves": [
+    21,
+    22
+  ],
+  "npcs": [
+    2293762,
+    2293763
+  ],
+  "occult_records": [
+    1,
+    2
+  ],
+  "orchestrions": [
+    1,
+    2
+  ],
+  "outfits": [
+    45094,
+    45095
+  ],
+  "relics": [
+    1675,
+    1746
+  ],
+  "spells": [
+    1,
+    2
+  ],
+  "survey_records": [
+    1,
+    2
+  ]
+}

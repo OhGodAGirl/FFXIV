@@ -1,0 +1,11 @@
+{
+  "format": "exportaramus-consumer-report-vectors",
+  "schemaVersion": "1.0",
+  "normalization": [
+    { "label": " é ", "normalized": "é", "accepted": true },
+    { "label": "FixtureConsumer", "normalized": "FixtureConsumer", "accepted": true },
+    { "label": "\u0000", "normalized": null, "accepted": false }
+  ],
+  "boundaries": { "reporterUtf8BytesAccepted": 64, "reporterUtf8BytesRejected": 65, "retainedRecords": 10000, "pendingTotal": 256, "pendingPerReporter": 32, "globalPerMinute": 60, "globalBurst": 20, "reporterPerMinute": 30, "reporterBurst": 10 },
+  "terminalResults": ["Accepted", "InvalidRequest", "WrongCharacter", "RateLimited", "CapacityReached", "QueueFull", "Unavailable", "ProviderStopping", "UnknownRejectWithoutRetry"]
+}

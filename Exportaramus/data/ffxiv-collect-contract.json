@@ -1,0 +1,112 @@
+{
+  "format": "exportaramus-ffxiv-collect-contract",
+  "schemaVersion": "1.0",
+  "upstreamRepository": "https://github.com/skyborn-industries/ffxiv-collect",
+  "upstreamCommit": "7eda07857e89b7dba81453135b44bc33bf3457b1",
+  "verifiedAtUtc": "2026-09-07T03:49:35.040442Z",
+  "importUtf8ByteLimit": 1048576,
+  "orderedKeys": [
+    "armoires",
+    "bardings",
+    "cards",
+    "fashions",
+    "field_records",
+    "frames",
+    "hairstyles",
+    "leves",
+    "npcs",
+    "occult_records",
+    "orchestrions",
+    "outfits",
+    "relics",
+    "spells",
+    "survey_records"
+  ],
+  "validatedGameDataVersion": "2026.08.11.0000.0000",
+  "artifacts": {
+    "identifierMappingsSha256": "847b4d36d43487f8dd7b477fc1748f2c9f72bb3d646f1e0d95b388a187cfe90e",
+    "recognizedIdsSha256": "cd450758a9efed643b9a353f14b4a25bdc760770eb72d6c396f368ab863a179a",
+    "derivedInputsSha256": "427cb8fb922eb82e5134c6ffee604fa6012aa6b40fbede0df38e6f90d8291d22"
+  },
+  "relationshipHashes": {
+    "outfitsSha256": "eb22b034d12a01aed0e07c68a51d3ee45aa68dcc4a0b00dd1d408f4172231a1f",
+    "relicsSha256": "54331ce92348c8def7627ae3c4b82297ed825245e34d8d68565bed3ba2757b65"
+  },
+  "catalogs": [
+    {
+      "key": "armoires",
+      "count": 3521,
+      "idsSha256": "f05f90da4750b298f3ca6a8cbd2535e0dc80d78adb6c8da188a8a2575385a864"
+    },
+    {
+      "key": "bardings",
+      "count": 107,
+      "idsSha256": "0376a2691e0fdf72aaa48a6ea9c7b91c9bacc8a6c74b837bfa39e60e59df87cd"
+    },
+    {
+      "key": "cards",
+      "count": 475,
+      "idsSha256": "39e054f062e1f3cac4b16e50827b4cca48189c3b189e2415d7d8274246ebdc58"
+    },
+    {
+      "key": "fashions",
+      "count": 51,
+      "idsSha256": "b621fafee9d5b43fa1c449098dd0e41d84e506d9050bac74bb66a487bcbdd5b1"
+    },
+    {
+      "key": "field_records",
+      "count": 50,
+      "idsSha256": "dd63df3042e7e7d49daa23ffe0ae4aeea4c281ccb3ffb7a2a723de894ed98163"
+    },
+    {
+      "key": "frames",
+      "count": 398,
+      "idsSha256": "56e85ad38520c1a4eb4e0597e9a85e73d1d438e61863f991a79d18efca980527"
+    },
+    {
+      "key": "hairstyles",
+      "count": 53,
+      "idsSha256": "fc3c8946a60f976b597d2c9d71fd4a12b89d47b98e7a2a013f882c98f45ca6fe"
+    },
+    {
+      "key": "leves",
+      "count": 1740,
+      "idsSha256": "42c819a92c0d1538df869335da04c81b0564a9f834564440cde57c4aa7e1be55"
+    },
+    {
+      "key": "npcs",
+      "count": 134,
+      "idsSha256": "b946648418c721603b3a58860f540df549ef5e68d803f5f242c6bbf78810ac8c"
+    },
+    {
+      "key": "occult_records",
+      "count": 60,
+      "idsSha256": "8894fefc4a9a33c9a71ccf1a3404e2f807365e8a0ca640011e58ca2fd755e293"
+    },
+    {
+      "key": "orchestrions",
+      "count": 883,
+      "idsSha256": "d2b7d7a30a302c682d6da1b6cfcb0094ba23dda541699340180490699af55be4"
+    },
+    {
+      "key": "outfits",
+      "count": 1086,
+      "idsSha256": "884118fb49c23298a6f3e256add62e1e4bd8f344fbac6dcf919976191a25c0d6"
+    },
+    {
+      "key": "relics",
+      "count": 2251,
+      "idsSha256": "55f85e2d98d96a420c4e367f3bab522fbd2c52ecf38b0aad407f32a3054c7836"
+    },
+    {
+      "key": "spells",
+      "count": 124,
+      "idsSha256": "d85bf240fb8ff58861c0d9e399fcd4305eb1087321ba2a5c280ed7f3b6b7e6f4"
+    },
+    {
+      "key": "survey_records",
+      "count": 49,
+      "idsSha256": "6bb44393550412069f66dc925fd2864c31fa4a155ee596a12c2cac07f3c245fc"
+    }
+  ]
+}

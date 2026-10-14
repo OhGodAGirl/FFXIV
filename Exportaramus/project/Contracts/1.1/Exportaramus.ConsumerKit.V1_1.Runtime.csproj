@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><LangVersion>14.0</LangVersion><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><EnableDefaultCompileItems>false</EnableDefaultCompileItems><AssemblyName>Exportaramus.ConsumerKit.V1_1</AssemblyName></PropertyGroup>
+  <ItemGroup><Compile Include="../../../src/Contracts/1.1/*.cs" /><EmbeddedResource Include="../../../data/Contracts/1.1/schemas/*.json" /><EmbeddedResource Include="../../../data/Contracts/1.1/resources/*.json" /></ItemGroup>
+</Project>

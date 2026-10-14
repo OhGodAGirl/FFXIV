@@ -1,0 +1,17 @@
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <Use_DalamudPackager>false</Use_DalamudPackager>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/Features/CollectionData/Catalog/CatalogRowPolicy.cs" />
+    <Compile Include="../../src/Features/CollectionData/Catalog/CatalogItem.cs" />
+    <Compile Include="../../src/Features/CollectionData/Catalog/CollectionDefinition.cs" />
+    <Compile Include="../../src/Features/CollectionData/State/CollectionSourceStatus.cs" />
+    <Reference Update="Lumina" Private="true" />
+    <Reference Update="Lumina.Excel" Private="true" />
+    <Reference Update="Microsoft.Extensions.ObjectPool" Private="true" />
+  </ItemGroup>
+</Project>

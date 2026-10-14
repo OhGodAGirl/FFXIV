@@ -1,0 +1,16 @@
+{
+  "format": "exportaramus-consumer-lifecycle-vectors",
+  "schemaVersion": "1.0",
+  "vectors": [
+    { "name": "AbsentAtStartup", "events": ["Attach", "ProviderAbsent"], "expected": "Unavailable" },
+    { "name": "AppearsAfterStartup", "events": ["ProviderAbsent", "ProviderAppears", "DiscoveryDue"], "expected": "Ready" },
+    { "name": "LoggedOutCapabilities", "events": ["CapabilitiesValid", "SnapshotEmpty"], "expected": "Unavailable" },
+    { "name": "Logout", "events": ["Ready", "MatchingWithdrawal", "SnapshotEmpty"], "expected": "Unavailable" },
+    { "name": "WrongCharacter", "events": ["Ready", "LocalCharacterChanged", "OldCharacterSnapshot"], "expected": "WrongCharacter" },
+    { "name": "ProviderDisappears", "events": ["Ready", "GateThrows"], "expected": "Unavailable" },
+    { "name": "ChangedBurst", "events": ["Ready", "1000ChangedHints", "Tick"], "expected": "OneAdditionalFetch" },
+    { "name": "StaleCompletion", "events": ["ReadPending", "LocalCharacterChanged", "ReadCompletes"], "expected": "Unavailable" },
+    { "name": "DisposePending", "events": ["ReadPending", "Dispose", "ReadCompletes"], "expected": "Disposed" },
+    { "name": "ForeignWithdrawal", "events": ["Ready", "OtherScopeWithdrawal", "Tick"], "expected": "Ready" }
+  ]
+}

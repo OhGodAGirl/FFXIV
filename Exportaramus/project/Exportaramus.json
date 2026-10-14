@@ -1,0 +1,11 @@
+{
+  "Author": "OhGodAGirl",
+  "Name": "Exportaramus",
+  "InternalName": "Exportaramus",
+  "Description": "Exportaramus conjures your FFXIV collections into portable data. It captures and keeps track of everything from mounts, minions, outfits, and orchestrion rolls to achievements, quests, Triple Triad cards, relics, and more—across 25 collection types. Keep your collection snapshot up to date automatically or with a guided refresh, then share it with other plugins and services, or export it as ready-to-use JSON.",
+  "ApplicableVersion": "any",
+  "DalamudApiLevel": 15,
+  "Punchline": "Local collection snapshots and sharing.",
+  "Tags": ["collections", "glamour", "export", "FFXIV Collect"],
+  "AcceptsFeedback": false
+}

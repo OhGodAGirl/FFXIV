@@ -1,0 +1,26 @@
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <Version>1.0.0.0</Version>
+    <Author>OhGodAGirl</Author>
+    <Name>Exportaramus</Name>
+    <AssemblyName>Exportaramus</AssemblyName>
+    <RootNamespace>Exportaramus</RootNamespace>
+    <Punchline>Local collection snapshots and sharing.</Punchline>
+    <Description>Exportaramus conjures your FFXIV collections into portable data. It captures and keeps track of everything from mounts, minions, outfits, and orchestrion rolls to achievements, quests, Triple Triad cards, relics, and more—across 25 collection types. Keep your collection snapshot up to date automatically or with a guided refresh, then share it with other plugins and services, or export it as ready-to-use JSON.</Description>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../src/**/*.cs" Exclude="../src/Features/Wardrobe/**/*.cs;../src/Contracts/**/*.cs" />
+    <Compile Include="../src/Contracts/1.0/*.cs" />
+    <ProjectReference Include="Contracts/1.1/Exportaramus.ConsumerKit.V1_1.Runtime.csproj" />
+    <ProjectReference Include="Contracts/1.2/Exportaramus.ConsumerKit.V1_2.Runtime.csproj" />
+    <EmbeddedResource Include="../data/*.json" />
+    <EmbeddedResource Include="../data/Contracts/1.0/schemas/*.json" />
+    <EmbeddedResource Include="../data/FFXIVCollect/1.0/*.json" />
+    <EmbeddedResource Include="../data/FFXIVCollect/1.2/*.json" />
+    <EmbeddedResource Include="../data/Diagnostics/1.0/*.schema.json" />
+    <Content Link="images/icon.png" Include="../images/icon.png" CopyToOutputDirectory="PreserveNewest" Condition="Exists('../images/icon.png')" />
+  </ItemGroup>
+</Project>
+
+
