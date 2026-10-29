@@ -12,11 +12,17 @@ public sealed class GameMappingCompatibilityTests
     [InlineData("2026.08.11.0000.0000", "2026.09.01.0000.0000 ", false)]
     [InlineData("unreviewed", "2026.09.01.0000.0000", false)]
     [InlineData("2026.08.11.0000.0000", "2026.10.06.0000.0000", true)]
+    [InlineData("2026.08.11.0000.0000", "2026.10.16.0000.0000", true)]
     [InlineData("2026.09.01.0000.0000", "2026.10.06.0000.0000", true)]
+    [InlineData("2026.09.01.0000.0000", "2026.10.16.0000.0000", true)]
     [InlineData("2026.09.01.0000.0000", "2026.10.06.0000.0001", false)]
+    [InlineData("2026.09.01.0000.0000", "2026.10.16.0000.0001", false)]
     [InlineData("2026.09.01.0000.0000", "2026.10.06.0000.0000 ", false)]
+    [InlineData("2026.09.01.0000.0000", "2026.10.16.0000.0000 ", false)]
     [InlineData("2026.09.01.0000.0001", "2026.10.06.0000.0000", false)]
+    [InlineData("2026.09.01.0000.0001", "2026.10.16.0000.0000", false)]
     [InlineData("unreviewed", "2026.10.06.0000.0000", false)]
+    [InlineData("unreviewed", "2026.10.16.0000.0000", false)]
     public void OnlyTheReviewedMappingBaselineCanBeReused(string baseline, string current, bool expected)
     {
         var contract = new FFXIVCollectContract(baseline, ImmutableDictionary<string, ImmutableHashSet<uint>>.Empty);
@@ -25,8 +31,11 @@ public sealed class GameMappingCompatibilityTests
 
     [Theory]
     [InlineData("2026.10.06.0000.0000", true)]
+    [InlineData("2026.10.16.0000.0000", true)]
     [InlineData("2026.10.06.0000.0001", false)]
+    [InlineData("2026.10.16.0000.0001", false)]
     [InlineData("2026.10.06.0000.0000 ", false)]
+    [InlineData("2026.10.16.0000.0000 ", false)]
     public void EmbeddedRefreshedAndBeastMappingsRemainIndependentlyVersionGuarded(string version, bool expected)
     {
         var contract = FFXIVCollectContract.LoadEmbedded();

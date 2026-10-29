@@ -8,7 +8,7 @@ namespace Exportaramus.Features.CollectionData.Publication;
 public sealed record BeastsExportContract(string GameDataVersion, ImmutableHashSet<uint> RecognizedIds, bool MappingValidated)
 {
     public bool SupportsGameVersion(string version) => MappingValidated && (version == GameDataVersion ||
-        GameDataVersion == CatalogRefreshContract.GameDataVersion && version == "2026.10.06.0000.0000");
+        GameDataVersion == CatalogRefreshContract.GameDataVersion && version is "2026.10.06.0000.0000" or "2026.10.16.0000.0000");
 
     public static BeastsExportContract Load(byte[] bytes)
     {

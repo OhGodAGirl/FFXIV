@@ -11,6 +11,7 @@ public sealed class ReaderCompatibilityTests
     [InlineData("2026.08.11.0000.0000")]
     [InlineData("2026.09.01.0000.0000")]
     [InlineData("2026.10.06.0000.0000")]
+    [InlineData("2026.10.16.0000.0000")]
     public void ReviewedBuildEnablesTheExplicitReadersButNotUnknownMappings(string version)
     {
         string[] expected = ["mounts", "minions", "emotes", "bardings", "cards", "fashions", "frames", "occult_records",
@@ -27,8 +28,11 @@ public sealed class ReaderCompatibilityTests
     [Theory]
     [InlineData("")]
     [InlineData("2026.10.06.0000.0001")]
+    [InlineData("2026.10.16.0000.0001")]
     [InlineData("2026.10.06.0000.0000 ")]
+    [InlineData("2026.10.16.0000.0000 ")]
     [InlineData("2026.10.06")]
+    [InlineData("2026.10.16")]
     [InlineData("2026.09.01.0000.0001")]
     [InlineData("2026.09.01.0000.0000 ")]
     [InlineData("2026.08.11.0000.0001")]

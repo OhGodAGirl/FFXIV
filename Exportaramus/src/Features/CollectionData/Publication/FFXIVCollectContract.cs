@@ -11,7 +11,7 @@ public sealed record FFXIVCollectContract(string GameDataVersion, ImmutableDicti
     // Frozen August and September mappings were rechecked against October game data.
     public bool SupportsGameVersion(string version) => version == GameDataVersion ||
         GameDataVersion == "2026.08.11.0000.0000" && version == "2026.09.01.0000.0000" ||
-        GameDataVersion is "2026.08.11.0000.0000" or CatalogRefreshContract.GameDataVersion && version == "2026.10.06.0000.0000";
+        GameDataVersion is "2026.08.11.0000.0000" or CatalogRefreshContract.GameDataVersion && version is "2026.10.06.0000.0000" or "2026.10.16.0000.0000";
     public static FFXIVCollectContract LoadEmbedded()
     {
         byte[] Resource(string suffix)

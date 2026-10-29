@@ -38,6 +38,7 @@ public sealed class FacewearMappingTests
     [Theory]
     [InlineData("2026.09.01.0000.0000", true)]
     [InlineData("2026.10.06.0000.0000", true)]
+    [InlineData("2026.10.16.0000.0000", true)]
     [InlineData("2026.08.11.0000.0000", false)]
     [InlineData("2026.09.01.0000.0001", false)]
     public void EmptyOwnershipIsCompleteOnlyOnReviewedBuild(string version, bool supported)
