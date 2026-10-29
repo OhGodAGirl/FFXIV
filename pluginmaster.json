@@ -37,11 +37,11 @@
       "FFXIV Collect"
     ],
     "AcceptsFeedback": false,
-    "AssemblyVersion": "1.0.0.1",
+    "AssemblyVersion": "1.0.0.2",
     "RepoUrl": "https://github.com/OhGodAGirl/FFXIV/tree/main/Exportaramus",
     "IconUrl": "https://raw.githubusercontent.com/OhGodAGirl/FFXIV/main/Exportaramus/images/icon.png",
-    "DownloadLinkInstall": "https://github.com/OhGodAGirl/FFXIV/releases/download/exportaramus-v1.0.0.1/Exportaramus.zip",
-    "DownloadLinkUpdate": "https://github.com/OhGodAGirl/FFXIV/releases/download/exportaramus-v1.0.0.1/Exportaramus.zip",
+    "DownloadLinkInstall": "https://github.com/OhGodAGirl/FFXIV/releases/download/exportaramus-v1.0.0.2/Exportaramus.zip",
+    "DownloadLinkUpdate": "https://github.com/OhGodAGirl/FFXIV/releases/download/exportaramus-v1.0.0.2/Exportaramus.zip",
     "IsHide": false,
     "IsTestingExclusive": false
   }
