@@ -24,8 +24,10 @@ public sealed class RestoredStatePolicyTests
         var restored = RestoredStatePolicy.Reconcile(fixture.Catalog, fixture.State, trusted, [], true, SnapshotFixture.Now.AddHours(1), 0);
         Assert.All(restored.Unlocks.Values, source =>
         {
-            Assert.Equal(SourceStatus.Stale, source.Health.SourceStatus); Assert.Equal(ProvenanceType.Restored, source.Health.ProvenanceType);
-            Assert.Equal(0, source.Health.CaptureGeneration); Assert.Equal(SnapshotFixture.Now, source.Health.ObservedAtUtc);
+            Assert.Equal(SourceStatus.Stale, source.Health.SourceStatus);
+            Assert.Equal(ProvenanceType.Restored, source.Health.ProvenanceType);
+            Assert.Equal(0, source.Health.CaptureGeneration);
+            Assert.Equal(SnapshotFixture.Now, source.Health.ObservedAtUtc);
         });
         Assert.All(restored.CurrentItemPresence.Values, source => Assert.Equal(SourceStatus.Stale, source.Health.SourceStatus));
         foreach (var pair in fixture.State.Unlocks)
@@ -35,10 +37,15 @@ public sealed class RestoredStatePolicyTests
         }
         foreach (var pair in fixture.State.CurrentItemPresence)
             Assert.Equal(pair.Value.Items, restored.CurrentItemPresence[pair.Key].Items);
-        Assert.Equal(0, restored.CaptureGeneration); Assert.Equal(CaptureType.Restored, restored.CaptureType); Assert.Empty(restored.Quests);
+        Assert.Equal(0, restored.CaptureGeneration);
+        Assert.Equal(CaptureType.Restored, restored.CaptureType);
+        Assert.Empty(restored.Quests);
         Assert.True(Exportaramus.ConsumerKit.V1.CollectionDataSemanticValidator.ValidateSnapshot(
             CollectionDataSerializer.Compact(CollectionDataAssembler.Assemble(fixture.Catalog, restored), 1), "123").Success);
-        var untrusted = RestoredStatePolicy.Reconcile(fixture.Catalog with { GameDataVersion = "different build" }, fixture.State, [], [], true, SnapshotFixture.Now, 0);
+        var untrusted = RestoredStatePolicy.Reconcile(fixture.Catalog with
+        {
+            GameDataVersion = "different build"
+        }, fixture.State, [], [], true, SnapshotFixture.Now, 0);
         Assert.All(untrusted.Unlocks.Values, source => { Assert.Empty(source.UnlockedIds); Assert.Equal(CapabilityState.UnavailablePendingValidation, source.Health.CapabilityState); });
         Assert.All(untrusted.CurrentItemPresence.Values, source => { Assert.Empty(source.Items); Assert.Null(source.Health.ObservedAtUtc); });
     }
@@ -50,7 +57,10 @@ public sealed class RestoredStatePolicyTests
         var trusted = CollectionKeys.Unlocks.Concat(CollectionKeys.Presence).ToImmutableHashSet();
         var catalog = fixture.Catalog with
         {
-            Collections = fixture.Catalog.Collections.Remove("mounts").SetItem("minions", fixture.Catalog.Collections["minions"] with { Items = [] }),
+            Collections = fixture.Catalog.Collections.Remove("mounts").SetItem("minions", fixture.Catalog.Collections["minions"] with
+            {
+                Items = []
+            }),
             KnownItemIds = [],
         };
         var result = RestoredStatePolicy.Reconcile(catalog, fixture.State, trusted, [], true, SnapshotFixture.Now, 0);
@@ -70,7 +80,10 @@ public sealed class RestoredStatePolicyTests
         var fixture = SnapshotFixture.Create();
         var saved = fixture.State with
         {
-            CurrentItemPresence = fixture.State.CurrentItemPresence.SetItem("inventory", fixture.State.CurrentItemPresence["inventory"] with { Items = [new(100, 1), new(999999, 1)] })
+            CurrentItemPresence = fixture.State.CurrentItemPresence.SetItem("inventory", fixture.State.CurrentItemPresence["inventory"] with
+            {
+                Items = [new(100, 1), new(999999, 1)]
+            })
         };
         var result = RestoredStatePolicy.Reconcile(fixture.Catalog, saved, ["inventory"], [], true, SnapshotFixture.Now, 0);
         Assert.Empty(result.CurrentItemPresence["inventory"].Items);
@@ -87,7 +100,12 @@ public sealed class RestoredStatePolicyTests
         var saved = fixture.State with
         {
             ReportedEvidence = new([], fixture.State.ReportedEvidence.Health with
-            { SourceStatus = SourceStatus.Unavailable, Completeness = Completeness.Unknown, ProvenanceType = ProvenanceType.None, ObservedAtUtc = null })
+            {
+                SourceStatus = SourceStatus.Unavailable,
+                Completeness = Completeness.Unknown,
+                ProvenanceType = ProvenanceType.None,
+                ObservedAtUtc = null
+            })
         };
         var now = SnapshotFixture.Now.AddHours(1);
         var result = RestoredStatePolicy.Reconcile(fixture.Catalog, saved, [], [new(100, "Fixture", now)], healthy, now, 2);
@@ -97,7 +115,9 @@ public sealed class RestoredStatePolicyTests
         Assert.Equal(healthy ? now : (DateTimeOffset?)null, result.ReportedEvidence.Health.ObservedAtUtc);
         Assert.Equal(2, result.ReportedEvidence.Health.CaptureGeneration);
         Assert.Equal(healthy ? 1 : 0, result.ReportedEvidence.Items.Length);
-        if (healthy) Assert.Empty(result.ReportedEvidence.Health.Reason);
-        else Assert.False(string.IsNullOrWhiteSpace(result.ReportedEvidence.Health.Reason));
+        if (healthy)
+            Assert.Empty(result.ReportedEvidence.Health.Reason);
+        else
+            Assert.False(string.IsNullOrWhiteSpace(result.ReportedEvidence.Health.Reason));
     }
 }

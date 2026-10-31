@@ -45,7 +45,8 @@ public sealed class BeastsPolicyRegressionTests
 
     private static JsonObject Contract() => new()
     {
-        ["schemaVersion"] = "1.2", ["key"] = "beasts",
+        ["schemaVersion"] = "1.2",
+        ["key"] = "beasts",
         ["upstreamCommit"] = "30d92ee4ea0bbbd678fff5c4279a41f7724b357d",
         ["importerPath"] = "app/controllers/import_controller.rb",
         ["validatedGameDataVersion"] = "2026.09.01.0000.0000",

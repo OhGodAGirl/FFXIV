@@ -34,13 +34,17 @@ public sealed class AtomicCanceledPreparationTests
 
     private sealed class Operations : IAtomicFileOperations
     {
-        public bool RecoveryDeletionUnavailable { get; set; }
+        public bool RecoveryDeletionUnavailable
+        {
+            get; set;
+        }
         public Stream OpenRead(string path) => new AtomicFileOperations().OpenRead(path);
         public void Move(string source, string destination) => File.Move(source, destination);
         public void Replace(string source, string destination, string? backup) => File.Replace(source, destination, backup);
         public void Delete(string path)
         {
-            if (RecoveryDeletionUnavailable && Path.GetFileName(path) == "write-recovery.json") throw new IOException("Recovery record deletion temporarily unavailable.");
+            if (RecoveryDeletionUnavailable && Path.GetFileName(path) == "write-recovery.json")
+                throw new IOException("Recovery record deletion temporarily unavailable.");
             File.Delete(path);
         }
     }

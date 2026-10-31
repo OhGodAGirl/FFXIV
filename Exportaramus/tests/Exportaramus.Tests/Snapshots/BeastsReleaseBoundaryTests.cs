@@ -39,7 +39,8 @@ public sealed class BeastsReleaseBoundaryTests : IDisposable
                 "duplicate" => new JsonArray(1, 1),
                 _ => new JsonArray(2, 1),
             };
-        else document[property] = value == "oversize" ? new string('x', 129) : value;
+        else
+            document[property] = value == "oversize" ? new string('x', 129) : value;
         Assert.Throws<InvalidDataException>(() => BeastsExportContract.Load(Encoding.UTF8.GetBytes(document.ToJsonString())));
     }
 
@@ -61,8 +62,14 @@ public sealed class BeastsReleaseBoundaryTests : IDisposable
         {
             Items = [new CatalogItem(1, 1, "First", false), new CatalogItem(2, 2, "Second", false)],
         };
-        data = CollectionDataAssembler.Assemble(data.Catalog with { Collections = data.Catalog.Collections.SetItem("beasts", beast) },
-            data.State with { Unlocks = data.State.Unlocks.SetItem("beasts", new([2], SnapshotFixture.Health(DataType.PermanentUnlock))) });
+        data = CollectionDataAssembler.Assemble(data.Catalog with
+        {
+            Collections = data.Catalog.Collections.SetItem("beasts", beast)
+        },
+            data.State with
+            {
+                Unlocks = data.State.Unlocks.SetItem("beasts", new([2], SnapshotFixture.Health(DataType.PermanentUnlock)))
+            });
         var contract = new FFXIVCollectContract(data.Catalog.GameDataVersion, ImmutableDictionary<string, ImmutableHashSet<uint>>.Empty)
         {
             Beasts = new(data.Catalog.GameDataVersion, [1, 2], true),
@@ -96,7 +103,10 @@ public sealed class BeastsReleaseBoundaryTests : IDisposable
             Unlocks = data.State.Unlocks.SetItem("beasts", data.State.Unlocks["beasts"] with
             {
                 Health = SnapshotFixture.Health(DataType.PermanentUnlock, SourceStatus.Stale) with
-                { ReasonCode = ReasonCode.CaptureFailed, Reason = "Retained Beast observation." },
+                {
+                    ReasonCode = ReasonCode.CaptureFailed,
+                    Reason = "Retained Beast observation."
+                },
             }),
         });
         foreach (var projected in new[] { CollectionDataLegacyProjection.Data(data), CollectionDataLegacyProjection.DataV11(data) })
@@ -117,7 +127,10 @@ public sealed class BeastsReleaseBoundaryTests : IDisposable
         var data = SnapshotFixture.Create();
         data = CollectionDataAssembler.Assemble(data.Catalog, data.State with
         {
-            Unlocks = data.State.Unlocks.SetItem(key, data.State.Unlocks[key] with { UnlockedIds = [0] }),
+            Unlocks = data.State.Unlocks.SetItem(key, data.State.Unlocks[key] with
+            {
+                UnlockedIds = [0]
+            }),
         });
         var exception = Assert.Throws<InvalidDataException>(() => new CollectionDataPublisher(new(root), null).Prepare(data, "Test", 1, null, false, false, default));
         Assert.StartsWith(prefix, exception.Message);
@@ -145,7 +158,9 @@ public sealed class BeastsReleaseBoundaryTests : IDisposable
             DresserEntries = [new(0, 100, 100, null, [new(0, 100)])],
         };
         data = CollectionDataAssembler.Assemble(data.Catalog, data.State with
-        { CurrentItemPresence = data.State.CurrentItemPresence.SetItem("glamourDresser", dresser) });
+        {
+            CurrentItemPresence = data.State.CurrentItemPresence.SetItem("glamourDresser", dresser)
+        });
         var json = CollectionDataSerializer.CompactV12(data, 1);
         var restored = CollectionStateReader.Read(json, 123, Guid.NewGuid(), SnapshotFixture.Now.AddMinutes(1));
         var entry = Assert.Single(restored.CurrentItemPresence["glamourDresser"].DresserEntries!.Value);
@@ -166,7 +181,9 @@ public sealed class BeastsReleaseBoundaryTests : IDisposable
         var data = SnapshotFixture.Create();
         var contract = new FFXIVCollectContract(data.Catalog.GameDataVersion,
             data.Catalog.Collections.ToImmutableDictionary(pair => pair.Key, pair => pair.Value.Items.Select(item => item.Id).ToImmutableHashSet()))
-        { Beasts = new(data.Catalog.GameDataVersion, [1], false) };
+        {
+            Beasts = new(data.Catalog.GameDataVersion, [1], false)
+        };
         var export = FFXIVCollectImportSerializer.Serialize(data, contract);
         Assert.True(export.CanCopy);
         Assert.Contains("beasts", export.OmittedKeys);
@@ -192,7 +209,10 @@ public sealed class BeastsReleaseBoundaryTests : IDisposable
             CaptureType = CaptureType.Lightweight,
             Unlocks = data.State.Unlocks.SetItem("beasts", data.State.Unlocks["beasts"] with
             {
-                Health = data.State.Unlocks["beasts"].Health with { Reason = new string('x', 4_194_305) },
+                Health = data.State.Unlocks["beasts"].Health with
+                {
+                    Reason = new string('x', 4_194_305)
+                },
             }),
         });
         Assert.True(Exportaramus.ConsumerKit.V1_1.CollectionDataSemanticValidator.ValidateSnapshot(CollectionDataSerializer.CompactV11(data, 1), "123").Success);
@@ -210,11 +230,16 @@ public sealed class BeastsReleaseBoundaryTests : IDisposable
         {
             Items = [new CatalogItem(1, 1, oversize ? new string('x', 16_777_217) : null!, false)],
         };
-        data = CollectionDataAssembler.Assemble(data.Catalog with { Collections = data.Catalog.Collections.SetItem("beasts", beast) }, data.State);
+        data = CollectionDataAssembler.Assemble(data.Catalog with
+        {
+            Collections = data.Catalog.Collections.SetItem("beasts", beast)
+        }, data.State);
         Assert.True(Exportaramus.ConsumerKit.V1.CollectionDataSemanticValidator.ValidateRich(CollectionDataSerializer.Rich(data, "Test", SnapshotFixture.Now)).Success);
         var publisher = new CollectionDataPublisher(new(root), null);
-        if (oversize) Assert.Throws<OutputSizeLimitException>(() => publisher.Prepare(data, "Test", 1, null, false, false, default));
-        else Assert.StartsWith("Rich snapshot 1.2 validation failed:", Assert.Throws<InvalidDataException>(() => publisher.Prepare(data, "Test", 1, null, false, false, default)).Message);
+        if (oversize)
+            Assert.Throws<OutputSizeLimitException>(() => publisher.Prepare(data, "Test", 1, null, false, false, default));
+        else
+            Assert.StartsWith("Rich snapshot 1.2 validation failed:", Assert.Throws<InvalidDataException>(() => publisher.Prepare(data, "Test", 1, null, false, false, default)).Message);
         Assert.False(Directory.Exists(root));
     }
 
@@ -231,7 +256,9 @@ public sealed class BeastsReleaseBoundaryTests : IDisposable
         var journal = Path.Combine(root, "state", "write-recovery.json");
         await File.WriteAllTextAsync(journal, JsonSerializer.Serialize(new
         {
-            format = "exportaramus-write-recovery", version = 1, committed = true,
+            format = "exportaramus-write-recovery",
+            version = 1,
+            committed = true,
             files = new[] { new { destination, temporary, backup, existed = true, delete = false, applied = true } },
         }));
         var storage = new AtomicSnapshotStorage(root);
@@ -245,7 +272,8 @@ public sealed class BeastsReleaseBoundaryTests : IDisposable
 
     private static JsonObject ContractDocument() => new()
     {
-        ["schemaVersion"] = "1.2", ["key"] = "beasts",
+        ["schemaVersion"] = "1.2",
+        ["key"] = "beasts",
         ["upstreamCommit"] = "30d92ee4ea0bbbd678fff5c4279a41f7724b357d",
         ["importerPath"] = "app/controllers/import_controller.rb",
         ["validatedGameDataVersion"] = "2026.09.01.0000.0000",
@@ -254,5 +282,9 @@ public sealed class BeastsReleaseBoundaryTests : IDisposable
         ["mappingValidated"] = true,
     };
 
-    public void Dispose() { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    public void Dispose()
+    {
+        if (Directory.Exists(root))
+            Directory.Delete(root, true);
+    }
 }

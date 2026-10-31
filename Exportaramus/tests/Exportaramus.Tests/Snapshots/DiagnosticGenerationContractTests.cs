@@ -20,7 +20,8 @@ public sealed class DiagnosticGenerationContractTests
             var clock = Stopwatch.StartNew();
             while (!controller.Reports.Available || controller.Busy)
             {
-                if (clock.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Initial restoration did not complete: " + controller.Error);
+                if (clock.Elapsed > TimeSpan.FromSeconds(5))
+                    Assert.Fail("Initial restoration did not complete: " + controller.Error);
                 controller.Update(123, "Fixture", false, false, 0, SnapshotFixture.Now);
                 await Task.Delay(1);
             }
@@ -44,19 +45,27 @@ public sealed class DiagnosticGenerationContractTests
         {
             controller.Dispose();
             await controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            if (Directory.Exists(root))
+                Directory.Delete(root, true);
         }
     }
 
     private sealed class Port : ISnapshotCapturePort
     {
-        public int Captures { get; private set; }
+        public int Captures
+        {
+            get; private set;
+        }
         public CollectionCatalog? Catalog { get; } = SnapshotFixture.Create().Catalog;
         public bool PrepareCatalog() => true;
         public void Begin(bool full, ulong contentId, long generation, DateTimeOffset now) => Captures++;
         public bool Advance() => throw new InvalidOperationException("No capture is expected.");
         public RawCaptureBatch? TakeResult() => throw new InvalidOperationException("No capture is expected.");
-        public void ResetSession() { }
-        public void Dispose() { }
+        public void ResetSession()
+        {
+        }
+        public void Dispose()
+        {
+        }
     }
 }

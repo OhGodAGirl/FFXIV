@@ -10,8 +10,11 @@ public sealed class PresentationInvalidationPolicy
     private GuidedState guidedState;
     public bool ShouldRefresh(double monotonicSeconds, long currentRevision, bool hasIntent, GuidedState currentGuidedState)
     {
-        if ((long)monotonicSeconds == second && currentRevision == revision && !hasIntent && currentGuidedState == guidedState) return false;
-        second = (long)monotonicSeconds; revision = currentRevision; guidedState = currentGuidedState;
+        if ((long)monotonicSeconds == second && currentRevision == revision && !hasIntent && currentGuidedState == guidedState)
+            return false;
+        second = (long)monotonicSeconds;
+        revision = currentRevision;
+        guidedState = currentGuidedState;
         return true;
     }
 }

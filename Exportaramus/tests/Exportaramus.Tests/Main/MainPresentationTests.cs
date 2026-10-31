@@ -32,8 +32,12 @@ public sealed class MainPresentationTests
     [InlineData(MainStatus.Error, "Error", UiTone.Error)]
     public void StatusCopyAndToneArePrepared(MainStatus status, string label, UiTone tone)
     {
-        var view = MainPresenter.Prepare(Input with { Status = status }, Now);
-        Assert.Equal(label, view.StateLabel); Assert.Equal(tone, view.StateTone);
+        var view = MainPresenter.Prepare(Input with
+        {
+            Status = status
+        }, Now);
+        Assert.Equal(label, view.StateLabel);
+        Assert.Equal(tone, view.StateTone);
         Assert.Equal(status != MainStatus.Synchronizing, view.CanSync);
         Assert.Equal(status != MainStatus.Synchronizing, view.CanGuide);
     }
@@ -42,26 +46,60 @@ public sealed class MainPresentationTests
     {
         foreach (var status in new[] { MainStatus.Synchronizing, MainStatus.Error })
         {
-            var view = MainPresenter.Prepare(Input with { Status = status }, Now);
-            Assert.Equal(23, view.Rows.Length); Assert.True(view.CanCopy);
+            var view = MainPresenter.Prepare(Input with
+            {
+                Status = status
+            }, Now);
+            Assert.Equal(23, view.Rows.Length);
+            Assert.True(view.CanCopy);
         }
-        var unavailable = MainPresenter.Prepare(Input with { PreparedExportAvailable = false }, Now);
-        Assert.False(unavailable.CanCopy); Assert.Equal(23, unavailable.Rows.Length);
+        var unavailable = MainPresenter.Prepare(Input with
+        {
+            PreparedExportAvailable = false
+        }, Now);
+        Assert.False(unavailable.CanCopy);
+        Assert.Equal(23, unavailable.Rows.Length);
     }
     [Fact]
     public void NoCharacterAndNoSnapshotNeverCreateZeroFilledRows()
     {
-        var view = MainPresenter.Prepare(Input with { HasCharacter = false, HasSnapshot = false, HistoryCount = -4 }, Now);
-        Assert.False(view.CanCopy); Assert.False(view.CanSync); Assert.False(view.CanGuide); Assert.False(view.HasSnapshot); Assert.Equal(0, view.HistoryCount);
-        Assert.Equal(25, MainPresenter.Prepare(Input with { HistoryCount = 100 }, Now).HistoryCount);
+        var view = MainPresenter.Prepare(Input with
+        {
+            HasCharacter = false,
+            HasSnapshot = false,
+            HistoryCount = -4
+        }, Now);
+        Assert.False(view.CanCopy);
+        Assert.False(view.CanSync);
+        Assert.False(view.CanGuide);
+        Assert.False(view.HasSnapshot);
+        Assert.Equal(0, view.HistoryCount);
+        Assert.Equal(25, MainPresenter.Prepare(Input with
+        {
+            HistoryCount = 100
+        }, Now).HistoryCount);
     }
     [Fact]
     public void GuidedCaptureKeepsSummaryAndProvidesOnlyPreparedStepAndPrompt()
     {
-        var guided = Input.Guided with { Active = true, StepLabel = "Opening Dresser", Paused = true, CanSavePartial = true };
-        var view = MainPresenter.Prepare(Input with { Guided = guided }, Now);
-        Assert.Equal(guided, view.Guided); Assert.Equal("Opening Dresser", view.StateLabel); Assert.Equal(UiTone.Working, view.StateTone);
-        Assert.False(view.CanSync); Assert.True(view.CanGuide); Assert.True(view.CanCopy); Assert.Equal(23, view.Rows.Length);
+        var guided = Input.Guided with
+        {
+            Active = true,
+            StepLabel = "Opening Dresser",
+            Paused = true,
+            CanSavePartial = true
+        };
+        var view = MainPresenter.Prepare(Input with
+        {
+            Guided = guided
+        }, Now);
+        Assert.Equal(guided, view.Guided);
+        Assert.Equal("Opening Dresser", view.StateLabel);
+        Assert.Equal(UiTone.Working, view.StateTone);
+        Assert.False(view.CanSync);
+        Assert.True(view.CanGuide);
+        Assert.True(view.CanCopy);
+        Assert.Equal(23, view.Rows.Length);
     }
     [Theory]
     [InlineData(5, RowEvidenceKind.PermanentUnlock, "+5", UiTone.Success)]
@@ -72,8 +110,14 @@ public sealed class MainPresentationTests
     public void DeltasRetainTypedMeaning(int delta, RowEvidenceKind kind, string text, UiTone tone)
     {
         var row = MainPresenter.Row(("mounts", "Mounts", "Mount"), new(1234, true, delta, kind));
-        Assert.Equal("1,234", row.Count); Assert.Equal("!", row.Marker); Assert.Equal(text, row.Delta); Assert.Equal(tone, row.DeltaTone);
-        var fresh = MainPresenter.Row(("mounts", "Mounts", "Mount"), new(0, false, null, kind)); Assert.Equal("0", fresh.Count); Assert.Equal("", fresh.Marker); Assert.Equal("", fresh.Delta);
+        Assert.Equal("1,234", row.Count);
+        Assert.Equal("!", row.Marker);
+        Assert.Equal(text, row.Delta);
+        Assert.Equal(tone, row.DeltaTone);
+        var fresh = MainPresenter.Row(("mounts", "Mounts", "Mount"), new(0, false, null, kind));
+        Assert.Equal("0", fresh.Count);
+        Assert.Equal("", fresh.Marker);
+        Assert.Equal("", fresh.Delta);
     }
     [Theory]
     [InlineData(-10, "Just now")]
@@ -87,8 +131,16 @@ public sealed class MainPresentationTests
     [Fact]
     public void TextAndHealthFactBoundsAreAppliedBeforeDraw()
     {
-        var view = MainPresenter.Prepare(Input with { Message = new('x', 200), HealthHeadline = new('y', 200), HealthFacts = [new(new('z', 200), UiTone.Error), new("2", UiTone.Warning), new("3", UiTone.Muted), new("4", UiTone.Primary)] }, Now);
-        Assert.Equal(160, view.Message.Length); Assert.Equal(160, view.HealthHeadline.Length); Assert.Equal(3, view.HealthFacts.Length); Assert.Equal(160, view.HealthFacts[0].Text.Length);
+        var view = MainPresenter.Prepare(Input with
+        {
+            Message = new('x', 200),
+            HealthHeadline = new('y', 200),
+            HealthFacts = [new(new('z', 200), UiTone.Error), new("2", UiTone.Warning), new("3", UiTone.Muted), new("4", UiTone.Primary)]
+        }, Now);
+        Assert.Equal(160, view.Message.Length);
+        Assert.Equal(160, view.HealthHeadline.Length);
+        Assert.Equal(3, view.HealthFacts.Length);
+        Assert.Equal(160, view.HealthFacts[0].Text.Length);
         Assert.Equal("Never", MainPresenter.RelativeTime(null, Now));
     }
     [Theory]
@@ -100,17 +152,26 @@ public sealed class MainPresentationTests
     [InlineData(720, true, 3)]
     public void ResponsiveBreakpointsAreLogicalUnits(float width, bool wide, int columns)
     {
-        var layout = LayoutPolicy.At(width); Assert.Equal(wide, layout.Wide); Assert.Equal(columns, layout.CollectionColumns);
-        Assert.Equal(width - 8, layout.OperationsWidth + layout.RightWidth, .001f); Assert.Equal((width - 8) * .54f, layout.OperationsWidth);
+        var layout = LayoutPolicy.At(width);
+        Assert.Equal(wide, layout.Wide);
+        Assert.Equal(columns, layout.CollectionColumns);
+        Assert.Equal(width - 8, layout.OperationsWidth + layout.RightWidth, .001f);
+        Assert.Equal((width - 8) * .54f, layout.OperationsWidth);
     }
     [Fact]
     public void MotionChangesOnlyVisualDisplacementAndTooltipsRemainDeferred()
     {
-        Assert.Equal(1.5f, LayoutPolicy.PressOffset(false, true)); Assert.Equal(0, LayoutPolicy.PressOffset(true, true)); Assert.Equal(0, LayoutPolicy.PressOffset(false, false));
-        Assert.False(LayoutPolicy.WideDiagnosticActions(589)); Assert.True(LayoutPolicy.WideDiagnosticActions(590));
+        Assert.Equal(1.5f, LayoutPolicy.PressOffset(false, true));
+        Assert.Equal(0, LayoutPolicy.PressOffset(true, true));
+        Assert.Equal(0, LayoutPolicy.PressOffset(false, false));
+        Assert.False(LayoutPolicy.WideDiagnosticActions(589));
+        Assert.True(LayoutPolicy.WideDiagnosticActions(590));
         Assert.All(Enum.GetValues<TooltipId>(), x => Assert.Null(Tooltips.Approved(x)));
-        Assert.Equal(VisualTokens.Muted, VisualTokens.Tone(UiTone.Muted)); Assert.Equal(VisualTokens.Success, VisualTokens.Tone(UiTone.Success));
-        Assert.Equal(VisualTokens.Heading, VisualTokens.Tone(UiTone.Working)); Assert.Equal(VisualTokens.Warning, VisualTokens.Tone(UiTone.Warning));
-        Assert.Equal(VisualTokens.Error, VisualTokens.Tone(UiTone.Error)); Assert.Equal(VisualTokens.Primary, VisualTokens.Tone(UiTone.Primary));
+        Assert.Equal(VisualTokens.Muted, VisualTokens.Tone(UiTone.Muted));
+        Assert.Equal(VisualTokens.Success, VisualTokens.Tone(UiTone.Success));
+        Assert.Equal(VisualTokens.Heading, VisualTokens.Tone(UiTone.Working));
+        Assert.Equal(VisualTokens.Warning, VisualTokens.Tone(UiTone.Warning));
+        Assert.Equal(VisualTokens.Error, VisualTokens.Tone(UiTone.Error));
+        Assert.Equal(VisualTokens.Primary, VisualTokens.Tone(UiTone.Primary));
     }
 }

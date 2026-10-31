@@ -7,3 +7,4 @@ TestResults/
 .vs/
 *.user
 __pycache__/
+.venv/

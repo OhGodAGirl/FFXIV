@@ -54,22 +54,37 @@ public sealed class RestorationAndPreparationTests
     {
         var data = SnapshotFixture.Create();
         var first = SnapshotBundlePreparation.Prepare(StateAndPublicationTests.Bundle(data, 1), null, true);
-        Assert.Empty(first.CollectionDeltas); Assert.Equal(Encoding.UTF8.GetByteCount(first.CompactJson), first.CompactBytes);
+        Assert.Empty(first.CollectionDeltas);
+        Assert.Equal(Encoding.UTF8.GetByteCount(first.CompactJson), first.CompactBytes);
         Assert.Equal(Encoding.UTF8.GetByteCount(first.CapabilitiesJson), first.CapabilitiesBytes);
         var next = SnapshotBundlePreparation.Prepare(StateAndPublicationTests.Bundle(data, 2), first, false);
         Assert.All(next.CollectionDeltas.Values, delta => Assert.Equal(0, delta));
         Assert.Equal(next.CapabilitiesJson, next.UnavailableReportsCapabilitiesJson);
-        var foreign = StateAndPublicationTests.Bundle(data with { State = data.State with { ContentId = 124 } }, 3);
+        var foreign = StateAndPublicationTests.Bundle(data with
+        {
+            State = data.State with
+            {
+                ContentId = 124
+            }
+        }, 3);
         Assert.Empty(SnapshotBundlePreparation.Prepare(foreign, first, false).CollectionDeltas);
         var unprepared = StateAndPublicationTests.Bundle(data, 1);
         Assert.Empty(SnapshotBundlePreparation.Prepare(unprepared, unprepared, false).CollectionDeltas);
-        var store = new CollectionDataPublicationStore(); store.Withdraw(); store.Accept(first); store.Withdraw();
-        Assert.Equal(first.UnavailableReportsCapabilitiesJson, store.GetCapabilities()); Assert.Empty(store.GetSnapshot());
+        var store = new CollectionDataPublicationStore();
+        store.Withdraw();
+        store.Accept(first);
+        store.Withdraw();
+        Assert.Equal(first.UnavailableReportsCapabilitiesJson, store.GetCapabilities());
+        Assert.Empty(store.GetSnapshot());
     }
     private static string Evidence(IEnumerable<ReportedEvidence> records) => JsonSerializer.Serialize(new
     {
         contentId = "123",
         items = records.Select(row => new
-        { itemId = row.ItemId, reporter = row.Reporter, reportedAtUtc = row.ReportedAtUtc.UtcDateTime.ToString("O") })
+        {
+            itemId = row.ItemId,
+            reporter = row.Reporter,
+            reportedAtUtc = row.ReportedAtUtc.UtcDateTime.ToString("O")
+        })
     });
 }

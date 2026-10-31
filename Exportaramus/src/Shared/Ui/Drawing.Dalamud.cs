@@ -21,7 +21,9 @@ internal static class Drawing
     internal static uint Color(Vector4 color) => ImGui.ColorConvertFloat4ToU32(color);
     internal static void Frame()
     {
-        var min = ImGui.GetWindowPos(); var max = min + ImGui.GetWindowSize(); var draw = ImGui.GetWindowDrawList();
+        var min = ImGui.GetWindowPos();
+        var max = min + ImGui.GetWindowSize();
+        var draw = ImGui.GetWindowDrawList();
         draw.AddRect(min + new Vector2(2, 3), max + new Vector2(2, 3), Color(VisualTokens.Shadow), 7, ImDrawFlags.None, 3);
         draw.AddRect(min + Vector2.One, max - Vector2.One, Color(VisualTokens.Shadow), 7, ImDrawFlags.None, 3);
         draw.AddRect(min + new Vector2(2), max - new Vector2(2), Color(VisualTokens.Gold), 7, ImDrawFlags.None, 1);
@@ -36,19 +38,23 @@ internal static class Drawing
     }
     internal static void Heading(string text, IFontHandle font)
     {
-        using (font.Push()) ImGui.TextColored(VisualTokens.Heading, text);
+        using (font.Push())
+            ImGui.TextColored(VisualTokens.Heading, text);
     }
     internal static void Tooltip(TooltipId id)
     {
         var text = Tooltips.Approved(id);
-        if (text is not null && ImGui.IsItemHovered()) ImGui.SetTooltip(text);
+        if (text is not null && ImGui.IsItemHovered())
+            ImGui.SetTooltip(text);
     }
     internal static bool Button(string label, string id, Vector2 size, bool enabled, bool reduceMotion, string icon = "", bool cancel = false)
     {
         ImGui.BeginDisabled(!enabled);
         var pos = ImGui.GetCursorScreenPos();
         var pressed = ImGui.Button(id, size);
-        var held = ImGui.IsItemActive(); var focused = ImGui.IsItemFocused(); var hovered = ImGui.IsItemHovered();
+        var held = ImGui.IsItemActive();
+        var focused = ImGui.IsItemFocused();
+        var hovered = ImGui.IsItemHovered();
         var draw = ImGui.GetWindowDrawList();
         var rim = hovered || focused ? VisualTokens.Gold : VisualTokens.Border;
         draw.AddRect(pos, pos + size, Color(rim), 3, ImDrawFlags.None, focused ? 2 : 1);
@@ -56,7 +62,11 @@ internal static class Drawing
         var textSize = ImGui.CalcTextSize(label);
         var total = textSize.X + (icon.Length == 0 ? 0 : 25 * Unit);
         var origin = pos + new Vector2((size.X - total) / 2, (size.Y - textSize.Y) / 2 + LayoutPolicy.PressOffset(reduceMotion, held));
-        if (icon.Length != 0) { UiIcons.Draw(icon, origin, 18 * Unit); origin.X += 25 * Unit; }
+        if (icon.Length != 0)
+        {
+            UiIcons.Draw(icon, origin, 18 * Unit);
+            origin.X += 25 * Unit;
+        }
         draw.AddText(origin, Color(!enabled ? VisualTokens.Muted : cancel ? VisualTokens.Warning : VisualTokens.Primary), label);
         ImGui.EndDisabled();
         return pressed;

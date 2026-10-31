@@ -13,7 +13,8 @@ public static class StorageFingerprint
         if (unlockedSlots.Length is not (0 or 11))
             throw new ArgumentException("Dresser fingerprints require zero or eleven slot bits.");
         hash = Add(hash, rawItemId);
-        foreach (var unlocked in unlockedSlots) hash = Add(hash, unlocked ? 1ul : 0);
+        foreach (var unlocked in unlockedSlots)
+            hash = Add(hash, unlocked ? 1ul : 0);
         return hash;
     }
 }

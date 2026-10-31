@@ -43,7 +43,10 @@ public sealed class InventoryCacheTests : IDisposable
     {
         var cache = new InventoryFileCache(directory);
         var saved = InventoryServiceTests.Saved(1);
-        await cache.SaveAsync(saved with { Locations = saved.Locations.Select(location => location with { State = InventoryObservationState.Retained }).ToImmutableArray() }, default);
+        await cache.SaveAsync(saved with
+        {
+            Locations = saved.Locations.Select(location => location with { State = InventoryObservationState.Retained }).ToImmutableArray()
+        }, default);
         Assert.All((await cache.LoadAsync(1, default))!.Locations, location => Assert.Equal(InventoryObservationState.Retained, location.State));
     }
 
@@ -124,22 +127,59 @@ public sealed class InventoryCacheTests : IDisposable
         var location = json["snapshot"]!["locations"]![0]!;
         switch (defect)
         {
-            case "nullDocument": json = null; break;
-            case "nullSnapshot": json["snapshot"] = null; break;
-            case "revision": json["snapshot"]!["revision"] = -1; break;
-            case "nullLocation": json["snapshot"]!["locations"]![0] = null; break;
-            case "invalidKind": location["key"]!["kind"] = 100; break;
-            case "invalidState": location["state"] = 100; break;
-            case "emptyName": location["name"] = ""; break;
-            case "defaultObservation": location["observedAtUtc"] = "0001-01-01T00:00:00+00:00"; break;
-            case "missingAttempt": location["attemptedAtUtc"] = null; break;
-            case "missingObservation": location["observedAtUtc"] = null; break;
-            case "retainedMissingObservation": location["observedAtUtc"] = null; location["state"] = "Retained"; break;
-            case "emptyMissingObservation": location["observedAtUtc"] = null; location["items"] = new JsonArray(); break;
-            case "emptyRetainedMissingObservation": location["observedAtUtc"] = null; location["state"] = "Retained"; location["items"] = new JsonArray(); break;
-            case "itemsWithoutObservation": location["observedAtUtc"] = null; location["state"] = "ReadFailed"; break;
-            case "attemptBeforeObservation": location["attemptedAtUtc"] = "2000-01-01T00:00:00Z"; break;
-            case "unsorted": location["items"]!.AsArray().Add(new JsonObject { ["itemId"] = 1, ["normalQuantity"] = 1, ["highQualityQuantity"] = 0 }); break;
+            case "nullDocument":
+                json = null;
+                break;
+            case "nullSnapshot":
+                json["snapshot"] = null;
+                break;
+            case "revision":
+                json["snapshot"]!["revision"] = -1;
+                break;
+            case "nullLocation":
+                json["snapshot"]!["locations"]![0] = null;
+                break;
+            case "invalidKind":
+                location["key"]!["kind"] = 100;
+                break;
+            case "invalidState":
+                location["state"] = 100;
+                break;
+            case "emptyName":
+                location["name"] = "";
+                break;
+            case "defaultObservation":
+                location["observedAtUtc"] = "0001-01-01T00:00:00+00:00";
+                break;
+            case "missingAttempt":
+                location["attemptedAtUtc"] = null;
+                break;
+            case "missingObservation":
+                location["observedAtUtc"] = null;
+                break;
+            case "retainedMissingObservation":
+                location["observedAtUtc"] = null;
+                location["state"] = "Retained";
+                break;
+            case "emptyMissingObservation":
+                location["observedAtUtc"] = null;
+                location["items"] = new JsonArray();
+                break;
+            case "emptyRetainedMissingObservation":
+                location["observedAtUtc"] = null;
+                location["state"] = "Retained";
+                location["items"] = new JsonArray();
+                break;
+            case "itemsWithoutObservation":
+                location["observedAtUtc"] = null;
+                location["state"] = "ReadFailed";
+                break;
+            case "attemptBeforeObservation":
+                location["attemptedAtUtc"] = "2000-01-01T00:00:00Z";
+                break;
+            case "unsorted":
+                location["items"]!.AsArray().Add(new JsonObject { ["itemId"] = 1, ["normalQuantity"] = 1, ["highQualityQuantity"] = 0 });
+                break;
         }
         await File.WriteAllTextAsync(cache.CharacterPath(1), json?.ToJsonString() ?? "null");
         Assert.Equal("InventoryCacheInvalid", (await Assert.ThrowsAsync<InvalidDataException>(() => cache.LoadAsync(1, default))).Message);
@@ -182,7 +222,10 @@ public sealed class InventoryCacheTests : IDisposable
         Assert.Null(await cache.LoadAsync(2, default));
         var unrelated = Path.Combine(directory, "current-snapshot.json");
         await File.WriteAllTextAsync(unrelated, "untouched");
-        var cleared = value with { Locations = [value.Locations[0] with { Items = [], ObservedAtUtc = value.Locations[0].ObservedAtUtc!.Value.AddSeconds(1), AttemptedAtUtc = value.Locations[0].AttemptedAtUtc!.Value.AddSeconds(1) }] };
+        var cleared = value with
+        {
+            Locations = [value.Locations[0] with { Items = [], ObservedAtUtc = value.Locations[0].ObservedAtUtc!.Value.AddSeconds(1), AttemptedAtUtc = value.Locations[0].AttemptedAtUtc!.Value.AddSeconds(1) }]
+        };
         await cache.SaveAsync(cleared, default);
         Assert.Empty((await cache.LoadAsync(1, default))!.Locations.Single().Items);
         Assert.Equal("untouched", await File.ReadAllTextAsync(unrelated));
@@ -195,7 +238,10 @@ public sealed class InventoryCacheTests : IDisposable
         var cache = new InventoryFileCache(directory);
         var saved = InventoryServiceTests.Saved(1);
         await cache.SaveAsync(saved, default);
-        var early = InventoryPolicy.Empty(1, 3) with { Locations = [saved.Locations[0] with { Items = [] }] };
+        var early = InventoryPolicy.Empty(1, 3) with
+        {
+            Locations = [saved.Locations[0] with { Items = [] }]
+        };
         await cache.SaveAsync(early, default);
         var result = await cache.LoadAsync(1, default);
         Assert.Empty(result!.Locations[0].Items);
@@ -210,7 +256,8 @@ public sealed class InventoryCacheTests : IDisposable
         var saved = InventoryServiceTests.Saved(1);
         await cache.SaveAsync(saved, default);
         var prior = await File.ReadAllBytesAsync(cache.CharacterPath(1));
-        using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cache.SaveAsync(saved, cancellation.Token));
         Assert.Equal("InventoryCacheInvalid", (await Assert.ThrowsAsync<InvalidDataException>(() => cache.SaveAsync(saved with { Locations = [saved.Locations[0] with { Items = [new(100, uint.MaxValue, 1)] }] }, default))).Message);
         Assert.Equal(prior, await File.ReadAllBytesAsync(cache.CharacterPath(1)));
@@ -231,12 +278,24 @@ public sealed class InventoryCacheTests : IDisposable
         var location = json["snapshot"]!["locations"]![0]!;
         switch (defect)
         {
-            case "identity": json["snapshot"]!["contentId"] = 2; break;
-            case "schema": json["schemaVersion"] = "2.0"; break;
-            case "quantity": location["items"]![0]!["normalQuantity"] = 0; break;
-            case "unknownWithItems": location["state"] = "Unknown"; break;
-            case "duplicate": json["snapshot"]!["locations"]!.AsArray().Add(location.DeepClone()); break;
-            case "missingQuantity": location["items"]![0]!.AsObject().Remove("normalQuantity"); break;
+            case "identity":
+                json["snapshot"]!["contentId"] = 2;
+                break;
+            case "schema":
+                json["schemaVersion"] = "2.0";
+                break;
+            case "quantity":
+                location["items"]![0]!["normalQuantity"] = 0;
+                break;
+            case "unknownWithItems":
+                location["state"] = "Unknown";
+                break;
+            case "duplicate":
+                json["snapshot"]!["locations"]!.AsArray().Add(location.DeepClone());
+                break;
+            case "missingQuantity":
+                location["items"]![0]!.AsObject().Remove("normalQuantity");
+                break;
         }
         await File.WriteAllTextAsync(cache.CharacterPath(1), json.ToJsonString());
         Assert.Equal("InventoryCacheInvalid", (await Assert.ThrowsAsync<InvalidDataException>(() => cache.LoadAsync(1, default))).Message);
@@ -249,11 +308,16 @@ public sealed class InventoryCacheTests : IDisposable
         Directory.CreateDirectory(Path.GetDirectoryName(cache.CharacterPath(1))!);
         await File.WriteAllTextAsync(cache.CharacterPath(1), "{");
         Assert.Equal("InventoryCacheInvalid", (await Assert.ThrowsAsync<InvalidDataException>(() => cache.LoadAsync(1, default))).Message);
-        await using (var stream = File.Create(cache.CharacterPath(1))) stream.SetLength(InventoryFileCache.MaximumBytes + 1L);
+        await using (var stream = File.Create(cache.CharacterPath(1)))
+            stream.SetLength(InventoryFileCache.MaximumBytes + 1L);
         Assert.Equal("InventoryCacheSizeLimit", (await Assert.ThrowsAsync<InvalidDataException>(() => cache.LoadAsync(1, default))).Message);
         Assert.Null(await cache.LoadAsync(2, default));
         Assert.Throws<ArgumentOutOfRangeException>(() => cache.CharacterPath(0));
     }
 
-    public void Dispose() { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    public void Dispose()
+    {
+        if (Directory.Exists(directory))
+            Directory.Delete(directory, true);
+    }
 }

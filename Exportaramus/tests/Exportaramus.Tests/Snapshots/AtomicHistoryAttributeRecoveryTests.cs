@@ -71,8 +71,10 @@ public sealed class AtomicHistoryAttributeRecoveryTests : IDisposable
         {
             AfterMove = (source, destination) =>
             {
-                if (source == oldest) cancellation.Cancel();
-                if (Path.GetFullPath(destination) == oldest) restored = true;
+                if (source == oldest)
+                    cancellation.Cancel();
+                if (Path.GetFullPath(destination) == oldest)
+                    restored = true;
             },
             Opening = path => { if (restored && phase != 1 && Path.GetFullPath(path) == Path.GetFullPath(Journal + ".tmp")) throw new IOException("terminal progress temporarily unavailable"); },
             Deleting = path => { if (phase == 1 && Path.GetFullPath(path) == Path.GetFullPath(Journal)) throw new IOException("journal cleanup unavailable after backups were consumed"); },
@@ -126,7 +128,8 @@ public sealed class AtomicHistoryAttributeRecoveryTests : IDisposable
         for (var index = 0; index < 25; index++)
             await storage.CommitAsync(1, "{}", "{\"old\":true}", null, true, false, SnapshotFixture.Now.AddSeconds(index), default);
         var histories = Directory.GetFiles(Path.Combine(root, "snapshots"), "*-snapshot-*.json").Order(StringComparer.Ordinal).ToArray();
-        for (var index = 0; index < histories.Length; index++) File.SetLastWriteTimeUtc(histories[index], SnapshotFixture.Now.AddSeconds(index).UtcDateTime);
+        for (var index = 0; index < histories.Length; index++)
+            File.SetLastWriteTimeUtc(histories[index], SnapshotFixture.Now.AddSeconds(index).UtcDateTime);
         File.SetAttributes(histories[0], attributes);
         return Path.GetFullPath(histories[0]);
     }
@@ -134,21 +137,47 @@ public sealed class AtomicHistoryAttributeRecoveryTests : IDisposable
     private string Journal => Path.Combine(root, "state", "write-recovery.json");
     private sealed class Operations : IAtomicFileOperations
     {
-        public Action<string, string>? BeforeMove { get; init; }
-        public Action<string, string>? AfterMove { get; init; }
-        public Action<string>? Opening { get; init; }
-        public Action<string>? Deleting { get; init; }
+        public Action<string, string>? BeforeMove
+        {
+            get; init;
+        }
+        public Action<string, string>? AfterMove
+        {
+            get; init;
+        }
+        public Action<string>? Opening
+        {
+            get; init;
+        }
+        public Action<string>? Deleting
+        {
+            get; init;
+        }
         public Stream OpenRead(string path) => new AtomicFileOperations().OpenRead(path);
         public FileStream OpenWrite(string path, FileMode mode, int bufferSize, FileOptions options)
-        { Opening?.Invoke(path); return new(path, mode, FileAccess.Write, FileShare.None, bufferSize, options); }
-        public void Move(string source, string destination) { BeforeMove?.Invoke(source, destination); File.Move(source, destination); AfterMove?.Invoke(source, destination); }
+        {
+            Opening?.Invoke(path);
+            return new(path, mode, FileAccess.Write, FileShare.None, bufferSize, options);
+        }
+        public void Move(string source, string destination)
+        {
+            BeforeMove?.Invoke(source, destination);
+            File.Move(source, destination);
+            AfterMove?.Invoke(source, destination);
+        }
         public void Replace(string source, string destination, string? backup) => File.Replace(source, destination, backup);
-        public void Delete(string path) { Deleting?.Invoke(path); File.Delete(path); }
+        public void Delete(string path)
+        {
+            Deleting?.Invoke(path);
+            File.Delete(path);
+        }
     }
     public void Dispose()
     {
-        if (!Directory.Exists(root)) return;
-        foreach (var file in Directory.GetFiles(root, "*", SearchOption.AllDirectories)) File.SetAttributes(file, FileAttributes.Normal);
+        if (!Directory.Exists(root))
+            return;
+        foreach (var file in Directory.GetFiles(root, "*", SearchOption.AllDirectories))
+            File.SetAttributes(file, FileAttributes.Normal);
         Directory.Delete(root, true);
     }
 }

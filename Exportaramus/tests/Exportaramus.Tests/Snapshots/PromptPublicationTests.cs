@@ -13,13 +13,15 @@ public sealed class PromptPublicationTests
     [Fact]
     public async Task UnchangedTargetedRetryClearsOnlyThePriorCaptureFailure()
     {
-        await using var run = new Harness(); await run.Initialize();
+        await using var run = new Harness();
+        await run.Initialize();
         run.Port.TargetedSupported = false;
         run.Controller.HintSource("orchestrions", 123, 19);
         run.Port.TargetedSupported = true;
         run.Port.FailNextRead = true;
         run.Controller.HintSource("orchestrions", 123, 20);
-        run.Update(20.25); run.Update(20.25);
+        run.Update(20.25);
+        run.Update(20.25);
         Assert.NotNull(run.Controller.Error);
         var accepted = run.Controller.Publication.Current;
         await run.Cycle(21.25);
@@ -33,9 +35,11 @@ public sealed class PromptPublicationTests
     [Fact]
     public async Task QueuedConsumerReportIsServicedBeforeContinuousCaptureHints()
     {
-        await using var run = new Harness(); await run.Initialize();
+        await using var run = new Harness();
+        await run.Initialize();
         Assert.Equal("Accepted", run.Controller.Reports.TryEnqueue("123", 100, "Fixture", 20, SnapshotFixture.Now.AddSeconds(20)));
-        for (var i = 0; i < 1000; i++) run.Controller.HintSource("orchestrions", 123, 20 + i / 10000d);
+        for (var i = 0; i < 1000; i++)
+            run.Controller.HintSource("orchestrions", 123, 20 + i / 10000d);
         run.Update(20.25);
         Assert.Equal(0, run.Controller.Reports.Count);
         var deadline = Stopwatch.StartNew();
@@ -43,7 +47,8 @@ public sealed class PromptPublicationTests
         {
             Assert.True(deadline.Elapsed < TimeSpan.FromSeconds(5), run.Controller.Error);
             run.Controller.HintSource("orchestrions", 123, 20.25);
-            await Task.Delay(1); run.Update(20.25);
+            await Task.Delay(1);
+            run.Update(20.25);
         }
         Assert.Null(run.Controller.Error);
     }
@@ -55,14 +60,28 @@ public sealed class PromptPublicationTests
         run.Port.State = SnapshotFixture.Create().State;
         await run.Initialize();
         var healthy = run.Port.State.Unlocks["orchestrions"];
-        run.Port.State = run.Port.State with { Unlocks = run.Port.State.Unlocks.SetItem("orchestrions", new([], CaptureReadPolicy.Health(DataType.PermanentUnlock, 2, SnapshotFixture.Now.AddSeconds(20), ReasonCode.NotLoadedThisSession, true))) };
-        run.Controller.HintSource("orchestrions", 123, 20); await run.Cycle(20.25);
+        run.Port.State = run.Port.State with
+        {
+            Unlocks = run.Port.State.Unlocks.SetItem("orchestrions", new([], CaptureReadPolicy.Health(DataType.PermanentUnlock, 2, SnapshotFixture.Now.AddSeconds(20), ReasonCode.NotLoadedThisSession, true)))
+        };
+        run.Controller.HintSource("orchestrions", 123, 20);
+        await run.Cycle(20.25);
         var retained = run.Controller.Publication.Current!.Data.State.Unlocks["orchestrions"];
         Assert.Equal(new uint[] { 1 }, retained.UnlockedIds);
         Assert.Equal(SourceStatus.Stale, retained.Health.SourceStatus);
         Assert.Equal(ReasonCode.NotLoadedThisSession, retained.Health.ReasonCode);
         Assert.Equal(healthy.Health.ObservedAtUtc, retained.Health.ObservedAtUtc);
-        run.Port.State = run.Port.State with { Unlocks = run.Port.State.Unlocks.SetItem("orchestrions", healthy with { Health = healthy.Health with { ObservedAtUtc = SnapshotFixture.Now.AddSeconds(21), CaptureGeneration = 3 } }) };
+        run.Port.State = run.Port.State with
+        {
+            Unlocks = run.Port.State.Unlocks.SetItem("orchestrions", healthy with
+            {
+                Health = healthy.Health with
+                {
+                    ObservedAtUtc = SnapshotFixture.Now.AddSeconds(21),
+                    CaptureGeneration = 3
+                }
+            })
+        };
         await run.Cycle(21.25);
         var recovered = run.Controller.Publication.Current!.Data.State.Unlocks["orchestrions"];
         Assert.Equal(SourceStatus.Fresh, recovered.Health.SourceStatus);
@@ -73,9 +92,17 @@ public sealed class PromptPublicationTests
     [Fact]
     public async Task TargetedCaptureDoesNotPostponeEitherScheduledDeadline()
     {
-        await using var run = new Harness(); await run.Initialize();
-        run.Port.State = run.Port.State with { Unlocks = run.Port.State.Unlocks.SetItem("orchestrions", run.Port.State.Unlocks["orchestrions"] with { UnlockedIds = [1] }) };
-        run.Controller.HintSource("orchestrions", 123, 100); await run.Cycle(100.25);
+        await using var run = new Harness();
+        await run.Initialize();
+        run.Port.State = run.Port.State with
+        {
+            Unlocks = run.Port.State.Unlocks.SetItem("orchestrions", run.Port.State.Unlocks["orchestrions"] with
+            {
+                UnlockedIds = [1]
+            })
+        };
+        run.Controller.HintSource("orchestrions", 123, 100);
+        await run.Cycle(100.25);
         await run.Cycle(304.999);
         Assert.Equal(new[] { (true, 5d) }, run.Port.Scheduled);
         await run.Cycle(305);
@@ -87,18 +114,28 @@ public sealed class PromptPublicationTests
     [Fact]
     public async Task CompletedTargetedWorkerCannotRepublishAfterLogout()
     {
-        await using var run = new Harness(); await run.Initialize();
-        run.Port.State = run.Port.State with { Unlocks = run.Port.State.Unlocks.SetItem("orchestrions", run.Port.State.Unlocks["orchestrions"] with { UnlockedIds = [1] }) };
+        await using var run = new Harness();
+        await run.Initialize();
+        run.Port.State = run.Port.State with
+        {
+            Unlocks = run.Port.State.Unlocks.SetItem("orchestrions", run.Port.State.Unlocks["orchestrions"] with
+            {
+                UnlockedIds = [1]
+            })
+        };
         run.Controller.HintSource("orchestrions", 123, 20);
-        run.Update(20.25); run.Update(20.25);
+        run.Update(20.25);
+        run.Update(20.25);
         var deadline = Stopwatch.StartNew();
         while (run.Controller.DiagnosticTasks.Single(task => task.Name == "CollectionOutput").State is not ("Completed" or "Faulted" or "Cancelled"))
         {
-            Assert.True(deadline.Elapsed < TimeSpan.FromSeconds(5)); await Task.Delay(1);
+            Assert.True(deadline.Elapsed < TimeSpan.FromSeconds(5));
+            await Task.Delay(1);
         }
         Assert.Equal("Completed", run.Controller.DiagnosticTasks.Single(task => task.Name == "CollectionOutput").State);
         Assert.Empty(run.Controller.Publication.Current!.Data.State.Unlocks["orchestrions"].UnlockedIds);
-        var changes = new List<string>(); run.Controller.ChangedV11 += changes.Add;
+        var changes = new List<string>();
+        run.Controller.ChangedV11 += changes.Add;
         run.Controller.Update(0, "", true, false, 21, SnapshotFixture.Now.AddSeconds(21));
         Assert.Equal(0ul, run.Controller.ActiveContentId);
         Assert.Null(run.Controller.Publication.Current);
@@ -114,9 +151,13 @@ public sealed class PromptPublicationTests
         run.Port.State = run.Port.State with
         {
             Unlocks = run.Port.State.Unlocks.SetItem("orchestrions",
-            run.Port.State.Unlocks["orchestrions"] with { UnlockedIds = [1] })
+            run.Port.State.Unlocks["orchestrions"] with
+            {
+                UnlockedIds = [1]
+            })
         };
-        var notices = new List<string>(); run.Controller.ChangedV11 += notices.Add;
+        var notices = new List<string>();
+        run.Controller.ChangedV11 += notices.Add;
         run.Controller.HintSource("orchestrions", 123, 20);
         await run.Cycle(20.25);
         var accepted = run.Controller.Publication.Current!;
@@ -128,7 +169,8 @@ public sealed class PromptPublicationTests
         Assert.True(Exportaramus.ConsumerKit.V1_1.CollectionDataSemanticValidator.ValidateChanged(notice).Success);
         using var json = JsonDocument.Parse(notice);
         var sources = json.RootElement.GetProperty("changedSources").EnumerateArray().Select(value => value.GetString()).ToArray();
-        Assert.Contains("orchestrions", sources); Assert.DoesNotContain("inventory", sources);
+        Assert.Contains("orchestrions", sources);
+        Assert.DoesNotContain("inventory", sources);
         await run.Cycle(21.25);
         Assert.Same(accepted, run.Controller.Publication.Current);
         Assert.Single(notices);
@@ -137,7 +179,8 @@ public sealed class PromptPublicationTests
     [Fact]
     public async Task AHintBeforeRegistrationIsNotProofAndItsDelayedRetryFindsTheNewState()
     {
-        await using var run = new Harness(); await run.Initialize();
+        await using var run = new Harness();
+        await run.Initialize();
         var before = run.Controller.Publication.Current!;
         run.Controller.HintSource("orchestrions", 123, 20);
         await run.Cycle(20.25);
@@ -146,7 +189,10 @@ public sealed class PromptPublicationTests
         run.Port.State = run.Port.State with
         {
             Unlocks = run.Port.State.Unlocks.SetItem("orchestrions",
-            run.Port.State.Unlocks["orchestrions"] with { UnlockedIds = [1] })
+            run.Port.State.Unlocks["orchestrions"] with
+            {
+                UnlockedIds = [1]
+            })
         };
         await run.Cycle(21.25);
         Assert.Equal(new uint[] { 1 }, run.Controller.Publication.Current!.Data.State.Unlocks["orchestrions"].UnlockedIds);
@@ -157,7 +203,10 @@ public sealed class PromptPublicationTests
     {
         private readonly string path = Path.Combine(AppContext.BaseDirectory, "prompt-publication", Guid.NewGuid().ToString("N"));
         public Port Port { get; } = new();
-        public SnapshotController Controller { get; }
+        public SnapshotController Controller
+        {
+            get;
+        }
         public Harness() => Controller = new(Port, new(path), null);
         public void Update(double seconds) => Controller.Update(123, "Fixture", false, false, seconds, SnapshotFixture.Now.AddSeconds(seconds));
         public async Task Initialize()
@@ -166,9 +215,11 @@ public sealed class PromptPublicationTests
             while (!Controller.Reports.Available || Controller.Busy)
             {
                 Assert.True(deadline.Elapsed < TimeSpan.FromSeconds(5), Controller.Error);
-                Update(0); await Task.Delay(1);
+                Update(0);
+                await Task.Delay(1);
             }
-            Controller.RequestFull(); await Cycle(5);
+            Controller.RequestFull();
+            await Cycle(5);
             Assert.NotNull(Controller.Publication.Current);
         }
         public async Task Cycle(double seconds)
@@ -178,14 +229,17 @@ public sealed class PromptPublicationTests
             while (Controller.Busy)
             {
                 Assert.True(deadline.Elapsed < TimeSpan.FromSeconds(5), Controller.Error);
-                await Task.Delay(1); Update(seconds);
+                await Task.Delay(1);
+                Update(seconds);
             }
             Assert.Null(Controller.Error);
         }
         public async ValueTask DisposeAsync()
         {
-            Controller.Dispose(); await Controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
-            if (Directory.Exists(path)) Directory.Delete(path, true);
+            Controller.Dispose();
+            await Controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
+            if (Directory.Exists(path))
+                Directory.Delete(path, true);
         }
     }
 
@@ -210,11 +264,17 @@ public sealed class PromptPublicationTests
                 State.CurrentItemPresence.Where(pair => sources.Contains(pair.Key)).ToImmutableDictionary(), sources.Contains("quests") ? State.Quests : []);
         public bool Advance()
         {
-            if (FailNextRead) { FailNextRead = false; throw new IOException("Transient capture failure."); }
+            if (FailNextRead)
+            {
+                FailNextRead = false;
+                throw new IOException("Transient capture failure.");
+            }
             return true;
         }
         public RawCaptureBatch? TakeResult() => result;
         public void ResetSession() => result = null;
-        public void Dispose() { }
+        public void Dispose()
+        {
+        }
     }
 }

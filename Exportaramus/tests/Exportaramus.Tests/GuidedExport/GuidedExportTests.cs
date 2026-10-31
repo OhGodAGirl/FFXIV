@@ -17,7 +17,11 @@ public sealed class GuidedExportTests
         var frame = Frame();
         controller.Update(frame, GuidedCommand.Start);
         CaptureAndClose(controller, frame, GuidedSource.Dresser);
-        controller.Update(frame with { CurrentTarget = 20, Furnishings = [Armoire with { Distance = 10 }] });
+        controller.Update(frame with
+        {
+            CurrentTarget = 20,
+            Furnishings = [Armoire with { Distance = 10 }]
+        });
         Assert.Contains("targeted Armoire", controller.View.Prompt);
     }
 
@@ -54,7 +58,10 @@ public sealed class GuidedExportTests
         var controller = new GuidedExportController();
         var frame = Frame();
         controller.Update(frame, GuidedCommand.Start);
-        Assert.Equal(GuidedEffectKind.None, controller.Update(frame with { Furnishings = [Dresser with { Distance = 10 }] }).Kind);
+        Assert.Equal(GuidedEffectKind.None, controller.Update(frame with
+        {
+            Furnishings = [Dresser with { Distance = 10 }]
+        }).Kind);
         controller.Update(frame);
         controller.Update(frame);
         controller.Update(Frame(1));
@@ -67,7 +74,11 @@ public sealed class GuidedExportTests
     public void MovingIntoRangeAutomaticallyTargetsAndInteractsWithoutContinue()
     {
         var controller = new GuidedExportController();
-        var far = Frame() with { CurrentTarget = 99, Furnishings = [Dresser with { Distance = 10 }] };
+        var far = Frame() with
+        {
+            CurrentTarget = 99,
+            Furnishings = [Dresser with { Distance = 10 }]
+        };
         controller.Update(far, GuidedCommand.Start);
         Assert.Equal(GuidedEffectKind.SelectTarget, controller.Update(far).Kind);
         Assert.False(controller.View.Paused);
@@ -80,13 +91,22 @@ public sealed class GuidedExportTests
     [Fact]
     public void AlreadyOpenArmoireIsCapturedWithoutFurnishingDiscoveryOrContinue()
     {
-        var controller = new GuidedExportController(); var frame = Frame();
+        var controller = new GuidedExportController();
+        var frame = Frame();
         controller.Update(frame, GuidedCommand.Start);
         CaptureAndClose(controller, frame, GuidedSource.Dresser);
-        controller.Update(frame with { Furnishings = [] });
+        controller.Update(frame with
+        {
+            Furnishings = []
+        });
         Assert.False(controller.View.Paused);
-        var open = Ready(frame) with { Furnishings = [], AddonIdentity = 78 };
-        controller.Update(open); controller.Update(open);
+        var open = Ready(frame) with
+        {
+            Furnishings = [],
+            AddonIdentity = 78
+        };
+        controller.Update(open);
+        controller.Update(open);
         var effect = controller.Update(open);
         Assert.Equal(GuidedEffectKind.Capture, effect.Kind);
         Assert.Equal(GuidedSource.Armoire, effect.Source);
@@ -96,13 +116,21 @@ public sealed class GuidedExportTests
     [Fact]
     public void ArmoireMenuIsSelectedOnceThenWaitsForTheActualCabinetBeforeCapture()
     {
-        var controller = new GuidedExportController(); var frame = Frame();
+        var controller = new GuidedExportController();
+        var frame = Frame();
         controller.Update(frame, GuidedCommand.Start);
         CaptureAndClose(controller, frame, GuidedSource.Dresser);
-        frame = frame with { CurrentTarget = 20, AddonIdentity = 43 };
+        frame = frame with
+        {
+            CurrentTarget = 20,
+            AddonIdentity = 43
+        };
         controller.Update(frame);
         Assert.Equal(GuidedEffectKind.Interact, controller.Update(frame).Kind);
-        var menu = frame with { ArmoireMenuIdentity = 90 };
+        var menu = frame with
+        {
+            ArmoireMenuIdentity = 90
+        };
         var selection = controller.Update(menu);
         Assert.Equal(GuidedEffectKind.SelectArmoireMenu, selection.Kind);
         Assert.Equal(90UL, selection.AddonIdentity);
@@ -116,8 +144,10 @@ public sealed class GuidedExportTests
     [Fact]
     public void RejectedNativeEffectPausesAndStaleFailureCannotAffectANewRun()
     {
-        var controller = new GuidedExportController(); var frame = Frame();
-        controller.Update(frame, GuidedCommand.Start); controller.Update(frame);
+        var controller = new GuidedExportController();
+        var frame = Frame();
+        controller.Update(frame, GuidedCommand.Start);
+        controller.Update(frame);
         var effect = controller.Update(frame);
         controller.RejectEffect(effect, frame.Now);
         Assert.True(controller.View.Paused);
@@ -131,7 +161,8 @@ public sealed class GuidedExportTests
     [Fact]
     public void CompleteRunCapturesAndClosesEachExactAddonThenRequestsOneFullSave()
     {
-        var controller = new GuidedExportController(); var frame = Frame();
+        var controller = new GuidedExportController();
+        var frame = Frame();
         Assert.Equal("", controller.View.Prompt);
         Assert.Equal(GuidedEffectKind.None, controller.Update(frame, GuidedCommand.Start).Kind);
         Assert.Equal(1, controller.Generation);
@@ -141,10 +172,17 @@ public sealed class GuidedExportTests
         Assert.Equal(GuidedState.NeedArmoire, controller.State);
         Assert.Equal(GuidedSource.Armoire, controller.CurrentSource);
         Assert.True(controller.View.DresserCompleted);
-        CaptureAndClose(controller, frame with { CurrentTarget = 20, AddonIdentity = 43 }, GuidedSource.Armoire);
+        CaptureAndClose(controller, frame with
+        {
+            CurrentTarget = 20,
+            AddonIdentity = 43
+        }, GuidedSource.Armoire);
         Assert.Equal(GuidedEffectKind.SaveFull, controller.Update(frame).Kind);
         Assert.Equal(GuidedEffectKind.None, controller.Update(frame).Kind);
-        controller.Update(frame with { SaveResult = GuidedResult.Succeeded });
+        controller.Update(frame with
+        {
+            SaveResult = GuidedResult.Succeeded
+        });
         Assert.Equal(GuidedState.Completed, controller.State);
         Assert.False(controller.OwnsWindowEdges);
         Assert.True(controller.View.ArmoireCompleted);
@@ -156,19 +194,25 @@ public sealed class GuidedExportTests
         Assert.Equal(source == GuidedSource.Dresser ? GuidedState.RequestDresserInteraction : GuidedState.RequestArmoireInteraction, controller.State);
         Assert.Equal(source == GuidedSource.Dresser ? "Opening Dresser" : "Opening Armoire", controller.View.StepLabel);
         var interaction = controller.Update(frame);
-        Assert.Equal(GuidedEffectKind.Interact, interaction.Kind); Assert.Equal(source, interaction.Source);
+        Assert.Equal(GuidedEffectKind.Interact, interaction.Kind);
+        Assert.Equal(source, interaction.Source);
         Assert.Equal(source == GuidedSource.Dresser ? GuidedState.WaitForDresserReady : GuidedState.WaitForArmoireReady, controller.State);
-        var ready = Ready(frame); controller.Update(ready);
+        var ready = Ready(frame);
+        controller.Update(ready);
         Assert.Equal(source == GuidedSource.Dresser ? GuidedState.CaptureDresser : GuidedState.CaptureArmoire, controller.State);
         Assert.Equal(source == GuidedSource.Dresser ? "Capturing Dresser" : "Capturing Armoire", controller.View.StepLabel);
         Assert.Equal(GuidedEffectKind.Capture, controller.Update(ready).Kind);
         Assert.Equal(GuidedEffectKind.None, controller.Update(ready).Kind);
-        controller.Update(ready with { CaptureResult = GuidedResult.Succeeded });
+        controller.Update(ready with
+        {
+            CaptureResult = GuidedResult.Succeeded
+        });
         Assert.Equal(source == GuidedSource.Dresser ? GuidedState.RequestDresserClose : GuidedState.RequestArmoireClose, controller.State);
         var close = controller.Update(ready);
         Assert.Equal(source == GuidedSource.Dresser ? GuidedState.WaitForDresserClosed : GuidedState.WaitForArmoireClosed, controller.State);
         Assert.Equal(source == GuidedSource.Dresser ? "Closing Dresser" : "Closing Armoire", controller.View.StepLabel);
-        Assert.Equal(GuidedEffectKind.CloseAddon, close.Kind); Assert.Equal(frame.AddonIdentity, close.AddonIdentity);
+        Assert.Equal(GuidedEffectKind.CloseAddon, close.Kind);
+        Assert.Equal(frame.AddonIdentity, close.AddonIdentity);
         Assert.Equal(GuidedEffectKind.None, controller.Update(ready).Kind);
         controller.Update(frame);
     }
@@ -176,12 +220,18 @@ public sealed class GuidedExportTests
     [Fact]
     public void InteractionRevalidationRejectsTheChosenObjectEvenWhenAnotherEligibleObjectExists()
     {
-        var controller = new GuidedExportController(); var frame = Frame();
-        controller.Update(frame, GuidedCommand.Start); controller.Update(frame);
+        var controller = new GuidedExportController();
+        var frame = Frame();
+        controller.Update(frame, GuidedCommand.Start);
+        controller.Update(frame);
 
-        var effect = controller.Update(frame with { Furnishings = [Dresser with { Allowlisted = false }, Dresser with { Identity = 11 }] });
+        var effect = controller.Update(frame with
+        {
+            Furnishings = [Dresser with { Allowlisted = false }, Dresser with { Identity = 11 }]
+        });
 
-        Assert.Equal(GuidedEffectKind.None, effect.Kind); Assert.Equal(GuidedState.NeedDresser, controller.State);
+        Assert.Equal(GuidedEffectKind.None, effect.Kind);
+        Assert.Equal(GuidedState.NeedDresser, controller.State);
     }
 
     [Theory]
@@ -189,10 +239,18 @@ public sealed class GuidedExportTests
     [InlineData(false, true)]
     public void WaitingForReadinessRequiresBothTheAddonAndManager(bool addonReady, bool managerReady)
     {
-        var controller = new GuidedExportController(); var frame = Frame();
-        controller.Update(frame, GuidedCommand.Start); controller.Update(frame); controller.Update(frame);
+        var controller = new GuidedExportController();
+        var frame = Frame();
+        controller.Update(frame, GuidedCommand.Start);
+        controller.Update(frame);
+        controller.Update(frame);
 
-        controller.Update(frame with { ExpectedAddonPresent = true, AddonReady = addonReady, ManagerReady = managerReady });
+        controller.Update(frame with
+        {
+            ExpectedAddonPresent = true,
+            AddonReady = addonReady,
+            ManagerReady = managerReady
+        });
 
         Assert.Equal(GuidedState.WaitForDresserReady, controller.State);
     }
@@ -200,46 +258,91 @@ public sealed class GuidedExportTests
     [Fact]
     public void DisappearingExpectedAddonCannotAuthorizeCaptureDespiteOtherReadyFlags()
     {
-        var controller = new GuidedExportController(); var frame = Ready(Frame());
-        controller.Update(frame, GuidedCommand.Start); controller.Update(frame); controller.Update(frame);
+        var controller = new GuidedExportController();
+        var frame = Ready(Frame());
+        controller.Update(frame, GuidedCommand.Start);
+        controller.Update(frame);
+        controller.Update(frame);
 
-        var effect = controller.Update(frame with { ExpectedAddonPresent = false });
+        var effect = controller.Update(frame with
+        {
+            ExpectedAddonPresent = false
+        });
 
-        Assert.Equal(GuidedEffectKind.None, effect.Kind); Assert.True(controller.View.Paused);
+        Assert.Equal(GuidedEffectKind.None, effect.Kind);
+        Assert.True(controller.View.Paused);
     }
 
     [Fact]
     public void ManualDresserClosureDoesNotMakeALaterArmoirePauseCountAsACompletedCapture()
     {
-        var controller = new GuidedExportController(); var ready = Ready(Frame());
-        controller.Update(ready, GuidedCommand.Start); controller.Update(ready); controller.Update(ready); controller.Update(ready);
-        controller.Update(ready with { CaptureResult = GuidedResult.Succeeded });
-        controller.Update(ready with { ManagerReady = false });
+        var controller = new GuidedExportController();
+        var ready = Ready(Frame());
+        controller.Update(ready, GuidedCommand.Start);
+        controller.Update(ready);
+        controller.Update(ready);
+        controller.Update(ready);
+        controller.Update(ready with
+        {
+            CaptureResult = GuidedResult.Succeeded
+        });
+        controller.Update(ready with
+        {
+            ManagerReady = false
+        });
         controller.Update(Frame(), GuidedCommand.Continue);
         Assert.Equal(GuidedState.NeedArmoire, controller.State);
-        controller.Update(Frame() with { RuntimeValidated = false }); Assert.False(controller.View.Paused);
+        controller.Update(Frame() with
+        {
+            RuntimeValidated = false
+        });
+        Assert.False(controller.View.Paused);
 
         controller.Update(Frame(), GuidedCommand.Continue);
 
-        Assert.Equal(GuidedState.RequestArmoireInteraction, controller.State); Assert.False(controller.View.ArmoireCompleted);
+        Assert.Equal(GuidedState.RequestArmoireInteraction, controller.State);
+        Assert.False(controller.View.ArmoireCompleted);
     }
 
     [Fact]
     public void TimeoutIntervalsAreMeasuredFromNonzeroEntryTimes()
     {
-        var controller = new GuidedExportController(); var frame = Frame(100);
-        controller.Update(frame, GuidedCommand.Start); controller.Update(frame); controller.Update(frame);
-        controller.Update(frame with { Now = TimeSpan.FromMilliseconds(100899) });
+        var controller = new GuidedExportController();
+        var frame = Frame(100);
+        controller.Update(frame, GuidedCommand.Start);
+        controller.Update(frame);
+        controller.Update(frame);
+        controller.Update(frame with
+        {
+            Now = TimeSpan.FromMilliseconds(100899)
+        });
         Assert.Equal(GuidedState.WaitForDresserReady, controller.State);
-        controller.Update(frame with { Now = TimeSpan.FromMilliseconds(100900) });
+        controller.Update(frame with
+        {
+            Now = TimeSpan.FromMilliseconds(100900)
+        });
         Assert.Equal(GuidedState.NeedDresser, controller.State);
 
-        controller = new GuidedExportController(); frame = Ready(Frame(100));
-        controller.Update(frame, GuidedCommand.Start); controller.Update(frame); controller.Update(frame); controller.Update(frame);
-        controller.Update(frame with { CaptureResult = GuidedResult.Succeeded }); controller.Update(frame);
-        controller.Update(frame with { Now = TimeSpan.FromSeconds(104) });
+        controller = new GuidedExportController();
+        frame = Ready(Frame(100));
+        controller.Update(frame, GuidedCommand.Start);
+        controller.Update(frame);
+        controller.Update(frame);
+        controller.Update(frame);
+        controller.Update(frame with
+        {
+            CaptureResult = GuidedResult.Succeeded
+        });
+        controller.Update(frame);
+        controller.Update(frame with
+        {
+            Now = TimeSpan.FromSeconds(104)
+        });
         Assert.Equal(GuidedState.WaitForDresserClosed, controller.State);
-        controller.Update(frame with { Now = TimeSpan.FromSeconds(105) });
+        controller.Update(frame with
+        {
+            Now = TimeSpan.FromSeconds(105)
+        });
         Assert.True(controller.View.Paused);
     }
 
@@ -249,7 +352,13 @@ public sealed class GuidedExportTests
     [InlineData(true, 7UL, true)]
     public void StartRequiresAnActiveCharacter(bool loggedIn, ulong identity, bool stopping)
     {
-        var controller = new GuidedExportController(); controller.Update(Frame() with { LoggedIn = loggedIn, ContentId = identity, Stopping = stopping }, GuidedCommand.Start);
+        var controller = new GuidedExportController();
+        controller.Update(Frame() with
+        {
+            LoggedIn = loggedIn,
+            ContentId = identity,
+            Stopping = stopping
+        }, GuidedCommand.Start);
         Assert.Equal(GuidedState.Idle, controller.State);
     }
 
@@ -258,32 +367,70 @@ public sealed class GuidedExportTests
     [InlineData(true)]
     public void EightAttemptsAreBoundedAndManualOpeningResumesWithoutContinue(bool armoire)
     {
-        var controller = new GuidedExportController(); var frame = Frame(); controller.Update(frame, GuidedCommand.Start);
-        if (armoire) { CaptureAndClose(controller, frame, GuidedSource.Dresser); frame = frame with { CurrentTarget = 20 }; }
+        var controller = new GuidedExportController();
+        var frame = Frame();
+        controller.Update(frame, GuidedCommand.Start);
+        if (armoire)
+        {
+            CaptureAndClose(controller, frame, GuidedSource.Dresser);
+            frame = frame with
+            {
+                CurrentTarget = 20
+            };
+        }
         var interactions = 0;
         for (var tick = 0; tick < 150; tick++)
         {
-            var effect = controller.Update(frame with { Now = TimeSpan.FromMilliseconds(tick * 150) });
-            if (effect.Kind == GuidedEffectKind.Interact) interactions++;
+            var effect = controller.Update(frame with
+            {
+                Now = TimeSpan.FromMilliseconds(tick * 150)
+            });
+            if (effect.Kind == GuidedEffectKind.Interact)
+                interactions++;
         }
         Assert.Equal(8, interactions);
         Assert.False(controller.View.Paused);
-        var ready = Ready(frame) with { Now = TimeSpan.FromSeconds(30) };
-        controller.Update(ready); controller.Update(ready);
+        var ready = Ready(frame) with
+        {
+            Now = TimeSpan.FromSeconds(30)
+        };
+        controller.Update(ready);
+        controller.Update(ready);
         Assert.Equal(GuidedEffectKind.Capture, controller.Update(ready).Kind);
     }
 
     [Fact]
     public void TargetIsSelectedOnceAndPlayerTargetChangePreventsInteraction()
     {
-        var controller = new GuidedExportController(); var frame = Frame() with { CurrentTarget = 99 };
+        var controller = new GuidedExportController();
+        var frame = Frame() with
+        {
+            CurrentTarget = 99
+        };
         controller.Update(frame, GuidedCommand.Start);
-        var select = controller.Update(frame); Assert.Equal(GuidedEffectKind.SelectTarget, select.Kind); Assert.Equal(10UL, select.TargetIdentity);
-        Assert.Equal(GuidedEffectKind.None, controller.Update(frame).Kind); Assert.Equal(GuidedState.NeedDresser, controller.State);
-        controller.Update(frame with { CurrentTarget = 10 });
-        Assert.Equal(GuidedEffectKind.None, controller.Update(frame with { CurrentTarget = 10, Furnishings = [] }).Kind);
+        var select = controller.Update(frame);
+        Assert.Equal(GuidedEffectKind.SelectTarget, select.Kind);
+        Assert.Equal(10UL, select.TargetIdentity);
+        Assert.Equal(GuidedEffectKind.None, controller.Update(frame).Kind);
         Assert.Equal(GuidedState.NeedDresser, controller.State);
-        controller.Update(frame with { CurrentTarget = 10 }); controller.Update(Ready(frame) with { CurrentTarget = 10 });
+        controller.Update(frame with
+        {
+            CurrentTarget = 10
+        });
+        Assert.Equal(GuidedEffectKind.None, controller.Update(frame with
+        {
+            CurrentTarget = 10,
+            Furnishings = []
+        }).Kind);
+        Assert.Equal(GuidedState.NeedDresser, controller.State);
+        controller.Update(frame with
+        {
+            CurrentTarget = 10
+        });
+        controller.Update(Ready(frame) with
+        {
+            CurrentTarget = 10
+        });
         Assert.Equal(GuidedState.NeedDresser, controller.State);
     }
 
@@ -292,29 +439,57 @@ public sealed class GuidedExportTests
     {
         foreach (var frame in new[] { Frame() with { Furnishings = [] }, Frame() with { RuntimeValidated = false }, Frame() with { SafeConditions = false } })
         {
-            var controller = new GuidedExportController(); controller.Update(frame, GuidedCommand.Start);
-            Assert.Equal(GuidedEffectKind.None, controller.Update(frame).Kind); Assert.Equal(GuidedState.NeedDresser, controller.State);
+            var controller = new GuidedExportController();
+            controller.Update(frame, GuidedCommand.Start);
+            Assert.Equal(GuidedEffectKind.None, controller.Update(frame).Kind);
+            Assert.Equal(GuidedState.NeedDresser, controller.State);
             Assert.DoesNotContain("select Continue", controller.View.Prompt);
             Assert.DoesNotContain("Glamour Dresser captured", controller.View.Prompt);
-            controller.Update(frame with { Now = TimeSpan.FromDays(1) }); Assert.Equal(GuidedState.NeedDresser, controller.State);
-            controller.Update(frame, GuidedCommand.SavePartial); Assert.Equal(GuidedState.NeedDresser, controller.State);
-            controller.Update(frame, GuidedCommand.Cancel); Assert.Equal(GuidedState.Cancelled, controller.State);
+            controller.Update(frame with
+            {
+                Now = TimeSpan.FromDays(1)
+            });
+            Assert.Equal(GuidedState.NeedDresser, controller.State);
+            controller.Update(frame, GuidedCommand.SavePartial);
+            Assert.Equal(GuidedState.NeedDresser, controller.State);
+            controller.Update(frame, GuidedCommand.Cancel);
+            Assert.Equal(GuidedState.Cancelled, controller.State);
         }
     }
 
     [Fact]
     public void AppearedAddonGetsFifteenSecondsForReadinessAndIsNeverReadUntilComplete()
     {
-        var controller = new GuidedExportController(); var frame = Frame(); controller.Update(frame, GuidedCommand.Start);
-        controller.Update(frame); controller.Update(frame);
-        frame = frame with { ExpectedAddonPresent = true, Now = TimeSpan.FromSeconds(9) };
-        controller.Update(frame); controller.Update(frame with { Now = TimeSpan.FromMilliseconds(23999) });
+        var controller = new GuidedExportController();
+        var frame = Frame();
+        controller.Update(frame, GuidedCommand.Start);
+        controller.Update(frame);
+        controller.Update(frame);
+        frame = frame with
+        {
+            ExpectedAddonPresent = true,
+            Now = TimeSpan.FromSeconds(9)
+        };
+        controller.Update(frame);
+        controller.Update(frame with
+        {
+            Now = TimeSpan.FromMilliseconds(23999)
+        });
         Assert.Equal(GuidedState.WaitForDresserReady, controller.State);
-        controller.Update(frame with { Now = TimeSpan.FromSeconds(24) }); Assert.Equal(GuidedState.Paused, controller.State);
+        controller.Update(frame with
+        {
+            Now = TimeSpan.FromSeconds(24)
+        });
+        Assert.Equal(GuidedState.Paused, controller.State);
         Assert.Contains("Reopen", controller.View.Prompt);
-        controller.Update(frame, GuidedCommand.Continue); controller.Update(frame);
+        controller.Update(frame, GuidedCommand.Continue);
+        controller.Update(frame);
         Assert.Equal(GuidedState.WaitForDresserReady, controller.State);
-        controller.Update(frame with { ExpectedAddonPresent = false }); Assert.Equal(GuidedState.Paused, controller.State);
+        controller.Update(frame with
+        {
+            ExpectedAddonPresent = false
+        });
+        Assert.Equal(GuidedState.Paused, controller.State);
         Assert.Contains("Reopen", controller.View.Prompt);
     }
 
@@ -323,17 +498,43 @@ public sealed class GuidedExportTests
     [InlineData(true)]
     public void OneCloseRequestWaitsFiveSecondsThenRequiresManualClosure(bool armoire)
     {
-        var controller = new GuidedExportController(); var frame = Frame(); controller.Update(frame, GuidedCommand.Start);
-        if (armoire) { CaptureAndClose(controller, frame, GuidedSource.Dresser); frame = frame with { CurrentTarget = 20 }; }
-        controller.Update(Ready(frame)); controller.Update(Ready(frame));
-        controller.Update(Ready(frame)); controller.Update(Ready(frame) with { CaptureResult = GuidedResult.Succeeded });
+        var controller = new GuidedExportController();
+        var frame = Frame();
+        controller.Update(frame, GuidedCommand.Start);
+        if (armoire)
+        {
+            CaptureAndClose(controller, frame, GuidedSource.Dresser);
+            frame = frame with
+            {
+                CurrentTarget = 20
+            };
+        }
+        controller.Update(Ready(frame));
+        controller.Update(Ready(frame));
+        controller.Update(Ready(frame));
+        controller.Update(Ready(frame) with
+        {
+            CaptureResult = GuidedResult.Succeeded
+        });
         Assert.Equal(GuidedEffectKind.CloseAddon, controller.Update(Ready(frame)).Kind);
-        controller.Update(Ready(frame) with { Now = TimeSpan.FromMilliseconds(4999) }); Assert.False(controller.View.Paused);
-        controller.Update(Ready(frame) with { Now = TimeSpan.FromSeconds(5) }); Assert.True(controller.View.Paused);
+        controller.Update(Ready(frame) with
+        {
+            Now = TimeSpan.FromMilliseconds(4999)
+        });
+        Assert.False(controller.View.Paused);
+        controller.Update(Ready(frame) with
+        {
+            Now = TimeSpan.FromSeconds(5)
+        });
+        Assert.True(controller.View.Paused);
         Assert.Contains("Close", controller.View.Prompt);
         Assert.Equal(!armoire, controller.View.Prompt.Contains("Glamour Dresser captured", StringComparison.Ordinal));
         Assert.Equal(!armoire, controller.View.CanSavePartial);
-        controller.Update(Ready(frame) with { Now = TimeSpan.FromDays(1) }, GuidedCommand.Continue); Assert.True(controller.View.Paused);
+        controller.Update(Ready(frame) with
+        {
+            Now = TimeSpan.FromDays(1)
+        }, GuidedCommand.Continue);
+        Assert.True(controller.View.Paused);
         controller.Update(frame, GuidedCommand.Continue);
         Assert.Equal(armoire ? GuidedState.SaveFullSnapshot : GuidedState.NeedArmoire, controller.State);
     }
@@ -343,13 +544,29 @@ public sealed class GuidedExportTests
     [InlineData(true)]
     public void PartialSaveOrCancelDoesNotRecaptureCompletedDresser(bool save)
     {
-        var controller = new GuidedExportController(); var frame = Frame(); controller.Update(frame, GuidedCommand.Start);
-        CaptureAndClose(controller, frame, GuidedSource.Dresser); controller.Update(frame with { Furnishings = [] });
-        Assert.True(controller.View.CanSavePartial); Assert.False(controller.View.Paused);
+        var controller = new GuidedExportController();
+        var frame = Frame();
+        controller.Update(frame, GuidedCommand.Start);
+        CaptureAndClose(controller, frame, GuidedSource.Dresser);
+        controller.Update(frame with
+        {
+            Furnishings = []
+        });
+        Assert.True(controller.View.CanSavePartial);
+        Assert.False(controller.View.Paused);
         controller.Update(frame, save ? GuidedCommand.SavePartial : GuidedCommand.Cancel);
-        var result = controller.Update(frame); Assert.Equal(save ? GuidedEffectKind.SavePartial : GuidedEffectKind.None, result.Kind);
-        if (save) { controller.Update(frame with { SaveResult = GuidedResult.Failed }); Assert.Equal(GuidedState.Failed, controller.State); }
-        else Assert.Equal(GuidedState.Cancelled, controller.State);
+        var result = controller.Update(frame);
+        Assert.Equal(save ? GuidedEffectKind.SavePartial : GuidedEffectKind.None, result.Kind);
+        if (save)
+        {
+            controller.Update(frame with
+            {
+                SaveResult = GuidedResult.Failed
+            });
+            Assert.Equal(GuidedState.Failed, controller.State);
+        }
+        else
+            Assert.Equal(GuidedState.Cancelled, controller.State);
     }
 
     [Fact]
@@ -357,20 +574,37 @@ public sealed class GuidedExportTests
     {
         foreach (var failure in new[] { 0, 1, 2 })
         {
-            var controller = new GuidedExportController(); var frame = Ready(Frame()); controller.Update(frame, GuidedCommand.Start);
-            controller.Update(frame); controller.Update(frame);
-            if (failure == 0) controller.Update(frame with { AddonIdentity = 99 });
+            var controller = new GuidedExportController();
+            var frame = Ready(Frame());
+            controller.Update(frame, GuidedCommand.Start);
+            controller.Update(frame);
+            controller.Update(frame);
+            if (failure == 0)
+                controller.Update(frame with
+                {
+                    AddonIdentity = 99
+                });
             else
             {
                 controller.Update(frame);
-                controller.Update(frame with { CaptureResult = failure == 1 ? GuidedResult.Failed : GuidedResult.Succeeded });
-                if (failure == 2) controller.Update(frame with { ManagerReady = false });
+                controller.Update(frame with
+                {
+                    CaptureResult = failure == 1 ? GuidedResult.Failed : GuidedResult.Succeeded
+                });
+                if (failure == 2)
+                    controller.Update(frame with
+                    {
+                        ManagerReady = false
+                    });
             }
             Assert.True(controller.View.Paused);
             Assert.Contains(failure == 2 ? "Close" : "Reopen", controller.View.Prompt);
             if (failure == 2)
             {
-                controller.Update(frame with { ManagerReady = false }, GuidedCommand.Continue);
+                controller.Update(frame with
+                {
+                    ManagerReady = false
+                }, GuidedCommand.Continue);
                 Assert.True(controller.View.Paused);
             }
         }
@@ -382,10 +616,20 @@ public sealed class GuidedExportTests
     [InlineData(2)]
     public void IdentityLossLogoutAndDisposalInvalidateGeneration(int cause)
     {
-        var controller = new GuidedExportController(); var frame = Frame(); controller.Update(frame, GuidedCommand.Start); var generation = controller.Generation;
-        controller.Update(cause switch { 0 => frame with { ContentId = 8 }, 1 => frame with { LoggedIn = false }, _ => frame with { Stopping = true } });
-        Assert.Equal(GuidedState.Cancelled, controller.State); Assert.True(controller.Generation > generation);
-        controller.Update(frame, GuidedCommand.Start); Assert.Equal(GuidedState.NeedDresser, controller.State);
+        var controller = new GuidedExportController();
+        var frame = Frame();
+        controller.Update(frame, GuidedCommand.Start);
+        var generation = controller.Generation;
+        controller.Update(cause switch
+        {
+            0 => frame with { ContentId = 8 },
+            1 => frame with { LoggedIn = false },
+            _ => frame with { Stopping = true }
+        });
+        Assert.Equal(GuidedState.Cancelled, controller.State);
+        Assert.True(controller.Generation > generation);
+        controller.Update(frame, GuidedCommand.Start);
+        Assert.Equal(GuidedState.NeedDresser, controller.State);
     }
 
     [Fact]
@@ -394,14 +638,20 @@ public sealed class GuidedExportTests
         foreach (var state in Enum.GetValues<GuidedState>())
         {
             var label = GuidedExportController.Label(state);
-            Assert.NotEmpty(label); Assert.DoesNotContain("Request", label); Assert.DoesNotContain("WaitFor", label);
+            Assert.NotEmpty(label);
+            Assert.DoesNotContain("Request", label);
+            Assert.DoesNotContain("WaitFor", label);
         }
     }
 
     [Fact]
     public void FurnishingSelectionPrefersCurrentTargetThenDistanceThenStableIdentity()
     {
-        var farther = Dresser with { Identity = 11, Distance = 3 };
+        var farther = Dresser with
+        {
+            Identity = 11,
+            Distance = 3
+        };
         Assert.Equal(farther, FurnishingPolicy.Select([farther, Dresser], GuidedSource.Dresser, 11));
         Assert.Equal(Dresser, FurnishingPolicy.Select([farther, Dresser], GuidedSource.Dresser, 0));
         Assert.Equal(Dresser, FurnishingPolicy.Select([Dresser with { Identity = 9, Source = GuidedSource.Armoire }, Dresser with { Identity = 12 }, Dresser], GuidedSource.Dresser, 0));
@@ -416,8 +666,18 @@ public sealed class GuidedExportTests
             Dresser with { Distance = double.NaN }, Dresser with { InteractionRange = double.PositiveInfinity }, Dresser with { Distance = -1 },
             Dresser with { InteractionRange = 0 }, Dresser with { Distance = 3.01 }];
         Assert.All(invalid, x => Assert.False(FurnishingPolicy.IsEligible(x, GuidedSource.Dresser)));
-        Assert.True(FurnishingPolicy.IsEligible(Dresser with { Distance = 0 }, GuidedSource.Dresser));
-        Assert.True(FurnishingPolicy.IsEligible(Dresser with { Distance = 3 }, GuidedSource.Dresser));
-        Assert.False(FurnishingPolicy.IsEligible(Dresser with { Distance = 0, InteractionRange = 0 }, GuidedSource.Dresser));
+        Assert.True(FurnishingPolicy.IsEligible(Dresser with
+        {
+            Distance = 0
+        }, GuidedSource.Dresser));
+        Assert.True(FurnishingPolicy.IsEligible(Dresser with
+        {
+            Distance = 3
+        }, GuidedSource.Dresser));
+        Assert.False(FurnishingPolicy.IsEligible(Dresser with
+        {
+            Distance = 0,
+            InteractionRange = 0
+        }, GuidedSource.Dresser));
     }
 }

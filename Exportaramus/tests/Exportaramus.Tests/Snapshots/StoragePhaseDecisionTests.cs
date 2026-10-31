@@ -21,19 +21,24 @@ public sealed class StoragePhaseDecisionTests : IDisposable
         {
             Installed = destination =>
             {
-                if (boundaryReached) return;
+                if (boundaryReached)
+                    return;
                 if (afterInstallation)
                 {
-                    if (!Path.GetFileName(destination).StartsWith("automatic-snapshot-", StringComparison.Ordinal)) return;
+                    if (!Path.GetFileName(destination).StartsWith("automatic-snapshot-", StringComparison.Ordinal))
+                        return;
                 }
                 else
                 {
-                    if (Path.GetFileName(destination) != "write-recovery.json") return;
+                    if (Path.GetFileName(destination) != "write-recovery.json")
+                        return;
                     using var journal = JsonDocument.Parse(File.ReadAllText(destination));
                     var rows = journal.RootElement.GetProperty("files");
-                    if (rows.GetArrayLength() != 3 || !rows.EnumerateArray().All(row => File.Exists(Path.Combine(root, row.GetProperty("temporary").GetString()!)))) return;
+                    if (rows.GetArrayLength() != 3 || !rows.EnumerateArray().All(row => File.Exists(Path.Combine(root, row.GetProperty("temporary").GetString()!))))
+                        return;
                 }
-                boundaryReached = true; cancellation.Cancel();
+                boundaryReached = true;
+                cancellation.Cancel();
             }
         };
         var storage = new AtomicSnapshotStorage(root, operations);
@@ -90,12 +95,34 @@ public sealed class StoragePhaseDecisionTests : IDisposable
 
     private sealed class Operations : IAtomicFileOperations
     {
-        public Action<string>? Installed { get; init; }
-        public Action<string>? Deleting { get; init; }
+        public Action<string>? Installed
+        {
+            get; init;
+        }
+        public Action<string>? Deleting
+        {
+            get; init;
+        }
         public Stream OpenRead(string path) => new AtomicFileOperations().OpenRead(path);
-        public void Move(string source, string destination) { File.Move(source, destination); Installed?.Invoke(destination); }
-        public void Replace(string source, string destination, string? backup) { File.Replace(source, destination, backup); Installed?.Invoke(destination); }
-        public void Delete(string path) { Deleting?.Invoke(path); File.Delete(path); }
+        public void Move(string source, string destination)
+        {
+            File.Move(source, destination);
+            Installed?.Invoke(destination);
+        }
+        public void Replace(string source, string destination, string? backup)
+        {
+            File.Replace(source, destination, backup);
+            Installed?.Invoke(destination);
+        }
+        public void Delete(string path)
+        {
+            Deleting?.Invoke(path);
+            File.Delete(path);
+        }
     }
-    public void Dispose() { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    public void Dispose()
+    {
+        if (Directory.Exists(root))
+            Directory.Delete(root, true);
+    }
 }

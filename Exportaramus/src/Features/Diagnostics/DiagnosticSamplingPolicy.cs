@@ -7,13 +7,15 @@ public static class DiagnosticSamplingPolicy
 {
     public static DiagnosticUi? PrepareUi(DiagnosticUiObservation? observation)
     {
-        if (!observation.HasValue) return null;
+        if (!observation.HasValue)
+            return null;
         var value = observation.Value;
         if (!InRange(value.X, -100000, 100000) || !InRange(value.Y, -100000, 100000) ||
             !InRange(value.Width, double.Epsilon, 100000) || !InRange(value.Height, double.Epsilon, 100000) ||
             !InRange(value.ContentWidth, 0, 3600000) || !InRange(value.Scale, double.Epsilon, 16) ||
             value.StyleVariables < 0 || value.StyleVariables > 64 || value.Colors < 0 || value.Colors > 128 ||
-            value.Revision < 0 || value.Revision > 9007199254740991) return null;
+            value.Revision < 0 || value.Revision > 9007199254740991)
+            return null;
         var layout = LayoutPolicy.At(value.ContentWidth);
         return new()
         {
@@ -36,14 +38,17 @@ public static class DiagnosticSamplingPolicy
     public static string ClientVersion(ReadOnlySpan<byte> buffer)
     {
         var end = buffer.IndexOf((byte)0);
-        if (end != 20) return "Unavailable";
+        if (end != 20)
+            return "Unavailable";
         for (var index = 0; index < end; index++)
         {
             if (index == 4 || index == 7 || index == 10 || index == 15)
             {
-                if (buffer[index] != '.') return "Unavailable";
+                if (buffer[index] != '.')
+                    return "Unavailable";
             }
-            else if (buffer[index] is < (byte)'0' or > (byte)'9') return "Unavailable";
+            else if (buffer[index] is < (byte)'0' or > (byte)'9')
+                return "Unavailable";
         }
         return Encoding.ASCII.GetString(buffer[..end]);
     }

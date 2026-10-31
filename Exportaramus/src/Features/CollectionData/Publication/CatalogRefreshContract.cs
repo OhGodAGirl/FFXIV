@@ -32,5 +32,7 @@ public sealed record CatalogRefreshContract(ImmutableDictionary<string, Immutabl
             KeyValuePair.Create(pair.Key, baseline.RecognizedIds[pair.Key].Union(pair.Value)))),
     };
     public DerivedCatalogInputs Apply(DerivedCatalogInputs baseline) => baseline with
-    { Outfits = [.. baseline.Outfits, .. Outfits] };
+    {
+        Outfits = [.. baseline.Outfits, .. Outfits]
+    };
 }

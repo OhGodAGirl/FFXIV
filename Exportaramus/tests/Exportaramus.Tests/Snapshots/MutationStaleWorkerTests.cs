@@ -11,7 +11,9 @@ public sealed class MutationStaleWorkerTests
     public async Task FaultedOldWorkerIsObservedAfterIdentityInvalidationWithoutChangingCurrentErrorOrPublication()
     {
         var root = Path.Combine(AppContext.BaseDirectory, "isolated-test-recovery/stale-worker-proof", Guid.NewGuid().ToString("N"));
-        var files = new DelayedFailureFiles(); var storage = new AtomicSnapshotStorage(root, files); var port = new Port();
+        var files = new DelayedFailureFiles();
+        var storage = new AtomicSnapshotStorage(root, files);
+        var port = new Port();
         Directory.CreateDirectory(Path.GetDirectoryName(storage.CharacterPath(1))!);
         await File.WriteAllTextAsync(storage.CharacterPath(1), "old scope");
         var controller = new SnapshotController(port, storage, null, prepareCapabilities: work => Task.FromResult(work()));
@@ -47,18 +49,24 @@ public sealed class MutationStaleWorkerTests
             Assert.Equal(preparationsBeforeRejection, port.Preparations);
             Assert.Equal("NotStarted", controller.DiagnosticTasks.Single(task => task.Name == "CollectionOutput").State);
             await Until(() => controller.Reports.Available, () => controller.Update(2, "Second", false, false, 1, SnapshotFixture.Now));
-            Assert.Null(controller.Error); Assert.Null(controller.Publication.Current); Assert.Equal(2ul, controller.ActiveContentId);
+            Assert.Null(controller.Error);
+            Assert.Null(controller.Publication.Current);
+            Assert.Equal(2ul, controller.ActiveContentId);
         }
         finally
         {
             files.Release.TrySetResult();
             try
             {
-                if (switching is not null) await switching.WaitAsync(TimeSpan.FromSeconds(5));
+                if (switching is not null)
+                    await switching.WaitAsync(TimeSpan.FromSeconds(5));
             }
             finally
             {
-                try { controller.Dispose(); }
+                try
+                {
+                    controller.Dispose();
+                }
                 finally { await controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5)); }
                 Directory.Delete(root, true);
             }
@@ -70,21 +78,34 @@ public sealed class MutationStaleWorkerTests
         var clock = Stopwatch.StartNew();
         while (!predicate())
         {
-            if (clock.Elapsed > TimeSpan.FromSeconds(5)) throw new TimeoutException("Fixture did not reach its explicitly controlled state.");
-            advance?.Invoke(); await Task.Delay(1);
+            if (clock.Elapsed > TimeSpan.FromSeconds(5))
+                throw new TimeoutException("Fixture did not reach its explicitly controlled state.");
+            advance?.Invoke();
+            await Task.Delay(1);
         }
     }
 
     private sealed class Port : ISnapshotCapturePort
     {
-        public int Preparations { get; private set; }
+        public int Preparations
+        {
+            get; private set;
+        }
         public CollectionCatalog? Catalog { get; } = SnapshotFixture.Create().Catalog;
-        public bool PrepareCatalog() { Preparations++; return true; }
+        public bool PrepareCatalog()
+        {
+            Preparations++;
+            return true;
+        }
         public void Begin(bool full, ulong contentId, long generation, DateTimeOffset now) => throw new InvalidOperationException("No capture is expected.");
         public bool Advance() => false;
         public RawCaptureBatch? TakeResult() => null;
-        public void ResetSession() { }
-        public void Dispose() { }
+        public void ResetSession()
+        {
+        }
+        public void Dispose()
+        {
+        }
     }
 
     private sealed class DelayedFailureFiles : IAtomicFileOperations

@@ -54,7 +54,8 @@ public sealed class ControllerReadCancellationTests
         {
             controller.Dispose();
             await controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            if (Directory.Exists(root))
+                Directory.Delete(root, true);
         }
     }
 
@@ -65,7 +66,8 @@ public sealed class ControllerReadCancellationTests
         var clock = Stopwatch.StartNew();
         while (!done())
         {
-            if (clock.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Controller did not reach the expected public state: " + controller.Error);
+            if (clock.Elapsed > TimeSpan.FromSeconds(5))
+                Assert.Fail("Controller did not reach the expected public state: " + controller.Error);
             Update(controller, now);
             await Task.Delay(1);
         }
@@ -75,8 +77,14 @@ public sealed class ControllerReadCancellationTests
     {
         public CollectionCatalog? Catalog { get; } = SnapshotFixture.Create().Catalog;
         public List<bool> Begins { get; } = [];
-        public bool CancelNextAdvance { get; set; }
-        public int CompletedReads { get; private set; }
+        public bool CancelNextAdvance
+        {
+            get; set;
+        }
+        public int CompletedReads
+        {
+            get; private set;
+        }
         private RawCaptureBatch? result;
         public bool PrepareCatalog() => true;
         public void Begin(bool full, ulong contentId, long generation, DateTimeOffset now)
@@ -87,13 +95,19 @@ public sealed class ControllerReadCancellationTests
         }
         public bool Advance()
         {
-            if (CancelNextAdvance) { CancelNextAdvance = false; throw new OperationCanceledException("Controlled active-read cancellation."); }
+            if (CancelNextAdvance)
+            {
+                CancelNextAdvance = false;
+                throw new OperationCanceledException("Controlled active-read cancellation.");
+            }
             CompletedReads++;
             return true;
         }
         public RawCaptureBatch? TakeResult() => result;
         public void ResetSession() => result = null;
-        public void Dispose() { }
+        public void Dispose()
+        {
+        }
     }
 }
 

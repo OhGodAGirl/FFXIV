@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
-using Exportaramus.Features.CollectionData.Catalog;
 using Exportaramus.Features.CollectionData.Capture;
+using Exportaramus.Features.CollectionData.Catalog;
 using Exportaramus.Features.CollectionData.State;
 
 namespace Exportaramus.Features.CollectionData.Publication;
@@ -15,8 +15,10 @@ public static class RestoredStatePolicy
         {
             if (!trustedSources.Contains(key))
                 return CaptureReadPolicy.Health(prior.DataType, generation, now, ReasonCode.PatchValidationRequired, false);
-            if (!mapped) return CaptureReadPolicy.Health(prior.DataType, generation, now, ReasonCode.MappingValidationFailed, false);
-            if (!prior.IsUsable) return CaptureReadPolicy.Health(prior.DataType, generation, now, ReasonCode.NotLoadedThisSession);
+            if (!mapped)
+                return CaptureReadPolicy.Health(prior.DataType, generation, now, ReasonCode.MappingValidationFailed, false);
+            if (!prior.IsUsable)
+                return CaptureReadPolicy.Health(prior.DataType, generation, now, ReasonCode.NotLoadedThisSession);
             return CollectionStatePolicy.Stale(prior, ReasonCode.RestoredFromDisk, "Restored from disk.", true) with
             {
                 CapabilityState = CapabilityState.Supported,
@@ -34,7 +36,12 @@ public static class RestoredStatePolicy
         var presence = saved.CurrentItemPresence.ToImmutableDictionary(pair => pair.Key, pair =>
         {
             var health = Health(pair.Key, pair.Value.Health, pair.Value.Items.All(item => catalog.KnownItemIds.Contains(item.ItemId)));
-            return pair.Value with { Items = health.IsUsable ? pair.Value.Items : [], DresserEntries = health.IsUsable ? pair.Value.DresserEntries : null, Health = health };
+            return pair.Value with
+            {
+                Items = health.IsUsable ? pair.Value.Items : [],
+                DresserEntries = health.IsUsable ? pair.Value.DresserEntries : null,
+                Health = health
+            };
         });
         var evidenceHealth = evidenceHealthy
             ? new CollectionSourceStatus(DataType.ReportedOwnership, SourceStatus.Fresh, Completeness.Complete, ProvenanceType.Reported,

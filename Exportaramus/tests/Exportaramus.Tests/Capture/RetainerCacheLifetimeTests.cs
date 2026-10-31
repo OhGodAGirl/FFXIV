@@ -15,7 +15,9 @@ public sealed class RetainerCacheLifetimeTests
         var accumulator = new RetainerAccumulator();
         var payload = Populate(accumulator);
         accumulator.Reset();
-        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
         Assert.False(payload.TryGetTarget(out _));
         GC.KeepAlive(accumulator);
     }

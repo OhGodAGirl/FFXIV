@@ -24,7 +24,8 @@ public sealed class DiagnosticDisposalPublicationRaceTests
             controller.Dispatch(DiagnosticsIntent.GenerateReport);
             var worker = Assert.IsAssignableFrom<Task>(workerField.GetValue(controller));
             Assert.Throws<InvalidOperationException>(() => worker.WaitAsync(TimeSpan.FromSeconds(3)).GetAwaiter().GetResult());
-            if (closeFirst) controller.Dispatch(DiagnosticsIntent.Close);
+            if (closeFirst)
+                controller.Dispatch(DiagnosticsIntent.Close);
 
             // Hold only the telemetry lock: Update detaches its completed worker before recording
             // the failure. This schedules disposal before publication without changing any state.
@@ -45,8 +46,12 @@ public sealed class DiagnosticDisposalPublicationRaceTests
         }
         finally
         {
-            if (held) Monitor.Exit(gate);
-            try { update?.WaitAsync(TimeSpan.FromSeconds(3)).GetAwaiter().GetResult(); }
+            if (held)
+                Monitor.Exit(gate);
+            try
+            {
+                update?.WaitAsync(TimeSpan.FromSeconds(3)).GetAwaiter().GetResult();
+            }
             finally { controller.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(3)).GetAwaiter().GetResult(); }
         }
     }

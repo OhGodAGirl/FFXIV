@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
+using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
-using Dalamud.Game;
 using Dalamud.Plugin.Services;
 using Lumina.Excel.Sheets;
 
@@ -12,7 +12,10 @@ public sealed record GuidedRuntimeValidation(string GameDataVersion, ObjectKind 
     string DresserAddon, string ArmoireAddon, float InteractionRange,
     ImmutableHashSet<ConditionFlag> UnsafeConditions, bool SupervisedValidationComplete)
 {
-    public bool DevelopmentCompatibility { get; init; }
+    public bool DevelopmentCompatibility
+    {
+        get; init;
+    }
     public static GuidedRuntimeValidation Development(IDataManager data)
     {
         var names = data.GetExcelSheet<EObjName>(ClientLanguage.English);
@@ -21,6 +24,8 @@ public sealed record GuidedRuntimeValidation(string GameDataVersion, ObjectKind 
             names.Where(row => row.Singular.ExtractText().Equals("Armoire", StringComparison.OrdinalIgnoreCase)).Select(row => row.RowId).ToImmutableHashSet(),
             "MiragePrismPrismBox", "Cabinet", 2.5f,
             [ConditionFlag.InCombat, ConditionFlag.BetweenAreas, ConditionFlag.BetweenAreas51, ConditionFlag.WatchingCutscene, ConditionFlag.OccupiedInCutSceneEvent, ConditionFlag.Mounted], false)
-        { DevelopmentCompatibility = true };
+        {
+            DevelopmentCompatibility = true
+        };
     }
 }

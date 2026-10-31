@@ -21,11 +21,20 @@ public sealed class InventoryOutfitCompletenessTests
         var presence = data.State.CurrentItemPresence.ToImmutableDictionary(pair => pair.Key,
             pair => pair.Value with { Items = [] });
         if (pieces == 2)
-            presence = presence.SetItem("glamourDresser", presence["glamourDresser"] with { Items = [new(800002, null)] });
+            presence = presence.SetItem("glamourDresser", presence["glamourDresser"] with
+            {
+                Items = [new(800002, null)]
+            });
         data = data with
         {
-            Catalog = data.Catalog with { Collections = data.Catalog.Collections.SetItem("outfits", definition) },
-            State = data.State with { CurrentItemPresence = presence },
+            Catalog = data.Catalog with
+            {
+                Collections = data.Catalog.Collections.SetItem("outfits", definition)
+            },
+            State = data.State with
+            {
+                CurrentItemPresence = presence
+            },
         };
         var bundle = new AcceptedSnapshotBundle(data, 1, "{}", "{}", "", ImmutableDictionary<string, string>.Empty,
             new("{}", [], [], null), 0, null);

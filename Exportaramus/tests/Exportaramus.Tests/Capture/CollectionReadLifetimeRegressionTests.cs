@@ -46,8 +46,14 @@ public sealed class CollectionReadLifetimeRegressionTests
 
     private sealed class Reader : ICollectionReader
     {
-        public int QuestReads { get; private set; }
-        public WeakReference<QuestState>? PendingRow { get; private set; }
+        public int QuestReads
+        {
+            get; private set;
+        }
+        public WeakReference<QuestState>? PendingRow
+        {
+            get; private set;
+        }
         public bool IdentityMatches(ulong contentId) => contentId == 123;
         public bool IsAvailable(string key, string version) => true;
         public bool ReadUnlock(string key, CatalogItem row) => true;

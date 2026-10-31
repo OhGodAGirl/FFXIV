@@ -16,7 +16,11 @@ public sealed class InventoryRetainerPresencePolicyTests
     [Fact]
     public void CompleteObservationsSumBothQualitiesAndPreserveOldestRead()
     {
-        var result = Read(Snapshot(Location(), Location(22) with { ObservedAtUtc = Now.AddHours(-1), Items = [new(100, 7, 11), new(200, 0, 2)] }));
+        var result = Read(Snapshot(Location(), Location(22) with
+        {
+            ObservedAtUtc = Now.AddHours(-1),
+            Items = [new(100, 7, 11), new(200, 0, 2)]
+        }));
         Assert.Equal(new PresenceItem[] { new(100, 23), new(200, 2) }, result.Items.ToArray());
         Assert.True(result.SupportsQuantity);
         Assert.Equal(SourceStatus.Fresh, result.Health.SourceStatus);
@@ -28,7 +32,10 @@ public sealed class InventoryRetainerPresencePolicyTests
     [Fact]
     public void RetainedObservationNeverBecomesFresh()
     {
-        var result = Read(Snapshot(Location() with { State = InventoryObservationState.Retained }, Location(22)));
+        var result = Read(Snapshot(Location() with
+        {
+            State = InventoryObservationState.Retained
+        }, Location(22)));
         Assert.Equal(SourceStatus.Stale, result.Health.SourceStatus);
         Assert.Equal(ProvenanceType.Observed, result.Health.ProvenanceType);
         Assert.Equal(ReasonCode.WindowNotReady, result.Health.ReasonCode);
@@ -40,9 +47,18 @@ public sealed class InventoryRetainerPresencePolicyTests
     public void KnownCompleteEmptyIsUsableButUnknownRosterIsNot()
     {
         Assert.True(Read(Snapshot()).Health.IsUsable);
-        Assert.Empty(Read(Snapshot(Location() with { Items = [] })).Items);
-        Assert.True(Read(Snapshot(Location() with { Items = [] })).Health.IsUsable);
-        Assert.False(Read(Snapshot() with { RetainerRosterKnown = false }).Health.IsUsable);
+        Assert.Empty(Read(Snapshot(Location() with
+        {
+            Items = []
+        })).Items);
+        Assert.True(Read(Snapshot(Location() with
+        {
+            Items = []
+        })).Health.IsUsable);
+        Assert.False(Read(Snapshot() with
+        {
+            RetainerRosterKnown = false
+        }).Health.IsUsable);
     }
 
     [Fact]
@@ -79,7 +95,10 @@ public sealed class InventoryRetainerPresencePolicyTests
             Assert.Empty(result.Items);
         }
         Assert.False(Read(Snapshot((InventoryLocationSnapshot)null!)).Health.IsUsable);
-        Assert.False(Read(Snapshot() with { Locations = default }).Health.IsUsable);
+        Assert.False(Read(Snapshot() with
+        {
+            Locations = default
+        }).Health.IsUsable);
         Assert.False(Read(Snapshot(Enumerable.Repeat(Location(), 18).ToArray())).Health.IsUsable);
         Assert.False(Read(Snapshot(), at: default(DateTimeOffset)).Health.IsUsable);
         Assert.False(Read(Snapshot(Location(), Location())).Health.IsUsable);
@@ -90,11 +109,26 @@ public sealed class InventoryRetainerPresencePolicyTests
     [Fact]
     public void AggregateOverflowFailsAndNonRetainerItemsDoNotContribute()
     {
-        var maximum = Location() with { Items = [new(1, uint.MaxValue, 0)] };
+        var maximum = Location() with
+        {
+            Items = [new(1, uint.MaxValue, 0)]
+        };
         Assert.Equal(uint.MaxValue, Assert.Single(Read(Snapshot(maximum)).Items).Quantity);
-        Assert.Equal(ReasonCode.QuantityOverflow, Read(Snapshot(maximum with { State = InventoryObservationState.Retained }, Location(22) with { Items = [new(1, 1, 0)] })).Health.ReasonCode);
-        Assert.Equal(ReasonCode.QuantityOverflow, Read(Snapshot(maximum, Location(22) with { Items = [new(1, 1, 0)] })).Health.ReasonCode);
-        Assert.Single(Read(Snapshot(Location(), Location() with { Key = new(InventoryLocationKind.Inventory) })).Items);
+        Assert.Equal(ReasonCode.QuantityOverflow, Read(Snapshot(maximum with
+        {
+            State = InventoryObservationState.Retained
+        }, Location(22) with
+        {
+            Items = [new(1, 1, 0)]
+        })).Health.ReasonCode);
+        Assert.Equal(ReasonCode.QuantityOverflow, Read(Snapshot(maximum, Location(22) with
+        {
+            Items = [new(1, 1, 0)]
+        })).Health.ReasonCode);
+        Assert.Single(Read(Snapshot(Location(), Location() with
+        {
+            Key = new(InventoryLocationKind.Inventory)
+        })).Items);
     }
 }
 

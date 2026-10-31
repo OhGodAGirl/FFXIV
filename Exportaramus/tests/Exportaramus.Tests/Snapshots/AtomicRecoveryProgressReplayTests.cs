@@ -32,7 +32,8 @@ public sealed class AtomicRecoveryProgressReplayTests : IDisposable
                 if (phase == 2 && evidence)
                 {
                     completedFileRetries++;
-                    if (unauthorized) throw new UnauthorizedAccessException("The already restored evidence file is unavailable again.");
+                    if (unauthorized)
+                        throw new UnauthorizedAccessException("The already restored evidence file is unavailable again.");
                     throw new IOException("The already restored evidence file is unavailable again.");
                 }
             }
@@ -70,14 +71,32 @@ public sealed class AtomicRecoveryProgressReplayTests : IDisposable
 
     private sealed class Operations : IAtomicFileOperations
     {
-        public Action<string, string>? Moving { get; init; }
-        public Action<string, string>? Copying { get; init; }
+        public Action<string, string>? Moving
+        {
+            get; init;
+        }
+        public Action<string, string>? Copying
+        {
+            get; init;
+        }
         public Stream OpenRead(string path) => new AtomicFileOperations().OpenRead(path);
-        public void Copy(string source, string destination, bool overwrite) { Copying?.Invoke(source, destination); File.Copy(source, destination, overwrite); }
-        public void Move(string source, string destination) { Moving?.Invoke(source, destination); File.Move(source, destination); }
+        public void Copy(string source, string destination, bool overwrite)
+        {
+            Copying?.Invoke(source, destination);
+            File.Copy(source, destination, overwrite);
+        }
+        public void Move(string source, string destination)
+        {
+            Moving?.Invoke(source, destination);
+            File.Move(source, destination);
+        }
         public void Replace(string source, string destination, string? backup) => File.Replace(source, destination, backup);
         public void Delete(string path) => File.Delete(path);
     }
 
-    public void Dispose() { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    public void Dispose()
+    {
+        if (Directory.Exists(root))
+            Directory.Delete(root, true);
+    }
 }

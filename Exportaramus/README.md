@@ -86,14 +86,56 @@ dotnet test tests/Exportaramus.Tests/Exportaramus.Tests.csproj -c Release --no-b
 
 The plugin package is written to `project/bin/Release/Exportaramus/latest.zip`.
 
+### Building the Consumer Kit
+
+The Consumer Kit lets another plugin read Exportaramus data without referencing the Exportaramus plugin DLL. Its source and schemas share this repository's existing folders.
+
+```powershell
+dotnet restore project/ConsumerKit/1.2/Exportaramus.ConsumerKit.V1_2.csproj --locked-mode
+dotnet build project/ConsumerKit/1.2/Exportaramus.ConsumerKit.V1_2.csproj -c Release --no-restore
+dotnet test tests/Exportaramus.ConsumerKit.Tests/Exportaramus.ConsumerKit.Tests.csproj -c Release -p:RestoreLockedMode=true
+```
+
+The [Collection Example](examples/CollectionExample/README.md) shows how to build and load a consumer plugin. Use the full project above for consumers; the projects under `project/Contracts/` build the provider's smaller runtime libraries. Do not reference both variants in the same plugin.
+
+The full API reference is in the [Backend Specification](<docs/Exportaramus - Backend Specification.md#13-collectiondata-ipc>).
+
+The [Consumer Integration Guide](<docs/Consumer Integration Guide.md>) walks through the example and explains how to interpret collection and inventory observations. The [Frontend Specification](<docs/Exportaramus - Frontend Specification.md>) documents the interface and its acceptance cases.
+
+### Verification
+
+Use PowerShell 7.5 or newer and Python 3.11 or newer, alongside the .NET SDK and Dalamud development assemblies described above. Install the pinned Python verification dependencies into a virtual environment:
+
+```powershell
+python -m venv .venv
+.venv/Scripts/python -m pip install -r tools/contract-python-requirements.txt
+pwsh -File tests/run-quality-gates.ps1 -Python .venv/Scripts/python.exe
+```
+
+The scripts resolve `dotnet` and `python` from PATH by default. Pass `-Dotnet` and `-Python` to select executable paths, and `-OutputDirectory` to choose where verification results are written. Generated results stay separate from source inputs.
+
+The portable checks cover locked restore, compilation, package inspection, provider and ConsumerKit behavior, strict coverage, canonical schemas and fixtures, checksums, and the source scope. The full API reference remains in the Backend Specification. Mutation qualification and supervised in-game acceptance are separate from these offline checks; a passing portable run does not establish either.
+
+The [mutation policy](tests/mutation-policy.json) records the pinned tool version, required score, and instrumentation evidence. The supplied Stryker configuration targets the provider's Testable project; separately referenced contract projects, the consumer client, and the example reader need their own instrumentation before claiming complete mutation qualification. [Performance budgets](tests/performance-budget.json) distinguish offline measurements from performance that requires a supervised game session.
+
+To check package reproduction with the same source, SDK, configuration, and dependency bytes:
+
+```powershell
+pwsh -File tools/Verify-Reproducibility.ps1
+```
+
+This rebuilds and compares the package and every runtime file. It verifies reproduction in the current checkout and environment; it does not claim identical output across different machines or checkout paths.
+
 ### Directory Layout
 
 - `project/` — Project, solution, dependency locks, manifest, and build configuration.
-- `src/` — Plugin code, interface, and runtime contracts.
+- `src/` — Plugin code, interface, shared contracts, and consumer connection code.
 - `data/` — Collection data, schemas, and export mappings embedded in the plugin.
 - `images/` — Plugin icon.
-- `tests/` — Automated tests and test configuration.
-- `tools/` — Build packaging and package validation scripts.
+- `tests/` — Automated tests, contract fixtures, and test configuration.
+- `examples/` — Example consumer plugin with build and loading instructions.
+- `docs/` — Integration guide, Backend and Frontend Specifications, and referenced images.
+- `tools/` — Packaging, validation, source inventory, and reproducibility scripts.
 
 The README, license, SDK selection, Git exclusions, and editor settings live at the top level.
 

@@ -21,7 +21,8 @@ public sealed class PromptCapturePolicy
 
     public void SetCharacter(ulong contentId, double now)
     {
-        if (character == contentId) return;
+        if (character == contentId)
+            return;
         character = contentId;
         Array.Fill(due, double.PositiveInfinity);
         Array.Clear(attempts);
@@ -33,9 +34,11 @@ public sealed class PromptCapturePolicy
 
     public void Hint(string source, ulong contentId, double now)
     {
-        if (character == 0 || contentId != character) return;
+        if (character == 0 || contentId != character)
+            return;
         var index = Sources.IndexOf(source);
-        if (index < 0) return;
+        if (index < 0)
+            return;
         due[index] = Math.Min(due[index], now + CoalesceDelay);
         expires[index] = now + RetryWindow;
         attempts[index] = 0;
@@ -43,26 +46,40 @@ public sealed class PromptCapturePolicy
 
     public ImmutableArray<string> Take(double now)
     {
-        if (character == 0 || now < readyAt) return [];
+        if (character == 0 || now < readyAt)
+            return [];
         ImmutableArray<string>.Builder? result = null;
         for (var i = 0; i < Sources.Length; i++)
         {
-            if (now < due[i]) continue;
-            if (now > expires[i]) { due[i] = double.PositiveInfinity; continue; }
+            if (now < due[i])
+                continue;
+            if (now > expires[i])
+            {
+                due[i] = double.PositiveInfinity;
+                continue;
+            }
             (result ??= ImmutableArray.CreateBuilder<string>()).Add(Sources[i]);
-            due[i] = ++attempts[i] switch { 1 => now + 1, 2 => now + 3, 3 => now + 8, _ => double.PositiveInfinity };
+            due[i] = ++attempts[i] switch
+            {
+                1 => now + 1,
+                2 => now + 3,
+                3 => now + 8,
+                _ => double.PositiveInfinity
+            };
         }
         if (now >= fallbackDue)
         {
             var source = Sources[fallbackIndex];
             fallbackIndex = (fallbackIndex + 1) % Sources.Length;
             fallbackDue = now + FallbackInterval;
-            if (source != "quests" && (result is null || !result.Contains(source))) (result ??= ImmutableArray.CreateBuilder<string>()).Add(source);
+            if (source != "quests" && (result is null || !result.Contains(source)))
+                (result ??= ImmutableArray.CreateBuilder<string>()).Add(source);
         }
         if (now >= questDue)
         {
             questDue = now + SnapshotSchedulePolicy.PresenceInterval;
-            if (result is null || !result.Contains("quests")) (result ??= ImmutableArray.CreateBuilder<string>()).Add("quests");
+            if (result is null || !result.Contains("quests"))
+                (result ??= ImmutableArray.CreateBuilder<string>()).Add("quests");
         }
         return result?.ToImmutable() ?? [];
     }

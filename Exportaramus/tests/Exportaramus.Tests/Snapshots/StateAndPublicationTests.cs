@@ -31,7 +31,10 @@ public sealed class StateAndPublicationTests
         var prior = new CurrentItemPresenceState([new(100, 8), new(101, 1)], true, SnapshotFixture.Health(DataType.CurrentItemPresence));
         var current = new CurrentItemPresenceState([new(100, 2)], true, prior.Health);
         Assert.Equal(current, CollectionStatePolicy.Resolve(prior, current, true, true));
-        Assert.Empty(CollectionStatePolicy.Resolve(prior, current with { Items = [] }, true, true).Items);
+        Assert.Empty(CollectionStatePolicy.Resolve(prior, current with
+        {
+            Items = []
+        }, true, true).Items);
     }
 
     [Theory]
@@ -41,7 +44,10 @@ public sealed class StateAndPublicationTests
     public void RetentionRequiresSameCharacterAndAllowedSource(bool same, bool retain, int count)
     {
         var prior = new PermanentUnlockState([1, 2], SnapshotFixture.Health(DataType.PermanentUnlock));
-        var missing = new PermanentUnlockState([999], SnapshotFixture.Health(DataType.PermanentUnlock, SourceStatus.Unavailable) with { ReasonCode = ReasonCode.WindowNotReady });
+        var missing = new PermanentUnlockState([999], SnapshotFixture.Health(DataType.PermanentUnlock, SourceStatus.Unavailable) with
+        {
+            ReasonCode = ReasonCode.WindowNotReady
+        });
         var result = CollectionStatePolicy.Resolve(prior, missing, same, retain);
         Assert.Equal(count, result.UnlockedIds.Length);
         if (count != 0)
@@ -57,7 +63,14 @@ public sealed class StateAndPublicationTests
     public void MappingFailureInvalidatesRetainedPresence()
     {
         var prior = SnapshotFixture.Create().State.CurrentItemPresence["armoire"];
-        var failed = prior with { Health = prior.Health with { SourceStatus = SourceStatus.Unavailable, ReasonCode = ReasonCode.MappingValidationFailed } };
+        var failed = prior with
+        {
+            Health = prior.Health with
+            {
+                SourceStatus = SourceStatus.Unavailable,
+                ReasonCode = ReasonCode.MappingValidationFailed
+            }
+        };
         Assert.Empty(CollectionStatePolicy.Resolve(prior, failed, true, true).Items);
     }
 
@@ -81,8 +94,26 @@ public sealed class StateAndPublicationTests
     {
         var unlock = new PermanentUnlockState([1, 2], SnapshotFixture.Health(DataType.PermanentUnlock));
         var presence = new CurrentItemPresenceState([new(100, 8)], true, SnapshotFixture.Health(DataType.CurrentItemPresence));
-        var unlockFailure = unlock with { UnlockedIds = [999], Health = unlock.Health with { SourceStatus = SourceStatus.Unavailable, ReasonCode = reason, Reason = "Current read failed." } };
-        var presenceFailure = presence with { Items = [new(999, 1)], Health = presence.Health with { SourceStatus = SourceStatus.Unavailable, ReasonCode = reason, Reason = "Current read failed." } };
+        var unlockFailure = unlock with
+        {
+            UnlockedIds = [999],
+            Health = unlock.Health with
+            {
+                SourceStatus = SourceStatus.Unavailable,
+                ReasonCode = reason,
+                Reason = "Current read failed."
+            }
+        };
+        var presenceFailure = presence with
+        {
+            Items = [new(999, 1)],
+            Health = presence.Health with
+            {
+                SourceStatus = SourceStatus.Unavailable,
+                ReasonCode = reason,
+                Reason = "Current read failed."
+            }
+        };
 
         var resolvedUnlock = CollectionStatePolicy.Resolve(unlock, unlockFailure, true, true);
         var resolvedPresence = CollectionStatePolicy.Resolve(presence, presenceFailure, true, true);
@@ -99,7 +130,13 @@ public sealed class StateAndPublicationTests
     public void RestoreOnlyMatchingCharacterNeverRestoresReportsFromSnapshot()
     {
         var data = SnapshotFixture.Create();
-        var state = data.State with { ReportedEvidence = data.State.ReportedEvidence with { Items = [new(100, "Test", SnapshotFixture.Now)] } };
+        var state = data.State with
+        {
+            ReportedEvidence = data.State.ReportedEvidence with
+            {
+                Items = [new(100, "Test", SnapshotFixture.Now)]
+            }
+        };
         Assert.Throws<InvalidDataException>(() => CollectionStatePolicy.Restore(state, 124, Guid.NewGuid(), SnapshotFixture.Now));
         var result = CollectionStatePolicy.Restore(state, 123, Guid.NewGuid(), SnapshotFixture.Now);
         Assert.Empty(result.ReportedEvidence.Items);
@@ -112,7 +149,10 @@ public sealed class StateAndPublicationTests
     {
         var data = SnapshotFixture.Create();
         var unknown = new PermanentUnlockState([], SnapshotFixture.Health(DataType.PermanentUnlock, SourceStatus.NeverObserved));
-        var state = data.State with { Unlocks = data.State.Unlocks.SetItem("minions", unknown) };
+        var state = data.State with
+        {
+            Unlocks = data.State.Unlocks.SetItem("minions", unknown)
+        };
 
         var restored = CollectionStatePolicy.Restore(state, 123, Guid.NewGuid(), SnapshotFixture.Now.AddMinutes(1));
 
@@ -126,10 +166,20 @@ public sealed class StateAndPublicationTests
     public void TimestampOnlyRefreshKeepsFingerprintButChangesRevisionAndNotice()
     {
         var data = SnapshotFixture.Create();
-        var updated = data with { State = data.State with { CapturedAtUtc = SnapshotFixture.Now.AddMinutes(1), CaptureGeneration = 2 } };
-        var first = Bundle(data, 1); var second = Bundle(updated, 2);
-        Assert.Equal(first.Fingerprint, second.Fingerprint); Assert.NotEqual(first.CompactJson, second.CompactJson);
-        var coalescer = new ChangedNoticeCoalescer(); coalescer.Add(second, first, ["inventory"]);
+        var updated = data with
+        {
+            State = data.State with
+            {
+                CapturedAtUtc = SnapshotFixture.Now.AddMinutes(1),
+                CaptureGeneration = 2
+            }
+        };
+        var first = Bundle(data, 1);
+        var second = Bundle(updated, 2);
+        Assert.Equal(first.Fingerprint, second.Fingerprint);
+        Assert.NotEqual(first.CompactJson, second.CompactJson);
+        var coalescer = new ChangedNoticeCoalescer();
+        coalescer.Add(second, first, ["inventory"]);
         using var notice = JsonDocument.Parse(coalescer.Take()!);
         Assert.Equal("SourceHealth", notice.RootElement.GetProperty("changedDataTypes")[0].GetString());
         Assert.Single(notice.RootElement.GetProperty("changedDataTypes").EnumerateArray());
@@ -141,11 +191,22 @@ public sealed class StateAndPublicationTests
     {
         var data = SnapshotFixture.Create();
         var emptied = data.State.CurrentItemPresence.ToImmutableDictionary(pair => pair.Key, pair => pair.Value with { Items = [] });
-        var state = data.State with { CurrentItemPresence = emptied, Unlocks = data.State.Unlocks.SetItem("achievements", data.State.Unlocks["achievements"] with { UnlockedIds = [] }) };
+        var state = data.State with
+        {
+            CurrentItemPresence = emptied,
+            Unlocks = data.State.Unlocks.SetItem("achievements", data.State.Unlocks["achievements"] with
+            {
+                UnlockedIds = []
+            })
+        };
         var next = CollectionDataAssembler.Assemble(data.Catalog, state);
-        Assert.False(next.Collections["outfits"].Items[0].Owned); Assert.False(next.Collections["relics"].Items[0].Owned);
+        Assert.False(next.Collections["outfits"].Items[0].Owned);
+        Assert.False(next.Collections["relics"].Items[0].Owned);
         Assert.Equal(data.State.Unlocks["mounts"], next.State.Unlocks["mounts"]);
-        var moved = state with { CurrentItemPresence = emptied.SetItem("inventory", data.State.CurrentItemPresence["inventory"]) };
+        var moved = state with
+        {
+            CurrentItemPresence = emptied.SetItem("inventory", data.State.CurrentItemPresence["inventory"])
+        };
         Assert.True(CollectionDataAssembler.Assemble(data.Catalog, moved).Collections["outfits"].Items[0].Owned);
     }
 
@@ -154,8 +215,14 @@ public sealed class StateAndPublicationTests
     {
         var data = SnapshotFixture.Create();
         var absent = data.State.CurrentItemPresence.ToImmutableDictionary(pair => pair.Key, pair => pair.Value with { Items = [] });
-        absent = absent.SetItem("retainers", absent["retainers"] with { Health = SnapshotFixture.Health(DataType.CurrentItemPresence, SourceStatus.NeverObserved) });
-        var result = CollectionDataAssembler.Assemble(data.Catalog, data.State with { CurrentItemPresence = absent });
+        absent = absent.SetItem("retainers", absent["retainers"] with
+        {
+            Health = SnapshotFixture.Health(DataType.CurrentItemPresence, SourceStatus.NeverObserved)
+        });
+        var result = CollectionDataAssembler.Assemble(data.Catalog, data.State with
+        {
+            CurrentItemPresence = absent
+        });
         Assert.False(result.Collections.ContainsKey("outfits"));
         Assert.True(result.Collections["relics"].Items[0].Owned); // Exact achievement is positive evidence.
     }
@@ -168,7 +235,8 @@ public sealed class StateAndPublicationTests
         {
             var input = Enumerable.Range(0, 200).Select(_ => (uint)random.Next(50));
             var normalized = CollectionStatePolicy.NormalizeIds(input);
-            Assert.Equal<uint>(normalized, CollectionStatePolicy.NormalizeIds(normalized)); Assert.DoesNotContain(0u, normalized);
+            Assert.Equal<uint>(normalized, CollectionStatePolicy.NormalizeIds(normalized));
+            Assert.DoesNotContain(0u, normalized);
             Assert.Equal(normalized.Order().Distinct(), normalized);
         }
     }

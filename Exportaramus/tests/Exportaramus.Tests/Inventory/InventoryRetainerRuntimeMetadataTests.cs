@@ -34,7 +34,10 @@ public sealed class InventoryRetainerRuntimeMetadataTests
         Assert.Null(restored.RetainerRosterObservedAtUtc);
         var location = Assert.Single(restored.Locations, item => item.Key == Key);
         Assert.True(location.RestoredFromCache);
-        var known = restored with { RetainerRosterKnown = true };
+        var known = restored with
+        {
+            RetainerRosterKnown = true
+        };
         var result = InventoryRetainerPresencePolicy.Capture(known, 1, true, 3, Now.AddMinutes(1));
         Assert.Equal(SourceStatus.Stale, result.Health.SourceStatus);
         Assert.Equal(ProvenanceType.Restored, result.Health.ProvenanceType);
@@ -65,11 +68,30 @@ public sealed class InventoryRetainerRuntimeMetadataTests
         var snapshot = new InventorySnapshot(1, 1, true, [location]);
         var observer = new RetainerInventoryChangeObserver();
         observer.Observe(snapshot);
-        Assert.True(observer.Observe(snapshot with { Revision = 2, Locations = [location with { RestoredFromCache = true }] }));
-        Assert.True(observer.Observe(snapshot with { Revision = 3, RetainerRosterObservedAtUtc = Now }));
-        Assert.False(observer.Observe(snapshot with { Revision = 4, RetainerRosterObservedAtUtc = Now }));
-        var restoredObserved = location with { State = InventoryObservationState.Observed, RestoredFromCache = true };
-        Assert.Equal(SourceStatus.Stale, InventoryRetainerPresencePolicy.Capture(snapshot with { Locations = [restoredObserved] }, 1, true, 1, Now).Health.SourceStatus);
+        Assert.True(observer.Observe(snapshot with
+        {
+            Revision = 2,
+            Locations = [location with { RestoredFromCache = true }]
+        }));
+        Assert.True(observer.Observe(snapshot with
+        {
+            Revision = 3,
+            RetainerRosterObservedAtUtc = Now
+        }));
+        Assert.False(observer.Observe(snapshot with
+        {
+            Revision = 4,
+            RetainerRosterObservedAtUtc = Now
+        }));
+        var restoredObserved = location with
+        {
+            State = InventoryObservationState.Observed,
+            RestoredFromCache = true
+        };
+        Assert.Equal(SourceStatus.Stale, InventoryRetainerPresencePolicy.Capture(snapshot with
+        {
+            Locations = [restoredObserved]
+        }, 1, true, 1, Now).Health.SourceStatus);
     }
 }
 

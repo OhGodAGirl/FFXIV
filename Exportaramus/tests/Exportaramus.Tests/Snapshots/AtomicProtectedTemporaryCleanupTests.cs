@@ -42,22 +42,26 @@ public sealed class AtomicProtectedTemporaryCleanupTests : IDisposable
         public Stream OpenRead(string path) => new AtomicFileOperations().OpenRead(path);
         public FileStream OpenWrite(string path, FileMode mode, int bufferSize, FileOptions options)
         {
-            if (mode == FileMode.CreateNew && ++payloads == 2) throw new IOException("Second payload preparation unavailable.");
+            if (mode == FileMode.CreateNew && ++payloads == 2)
+                throw new IOException("Second payload preparation unavailable.");
             return new(path, mode, FileAccess.Write, FileShare.None, bufferSize, options);
         }
         public void Replace(string source, string destination, string? backup) => File.Replace(source, destination, backup);
         public void Move(string source, string destination) => File.Move(source, destination);
         public void Delete(string path)
         {
-            if (path.EndsWith(".tmp", StringComparison.Ordinal)) throw new IOException("Temporary cleanup unavailable during initial failure.");
+            if (path.EndsWith(".tmp", StringComparison.Ordinal))
+                throw new IOException("Temporary cleanup unavailable during initial failure.");
             File.Delete(path);
         }
     }
 
     public void Dispose()
     {
-        if (!Directory.Exists(root)) return;
-        foreach (var path in Directory.GetFiles(root, "*", SearchOption.AllDirectories)) File.SetAttributes(path, FileAttributes.Normal);
+        if (!Directory.Exists(root))
+            return;
+        foreach (var path in Directory.GetFiles(root, "*", SearchOption.AllDirectories))
+            File.SetAttributes(path, FileAttributes.Normal);
         Directory.Delete(root, true);
     }
 }

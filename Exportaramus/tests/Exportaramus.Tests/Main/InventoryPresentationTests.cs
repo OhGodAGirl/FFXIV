@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
-using Exportaramus.Features.Inventory;
 using Exportaramus.Features.CollectionData.Publication;
+using Exportaramus.Features.Inventory;
 using Exportaramus.Tests.Snapshots;
 
 namespace Exportaramus.Tests.Main;
@@ -11,10 +11,16 @@ public sealed class InventoryPresentationTests
     public void ObservedCollectionStorageCanConfirmAnOutfitWithoutInventoryCopies()
     {
         var data = SnapshotFixture.Create();
-        var outfits = data.Catalog.Collections["outfits"] with { Items = [new(900, 900, "Outfit", false, RequiredItemIds: [100]), new(901, 901, "Missing", false, RequiredItemIds: [101]), new(902, 902, "Unmapped", false)] };
+        var outfits = data.Catalog.Collections["outfits"] with
+        {
+            Items = [new(900, 900, "Outfit", false, RequiredItemIds: [100]), new(901, 901, "Missing", false, RequiredItemIds: [101]), new(902, 902, "Unmapped", false)]
+        };
         data = data with
         {
-            Catalog = data.Catalog with { Collections = data.Catalog.Collections.SetItem("outfits", outfits) },
+            Catalog = data.Catalog with
+            {
+                Collections = data.Catalog.Collections.SetItem("outfits", outfits)
+            },
             State = data.State with
             {
                 CurrentItemPresence = data.State.CurrentItemPresence.SetItem("glamourDresser",
@@ -42,7 +48,16 @@ public sealed class InventoryPresentationTests
             new("{}", [], ["outfits"], null), 0, null);
         var snapshot = InventoryPolicy.Empty(123, 1);
         Assert.Equal(0, InventoryPresentation.Prepare(snapshot, bundle, DateTimeOffset.UtcNow).ConfirmedOutfits);
-        bundle = bundle with { Data = data with { Catalog = data.Catalog with { Collections = data.Catalog.Collections.Remove("outfits") } } };
+        bundle = bundle with
+        {
+            Data = data with
+            {
+                Catalog = data.Catalog with
+                {
+                    Collections = data.Catalog.Collections.Remove("outfits")
+                }
+            }
+        };
         Assert.Null(InventoryPresentation.Prepare(snapshot, bundle, DateTimeOffset.UtcNow).ConfirmedOutfits);
     }
 
@@ -51,8 +66,17 @@ public sealed class InventoryPresentationTests
     {
         var data = SnapshotFixture.Create();
         var outfit = data.Catalog.Collections["outfits"];
-        outfit = outfit with { Items = [new(900, 900, "Outfit", false, RequiredItemIds: [800001u, 800002u])] };
-        data = data with { Catalog = data.Catalog with { Collections = data.Catalog.Collections.SetItem("outfits", outfit) } };
+        outfit = outfit with
+        {
+            Items = [new(900, 900, "Outfit", false, RequiredItemIds: [800001u, 800002u])]
+        };
+        data = data with
+        {
+            Catalog = data.Catalog with
+            {
+                Collections = data.Catalog.Collections.SetItem("outfits", outfit)
+            }
+        };
         var bundle = new AcceptedSnapshotBundle(data, 1, "{}", "{}", "", ImmutableDictionary<string, string>.Empty,
             new("{}", [], ["outfits"], null), 0, null);
         var now = DateTimeOffset.UtcNow;

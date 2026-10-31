@@ -23,19 +23,24 @@ public sealed class AtomicReadSharingTests : IDisposable
         await using var held = operations.OpenRead(destination);
         await using var second = operations.OpenRead(destination);
 
-        if (delete) operations.Delete(destination);
-        else operations.Replace(candidate, destination, null);
+        if (delete)
+            operations.Delete(destination);
+        else
+            operations.Replace(candidate, destination, null);
 
         using var heldReader = new StreamReader(held, Encoding.UTF8, leaveOpen: true);
         using var secondReader = new StreamReader(second, Encoding.UTF8, leaveOpen: true);
         Assert.Equal(accepted, await heldReader.ReadToEndAsync());
         Assert.Equal(accepted, await secondReader.ReadToEndAsync());
-        if (delete) Assert.False(File.Exists(destination));
-        else Assert.Equal(replacement, await File.ReadAllTextAsync(destination));
+        if (delete)
+            Assert.False(File.Exists(destination));
+        else
+            Assert.Equal(replacement, await File.ReadAllTextAsync(destination));
     }
 
     public void Dispose()
     {
-        if (Directory.Exists(root)) Directory.Delete(root, true);
+        if (Directory.Exists(root))
+            Directory.Delete(root, true);
     }
 }

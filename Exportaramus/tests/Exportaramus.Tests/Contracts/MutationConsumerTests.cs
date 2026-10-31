@@ -39,7 +39,8 @@ public sealed class MutationConsumerTests
     [InlineData("{\"format\":\"date-time\"}", "\"2026-09-06T12:00:00+01:00\"", true)]
     public void NestedValuesEscapedReferenceNamesAndTimestampShapePreserveSchemaMeaning(string body, string input, bool expected)
     {
-        var schema = JsonNode.Parse(body)!.AsObject(); schema["$id"] = "https://exportaramus.local/schemas/1.0/collection-data.schema.json";
+        var schema = JsonNode.Parse(body)!.AsObject();
+        schema["$id"] = "https://exportaramus.local/schemas/1.0/collection-data.schema.json";
         var registry = new ContractSchemaRegistry([Encoding.UTF8.GetBytes(schema.ToJsonString())]);
         using var document = JsonDocument.Parse(input);
         Assert.Equal(expected, registry.Validate(document.RootElement, "collection-data.schema.json"));
@@ -50,6 +51,8 @@ public sealed class MutationConsumerTests
     {
         var valid = ConsumerContractTests.Fixture("compendium-valid-complete.json");
         var validated = CollectionDataSemanticValidator.ValidateRich(valid);
-        Assert.True(validated.Success); Assert.Equal(CollectionDataValidationCode.None, validated.Code); Assert.Equal("", validated.Detail);
+        Assert.True(validated.Success);
+        Assert.Equal(CollectionDataValidationCode.None, validated.Code);
+        Assert.Equal("", validated.Detail);
     }
 }

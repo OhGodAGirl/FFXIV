@@ -57,7 +57,11 @@ public sealed class InventoryServiceTests
     {
         public List<InventorySnapshot> Writes { get; } = [];
         public Task<InventorySnapshot?> LoadAsync(ulong contentId, CancellationToken cancellationToken) => Task.FromResult<InventorySnapshot?>(null);
-        public Task SaveAsync(InventorySnapshot snapshot, CancellationToken cancellationToken) { Writes.Add(snapshot); return Task.CompletedTask; }
+        public Task SaveAsync(InventorySnapshot snapshot, CancellationToken cancellationToken)
+        {
+            Writes.Add(snapshot);
+            return Task.CompletedTask;
+        }
     }
 
     [Fact]
@@ -252,7 +256,8 @@ public sealed class InventoryServiceTests
         await PumpUntil(service, () => service.LastCacheFailure is not null);
         Assert.Equal(1, cache.Attempts);
         service.AcceptLocation(1, Bag, "Inventory", [], Now.AddSeconds(1));
-        for (var index = 0; index < 100; index++) service.Pump();
+        for (var index = 0; index < 100; index++)
+            service.Pump();
         Assert.Equal(1, cache.Attempts);
         clock.Now = Now.AddSeconds(29);
         service.Pump();
@@ -284,7 +289,8 @@ public sealed class InventoryServiceTests
         finally
         {
             cache.Loaded.TrySetResult(null);
-            if (pump is not null) await pump.WaitAsync(TimeSpan.FromSeconds(5));
+            if (pump is not null)
+                await pump.WaitAsync(TimeSpan.FromSeconds(5));
             await service.DisposeAsync();
         }
     }
@@ -328,7 +334,12 @@ public sealed class InventoryServiceTests
     private static async Task PumpUntil(InventoryService service, Func<bool> predicate)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        while (!predicate()) { timeout.Token.ThrowIfCancellationRequested(); service.Pump(); await Task.Delay(1, timeout.Token); }
+        while (!predicate())
+        {
+            timeout.Token.ThrowIfCancellationRequested();
+            service.Pump();
+            await Task.Delay(1, timeout.Token);
+        }
     }
 
     private sealed class ControlledCache : IInventoryCache
@@ -364,7 +375,8 @@ public sealed class InventoryServiceTests
         public Task<InventorySnapshot?> LoadAsync(ulong contentId, CancellationToken cancellationToken) => Task.FromResult<InventorySnapshot?>(null);
         public Task SaveAsync(InventorySnapshot snapshot, CancellationToken cancellationToken)
         {
-            if (Interlocked.Increment(ref Attempts) == 1) return Task.FromException(new IOException());
+            if (Interlocked.Increment(ref Attempts) == 1)
+                return Task.FromException(new IOException());
             Saved = snapshot;
             return Task.CompletedTask;
         }

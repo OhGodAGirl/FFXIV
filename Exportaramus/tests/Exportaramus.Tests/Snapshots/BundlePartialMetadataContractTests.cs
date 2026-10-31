@@ -40,10 +40,17 @@ public sealed class BundlePartialMetadataContractTests
     {
         var original = SnapshotFixture.Create();
         var outfits = original.Catalog.Collections["outfits"];
-        var unobserved = outfits.Items[0] with { Id = 45095, RequiredItemIds = [999] };
+        var unobserved = outfits.Items[0] with
+        {
+            Id = 45095,
+            RequiredItemIds = [999]
+        };
         var catalog = original.Catalog with
         {
-            Collections = original.Catalog.Collections.SetItem("outfits", outfits with { Items = [.. outfits.Items, unobserved] }),
+            Collections = original.Catalog.Collections.SetItem("outfits", outfits with
+            {
+                Items = [.. outfits.Items, unobserved]
+            }),
             KnownItemIds = original.Catalog.KnownItemIds.Add(999),
         };
         var state = original.State;

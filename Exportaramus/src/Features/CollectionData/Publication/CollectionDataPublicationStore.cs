@@ -17,7 +17,8 @@ public sealed class CollectionDataPublicationStore
     public void Accept(AcceptedSnapshotBundle bundle) => Volatile.Write(ref current, bundle);
     public void Withdraw()
     {
-        if (Current is { } previous) SetCapabilities(previous.UnavailableReportsCapabilitiesJson, previous.UnavailableReportsCapabilitiesJsonV11, previous.UnavailableReportsCapabilitiesJsonV12);
+        if (Current is { } previous)
+            SetCapabilities(previous.UnavailableReportsCapabilitiesJson, previous.UnavailableReportsCapabilitiesJsonV11, previous.UnavailableReportsCapabilitiesJsonV12);
         Volatile.Write(ref current, null);
     }
 }

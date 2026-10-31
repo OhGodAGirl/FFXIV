@@ -25,25 +25,43 @@ public sealed class TargetedCaptureTests
         public void Begin(bool full, ulong contentId, long generation, DateTimeOffset now) => Began = true;
         public bool Advance() => false;
         public RawCaptureBatch? TakeResult() => null;
-        public void ResetSession() { }
-        public void Dispose() { }
+        public void ResetSession()
+        {
+        }
+        public void Dispose()
+        {
+        }
     }
 
     [Fact]
     public void QuestProgressChangesAreObservedWithoutChangingCompletedUnlockIds()
     {
         var prior = SnapshotFixture.Create().State;
-        prior = prior with { Unlocks = prior.Unlocks.SetItem("quests", prior.Unlocks["quests"] with { UnlockedIds = [] }), Quests = [new(1, QuestStatus.InProgress, 1)] };
+        prior = prior with
+        {
+            Unlocks = prior.Unlocks.SetItem("quests", prior.Unlocks["quests"] with
+            {
+                UnlockedIds = []
+            }),
+            Quests = [new(1, QuestStatus.InProgress, 1)]
+        };
         var raw = new RawCaptureBatch(ImmutableDictionary<string, PermanentUnlockState>.Empty.Add("quests", prior.Unlocks["quests"]), ImmutableDictionary<string, CurrentItemPresenceState>.Empty, [new(1, QuestStatus.InProgress, 2)]);
         var next = TargetedCaptureMerge.Apply(prior, raw, 2, SnapshotFixture.Now);
         Assert.Empty(next.Unlocks["quests"].UnlockedIds);
         Assert.Equal(new QuestState(1, QuestStatus.InProgress, 2), Assert.Single(next.Quests));
         Assert.True(TargetedCaptureChangePolicy.HasChanges(prior, next, raw));
-        var failed = raw with { Unlocks = raw.Unlocks.SetItem("quests", new([], CaptureReadPolicy.Health(DataType.PermanentUnlock, 3, SnapshotFixture.Now, ReasonCode.CaptureFailed, true))), Quests = [] };
+        var failed = raw with
+        {
+            Unlocks = raw.Unlocks.SetItem("quests", new([], CaptureReadPolicy.Health(DataType.PermanentUnlock, 3, SnapshotFixture.Now, ReasonCode.CaptureFailed, true))),
+            Quests = []
+        };
         var retained = TargetedCaptureMerge.Apply(next, failed, 3, SnapshotFixture.Now);
         Assert.Equal(next.Quests, retained.Quests);
         Assert.Equal(SourceStatus.Stale, retained.Unlocks["quests"].Health.SourceStatus);
-        var unsupported = failed with { Unlocks = failed.Unlocks.SetItem("quests", new([], CaptureReadPolicy.Health(DataType.PermanentUnlock, 4, SnapshotFixture.Now, ReasonCode.PatchValidationRequired, false))) };
+        var unsupported = failed with
+        {
+            Unlocks = failed.Unlocks.SetItem("quests", new([], CaptureReadPolicy.Health(DataType.PermanentUnlock, 4, SnapshotFixture.Now, ReasonCode.PatchValidationRequired, false)))
+        };
         var invalidated = TargetedCaptureMerge.Apply(retained, unsupported, 4, SnapshotFixture.Now);
         Assert.Empty(invalidated.Quests);
         Assert.False(invalidated.Unlocks["quests"].Health.IsUsable);
@@ -65,16 +83,37 @@ public sealed class TargetedCaptureTests
     public void DresserCompositionChangesRemainObservableEvenWithIdenticalAggregateMembership()
     {
         var prior = SnapshotFixture.Create().State;
-        var original = prior.CurrentItemPresence["glamourDresser"] with { DresserEntries = [new(0, 100, 100, null, [new(0, 100)])] };
-        prior = prior with { CurrentItemPresence = prior.CurrentItemPresence.SetItem("glamourDresser", original) };
-        var same = original with { DresserEntries = [new(0, 100, 100, null, [new(0, 100)])] };
+        var original = prior.CurrentItemPresence["glamourDresser"] with
+        {
+            DresserEntries = [new(0, 100, 100, null, [new(0, 100)])]
+        };
+        prior = prior with
+        {
+            CurrentItemPresence = prior.CurrentItemPresence.SetItem("glamourDresser", original)
+        };
+        var same = original with
+        {
+            DresserEntries = [new(0, 100, 100, null, [new(0, 100)])]
+        };
         var raw = new RawCaptureBatch(ImmutableDictionary<string, PermanentUnlockState>.Empty, ImmutableDictionary<string, CurrentItemPresenceState>.Empty.Add("glamourDresser", same), []);
         var next = TargetedCaptureMerge.Apply(prior, raw, 2, SnapshotFixture.Now);
         Assert.False(TargetedCaptureChangePolicy.HasChanges(prior, next, raw));
-        var changed = same with { DresserEntries = [new(1, 100, 100, null, [new(0, 100)])] };
-        next = next with { CurrentItemPresence = next.CurrentItemPresence.SetItem("glamourDresser", changed) };
+        var changed = same with
+        {
+            DresserEntries = [new(1, 100, 100, null, [new(0, 100)])]
+        };
+        next = next with
+        {
+            CurrentItemPresence = next.CurrentItemPresence.SetItem("glamourDresser", changed)
+        };
         Assert.True(TargetedCaptureChangePolicy.HasChanges(prior, next, raw));
-        next = next with { CurrentItemPresence = next.CurrentItemPresence.SetItem("glamourDresser", same with { DresserEntries = null }) };
+        next = next with
+        {
+            CurrentItemPresence = next.CurrentItemPresence.SetItem("glamourDresser", same with
+            {
+                DresserEntries = null
+            })
+        };
         Assert.True(TargetedCaptureChangePolicy.HasChanges(prior, next, raw));
         foreach (var entries in new ImmutableArray<DresserEntry>[]
         {
@@ -84,7 +123,13 @@ public sealed class TargetedCaptureTests
             [new(0, 100, 100, null, [new(0, 101)])],
         })
             Assert.True(TargetedCaptureChangePolicy.HasChanges(prior,
-                next with { CurrentItemPresence = next.CurrentItemPresence.SetItem("glamourDresser", same with { DresserEntries = entries }) }, raw));
+                next with
+                {
+                    CurrentItemPresence = next.CurrentItemPresence.SetItem("glamourDresser", same with
+                    {
+                        DresserEntries = entries
+                    })
+                }, raw));
     }
     [Fact]
     public void ObtainingAnItemDoesNotRegisterItAndRegistrationReadsOnlyItsCollection()
@@ -93,7 +138,8 @@ public sealed class TargetedCaptureTests
         var reader = new Reader();
         using var obtained = new CollectionReadOperation(reader, fixture.Catalog, false, 123, 2, SnapshotFixture.Now, sources: ["inventory"]);
         Assert.True(obtained.Advance());
-        Assert.Empty(reader.UnlockReads); Assert.Equal(new[] { "inventory" }, reader.PresenceReads);
+        Assert.Empty(reader.UnlockReads);
+        Assert.Equal(new[] { "inventory" }, reader.PresenceReads);
         Assert.Empty(obtained.Result!.Unlocks);
         var present = TargetedCaptureMerge.Apply(fixture.State, obtained.Result, 2, SnapshotFixture.Now);
         Assert.Same(fixture.State.Unlocks["orchestrions"], present.Unlocks["orchestrions"]);
@@ -127,13 +173,43 @@ public sealed class TargetedCaptureTests
     {
         var prior = SnapshotFixture.Create().State;
         var observation = prior.CurrentItemPresence["inventory"] with
-        { Health = prior.CurrentItemPresence["inventory"].Health with { ObservedAtUtc = SnapshotFixture.Now.AddSeconds(2), CaptureGeneration = 2 } };
+        {
+            Health = prior.CurrentItemPresence["inventory"].Health with
+            {
+                ObservedAtUtc = SnapshotFixture.Now.AddSeconds(2),
+                CaptureGeneration = 2
+            }
+        };
         var raw = new RawCaptureBatch(ImmutableDictionary<string, PermanentUnlockState>.Empty, ImmutableDictionary<string, CurrentItemPresenceState>.Empty.Add("inventory", observation), []);
         var next = TargetedCaptureMerge.Apply(prior, raw, 2, SnapshotFixture.Now.AddSeconds(2));
         Assert.False(TargetedCaptureChangePolicy.HasChanges(prior, next, raw));
-        Assert.True(TargetedCaptureChangePolicy.HasChanges(prior, next with { CurrentItemPresence = next.CurrentItemPresence.SetItem("inventory", observation with { Items = [] }) }, raw));
-        Assert.True(TargetedCaptureChangePolicy.HasChanges(prior, next with { CurrentItemPresence = next.CurrentItemPresence.SetItem("inventory", observation with { Health = observation.Health with { CapabilityState = CapabilityState.Degraded } }) }, raw));
-        Assert.True(TargetedCaptureChangePolicy.HasChanges(prior, next with { CurrentItemPresence = next.CurrentItemPresence.SetItem("inventory", observation with { Health = observation.Health with { Reason = "Updated reader detail." } }) }, raw));
+        Assert.True(TargetedCaptureChangePolicy.HasChanges(prior, next with
+        {
+            CurrentItemPresence = next.CurrentItemPresence.SetItem("inventory", observation with
+            {
+                Items = []
+            })
+        }, raw));
+        Assert.True(TargetedCaptureChangePolicy.HasChanges(prior, next with
+        {
+            CurrentItemPresence = next.CurrentItemPresence.SetItem("inventory", observation with
+            {
+                Health = observation.Health with
+                {
+                    CapabilityState = CapabilityState.Degraded
+                }
+            })
+        }, raw));
+        Assert.True(TargetedCaptureChangePolicy.HasChanges(prior, next with
+        {
+            CurrentItemPresence = next.CurrentItemPresence.SetItem("inventory", observation with
+            {
+                Health = observation.Health with
+                {
+                    Reason = "Updated reader detail."
+                }
+            })
+        }, raw));
     }
 
     [Fact]
@@ -141,8 +217,11 @@ public sealed class TargetedCaptureTests
     {
         var reader = new Reader();
         using var operation = new CollectionReadOperation(reader, SnapshotFixture.Create().Catalog, false, 123, 2, SnapshotFixture.Now, sources: ["orchestrions"]);
-        Assert.False(operation.Advance(1)); reader.Identity = false;
-        Assert.True(operation.Advance()); Assert.True(operation.Rejected); Assert.Null(operation.Result);
+        Assert.False(operation.Advance(1));
+        reader.Identity = false;
+        Assert.True(operation.Advance());
+        Assert.True(operation.Rejected);
+        Assert.Null(operation.Result);
     }
 
     private sealed class Reader : ICollectionReader
@@ -153,9 +232,16 @@ public sealed class TargetedCaptureTests
         public List<string> PresenceReads { get; } = [];
         public bool IdentityMatches(ulong contentId) => Identity && contentId == 123;
         public bool IsAvailable(string key, string version) => true;
-        public bool ReadUnlock(string key, CatalogItem row) { UnlockReads.Add(key); return Unlocked; }
+        public bool ReadUnlock(string key, CatalogItem row)
+        {
+            UnlockReads.Add(key);
+            return Unlocked;
+        }
         public QuestState ReadQuest(uint id, bool completed) => new(id, completed ? QuestStatus.Completed : QuestStatus.NotStarted, 0);
         public CurrentItemPresenceState ReadPresence(string source, CollectionCatalog catalog, ulong contentId, long generation, DateTimeOffset now)
-        { PresenceReads.Add(source); return CaptureReadPolicy.Presence([new(100, 5)], true, true, generation, now); }
+        {
+            PresenceReads.Add(source);
+            return CaptureReadPolicy.Presence([new(100, 5)], true, true, generation, now);
+        }
     }
 }

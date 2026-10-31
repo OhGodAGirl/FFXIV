@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Text.Json;
+using Exportaramus.Features.CollectionData.Capture;
 using Exportaramus.Features.CollectionData.Contracts;
 using Exportaramus.Features.CollectionData.Publication;
-using Exportaramus.Features.CollectionData.Capture;
 using Exportaramus.Features.CollectionData.State;
 using Harness = Exportaramus.Tests.Snapshots.ControllerSchedulingIntegrationTests.Harness;
 
@@ -16,7 +16,8 @@ public sealed class ControllerAdditionalBoundaryTests
         await using var run = new Harness();
         await run.Restore(0);
         run.Port.AdvanceReady = false;
-        run.Controller.RequestFull(); run.Update(5);
+        run.Controller.RequestFull();
+        run.Update(5);
         run.Update(6);
         Assert.Equal("Capturing", run.Controller.DiagnosticOperation(6).ControllerState);
         Assert.Null(run.Controller.Publication.Current);
@@ -30,13 +31,17 @@ public sealed class ControllerAdditionalBoundaryTests
     public async Task ANoticeWaitingForCatalogReadinessCannotEscapeIntoTheNextCharacter()
     {
         await using var run = new Harness();
-        var notices = new List<string>(); run.Controller.Changed += notices.Add;
+        var notices = new List<string>();
+        run.Controller.Changed += notices.Add;
         await run.Restore(0);
-        run.Controller.RequestFull(); run.Update(5); run.Update(5);
+        run.Controller.RequestFull();
+        run.Update(5);
+        run.Update(5);
         var clock = Stopwatch.StartNew();
         while (run.Controller.DiagnosticTasks.Single(task => task.Name == "CollectionOutput").State != "Completed")
         {
-            if (clock.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Output preparation did not complete.");
+            if (clock.Elapsed > TimeSpan.FromSeconds(5))
+                Assert.Fail("Output preparation did not complete.");
             await Task.Delay(1);
         }
         run.Port.CatalogReady = false;
@@ -48,7 +53,8 @@ public sealed class ControllerAdditionalBoundaryTests
         clock.Restart();
         while (!run.Controller.Reports.Available || run.Controller.Busy)
         {
-            if (clock.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Second character restoration did not complete.");
+            if (clock.Elapsed > TimeSpan.FromSeconds(5))
+                Assert.Fail("Second character restoration did not complete.");
             run.Controller.Update(456, "Second", false, false, 6, SnapshotFixture.Now.AddSeconds(6));
             await Task.Delay(1);
         }
@@ -61,11 +67,14 @@ public sealed class ControllerAdditionalBoundaryTests
     public async Task IdenticalFullAndDuplicateReportStillNameEveryObservedSource()
     {
         await using var run = new Harness();
-        var notices = new List<string>(); run.Controller.Changed += notices.Add;
+        var notices = new List<string>();
+        run.Controller.Changed += notices.Add;
         await run.Restore(0);
-        run.Controller.RequestFull(); await run.Accept(5, 1, CaptureType.Full);
+        run.Controller.RequestFull();
+        await run.Accept(5, 1, CaptureType.Full);
         notices.Clear();
-        run.Controller.RequestFull(); await run.Accept(10, 2, CaptureType.Full);
+        run.Controller.RequestFull();
+        await run.Accept(10, 2, CaptureType.Full);
         using (var document = JsonDocument.Parse(Assert.Single(notices)))
             Assert.Equal(CollectionKeys.Unlocks.Where(key => key is not ("facewear" or "beasts")).Concat(CollectionReadOperation.PhysicalSources).Order(StringComparer.Ordinal),
                 document.RootElement.GetProperty("changedSources").EnumerateArray().Select(value => value.GetString()));
@@ -96,7 +105,8 @@ public sealed class ControllerAdditionalBoundaryTests
     {
         await using var run = new Harness();
         await run.Restore(0);
-        if (manual) run.Controller.RequestFull();
+        if (manual)
+            run.Controller.RequestFull();
         await run.Accept(manual ? 5 : 15, 1, CaptureType.Full);
         var historyRoot = Path.Combine(Path.GetDirectoryName(run.Storage.CanonicalPath)!, "snapshots");
         var file = Assert.Single(Directory.GetFiles(historyRoot, "*-snapshot-*.json"));

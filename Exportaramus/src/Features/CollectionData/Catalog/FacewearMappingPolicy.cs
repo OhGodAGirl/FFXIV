@@ -21,13 +21,16 @@ public static class FacewearMappingPolicy
         bool found = false, owned = false;
         foreach (var row in rows)
         {
-            if (row.GlassesId == 0) continue;
+            if (row.GlassesId == 0)
+                continue;
             var projected = Project(row.GlassesId, row.StyleId);
-            if (projected.Id != id) continue;
+            if (projected.Id != id)
+                continue;
             found = true;
             owned |= isUnlocked(checked((ushort)row.GlassesId));
         }
-        if (!found) throw new SourceReadException(ReasonCode.MappingValidationFailed);
+        if (!found)
+            throw new SourceReadException(ReasonCode.MappingValidationFailed);
         return owned;
     }
 }

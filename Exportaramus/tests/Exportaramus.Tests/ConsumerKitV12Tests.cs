@@ -14,7 +14,8 @@ public sealed class ConsumerKitV12Tests
         get
         {
             var directory = new DirectoryInfo(AppContext.BaseDirectory);
-            while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "project", "Exportaramus.csproj"))) directory = directory.Parent;
+            while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "project", "Exportaramus.csproj")))
+                directory = directory.Parent;
             return Path.Combine(directory?.FullName ?? throw new InvalidOperationException(), "tests", "fixtures", "Contracts", "1.2");
         }
     }
@@ -24,7 +25,9 @@ public sealed class ConsumerKitV12Tests
     private static string Fixture(string name) => File.ReadAllText(Path.Combine(FixtureRoot, "fixtures", name.Contains("-invalid-", StringComparison.Ordinal) ? "invalid" : "valid", name));
     private static string Edit(string payload, Action<JsonObject> edit)
     {
-        var node = JsonNode.Parse(payload)!.AsObject(); edit(node); return node.ToJsonString();
+        var node = JsonNode.Parse(payload)!.AsObject();
+        edit(node);
+        return node.ToJsonString();
     }
 
     public static IEnumerable<object[]> Fixtures() => Directory.EnumerateFiles(Path.Combine(FixtureRoot, "fixtures"), "*.json", SearchOption.AllDirectories)
@@ -56,11 +59,14 @@ public sealed class ConsumerKitV12Tests
     public void BeastMembershipUsesPinnedCatalogAndOmissionIsDistinctFromCompleteEmpty()
     {
         var populated = CollectionDataSemanticValidator.ValidateSnapshot(Fixture("compact-valid-beasts-populated.json"), Identity);
-        Assert.True(populated.Success); Assert.Equal(new uint[] { 1, 2, 50 }, populated.Value!.Unlocks["beasts"].UnlockedIds);
+        Assert.True(populated.Success);
+        Assert.Equal(new uint[] { 1, 2, 50 }, populated.Value!.Unlocks["beasts"].UnlockedIds);
         var empty = CollectionDataSemanticValidator.ValidateSnapshot(Fixture("compact-valid-beasts-empty.json"), Identity);
-        Assert.True(empty.Success); Assert.Empty(empty.Value!.Unlocks["beasts"].UnlockedIds);
+        Assert.True(empty.Success);
+        Assert.Empty(empty.Value!.Unlocks["beasts"].UnlockedIds);
         var unavailable = CollectionDataSemanticValidator.ValidateSnapshot(Fixture("compact-valid-full.json"), Identity);
-        Assert.True(unavailable.Success); Assert.False(unavailable.Value!.Unlocks.ContainsKey("beasts"));
+        Assert.True(unavailable.Success);
+        Assert.False(unavailable.Value!.Unlocks.ContainsKey("beasts"));
         Assert.Equal("UnavailablePendingValidation", unavailable.Value.SourceHealth["beasts"].CapabilityState);
         Assert.False(CollectionDataSemanticValidator.ValidateSnapshot(Fixture("compact-valid-beasts-populated.json"), "1").Success);
         using var resource = JsonDocument.Parse(File.ReadAllText(Path.Combine(ContractData, "resources", "recognized-ids.json")));

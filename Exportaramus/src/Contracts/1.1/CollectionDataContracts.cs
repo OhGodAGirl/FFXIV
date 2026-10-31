@@ -26,7 +26,10 @@ public sealed record DresserEntryComponent(int SlotIndex, uint ItemId);
 public sealed record DresserEntry(int EntryIndex, uint RawItemId, uint BaseItemId, uint? OutfitId, ImmutableArray<DresserEntryComponent> Components);
 public sealed record PresenceSource(ImmutableArray<PresenceItem> Items)
 {
-    public ImmutableArray<DresserEntry>? DresserEntries { get; init; }
+    public ImmutableArray<DresserEntry>? DresserEntries
+    {
+        get; init;
+    }
 }
 public sealed record ReportedEvidence(uint ItemId, string ReportedAtUtc, string Reporter);
 public sealed record ReportedOwnership(ImmutableArray<ReportedEvidence> Items);
@@ -51,7 +54,10 @@ public sealed record CollectionDataChangedNotice(string EventType, string Schema
     long Revision, string ContentId, string CapturedAtUtc, ImmutableArray<string> ChangedDataTypes, ImmutableArray<string> ChangedSources);
 public sealed record CollectionDataWithdrawnNotice(string EventType, string SchemaVersion, string ProviderSessionId,
     string ContentId, string WithdrawnAtUtc, string ReasonCode, string? Explanation);
-public enum CollectionDataAvailability { Unavailable, Refreshing, Ready, Rejected, Disposed }
+public enum CollectionDataAvailability
+{
+    Unavailable, Refreshing, Ready, Rejected, Disposed
+}
 public sealed record CollectionDataClientView(CollectionDataAvailability Availability, CollectionDataSnapshot? Snapshot,
     string? ProviderSessionId, string? ContentId, long Revision, CollectionDataValidationCode Failure)
 {

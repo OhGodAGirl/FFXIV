@@ -11,8 +11,10 @@ public sealed class CatalogContractDecisionTests
     {
         var entry = CatalogRowPolicy.Project(new("@items", 99, null));
         Assert.Equal("@items", entry.Key);
-        Assert.Equal(99u, entry.Item.Id); Assert.Equal(99u, entry.Item.SourceRowId);
-        Assert.Equal("Entry 99", entry.Item.Name); Assert.True(entry.Item.IsFallbackName);
+        Assert.Equal(99u, entry.Item.Id);
+        Assert.Equal(99u, entry.Item.SourceRowId);
+        Assert.Equal("Entry 99", entry.Item.Name);
+        Assert.True(entry.Item.IsFallbackName);
     }
 
     [Fact]
@@ -52,7 +54,8 @@ public sealed class CatalogContractDecisionTests
         foreach (var expected in names)
         {
             var collection = catalog.Collections[expected.Key];
-            Assert.Equal(expected.Key, collection.Key); Assert.Equal(expected.Value, collection.Label);
+            Assert.Equal(expected.Key, collection.Key);
+            Assert.Equal(expected.Value, collection.Label);
             Assert.Equal(expected.Key != "glamour_dresser", collection.TotalKnown);
             Assert.Empty(collection.Items);
         }
@@ -82,8 +85,10 @@ public sealed class CatalogContractDecisionTests
 
         try
         {
-            if (faulted) completion.SetException(new IOException("Worker fixture failure."));
-            else completion.SetResult(CollectionCatalogBuilderPolicy.Build(new("English", "build", [], [], [])));
+            if (faulted)
+                completion.SetException(new IOException("Worker fixture failure."));
+            else
+                completion.SetResult(CollectionCatalogBuilderPolicy.Build(new("English", "build", [], [], [])));
             await preparation.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(3));
             Assert.Equal(0, context.PostCount);
             Assert.True(handle.IsClosed);
@@ -91,7 +96,9 @@ public sealed class CatalogContractDecisionTests
         }
         finally
         {
-            completion.TrySetCanceled(); context.Drain(); preparation.Dispose();
+            completion.TrySetCanceled();
+            context.Drain();
+            preparation.Dispose();
             await preparation.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(3));
         }
     }
@@ -100,7 +107,9 @@ public sealed class CatalogContractDecisionTests
     {
         public CatalogProjection? Projection { get; } = new("English", "build", [], [], []);
         public bool Advance(int maximumRows = 256) => true;
-        public void Dispose() { }
+        public void Dispose()
+        {
+        }
     }
 
     private sealed class QueuedContext : SynchronizationContext
@@ -108,7 +117,15 @@ public sealed class CatalogContractDecisionTests
         private readonly ConcurrentQueue<(SendOrPostCallback Callback, object? State)> callbacks = new();
         private int posts;
         public int PostCount => Volatile.Read(ref posts);
-        public override void Post(SendOrPostCallback callback, object? state) { Interlocked.Increment(ref posts); callbacks.Enqueue((callback, state)); }
-        public void Drain() { while (callbacks.TryDequeue(out var pending)) pending.Callback(pending.State); }
+        public override void Post(SendOrPostCallback callback, object? state)
+        {
+            Interlocked.Increment(ref posts);
+            callbacks.Enqueue((callback, state));
+        }
+        public void Drain()
+        {
+            while (callbacks.TryDequeue(out var pending))
+                pending.Callback(pending.State);
+        }
     }
 }

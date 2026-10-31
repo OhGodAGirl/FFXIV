@@ -67,9 +67,12 @@ public sealed class StorageRecoveryVisibilityTests
 
             Assert.True(operations.FailureBoundaryReached);
             Assert.True(operations.TemporaryCleanupAttempted);
-            if (cleanupFails) Assert.IsType<UnauthorizedAccessException>(exception);
-            else if (finalPreparation) Assert.IsAssignableFrom<OperationCanceledException>(exception);
-            else Assert.IsType<IOException>(exception);
+            if (cleanupFails)
+                Assert.IsType<UnauthorizedAccessException>(exception);
+            else if (finalPreparation)
+                Assert.IsAssignableFrom<OperationCanceledException>(exception);
+            else
+                Assert.IsType<IOException>(exception);
             Assert.Equal("{\"old\":true}", await File.ReadAllTextAsync(storage.CharacterPath(1)));
             Assert.Equal("Failed", storage.Diagnostic.LastWrite.Status);
             Assert.Equal("WriteFailed", storage.Diagnostic.LastWrite.FailureCode);
@@ -98,7 +101,10 @@ public sealed class StorageRecoveryVisibilityTests
 
     private sealed class CountingOperations : IAtomicFileOperations
     {
-        public int WritersOpened { get; private set; }
+        public int WritersOpened
+        {
+            get; private set;
+        }
         public Stream OpenRead(string path) => new AtomicFileOperations().OpenRead(path);
         public FileStream OpenWrite(string path, FileMode mode, int bufferSize, FileOptions options)
         {
@@ -112,32 +118,52 @@ public sealed class StorageRecoveryVisibilityTests
 
     private sealed class Operations(string root, CancellationTokenSource cancellation, bool finalPreparation, bool cleanupFails) : IAtomicFileOperations
     {
-        public bool FailureBoundaryReached { get; private set; }
-        public bool TemporaryCleanupAttempted { get; private set; }
+        public bool FailureBoundaryReached
+        {
+            get; private set;
+        }
+        public bool TemporaryCleanupAttempted
+        {
+            get; private set;
+        }
         public Stream OpenRead(string path) => new AtomicFileOperations().OpenRead(path);
         public FileStream OpenWrite(string path, FileMode mode, int bufferSize, FileOptions options) =>
             new Writer(path, mode, bufferSize, options, () =>
             {
                 if (!finalPreparation && mode == FileMode.CreateNew)
-                { FailureBoundaryReached = true; throw new IOException("Temporary payload could not be durably flushed."); }
+                {
+                    FailureBoundaryReached = true;
+                    throw new IOException("Temporary payload could not be durably flushed.");
+                }
             });
-        public void Move(string source, string destination) { File.Move(source, destination); Installed(destination); }
-        public void Replace(string source, string destination, string? backup) { File.Replace(source, destination, backup); Installed(destination); }
+        public void Move(string source, string destination)
+        {
+            File.Move(source, destination);
+            Installed(destination);
+        }
+        public void Replace(string source, string destination, string? backup)
+        {
+            File.Replace(source, destination, backup);
+            Installed(destination);
+        }
         public void Delete(string path)
         {
             if (path.EndsWith(".tmp", StringComparison.Ordinal))
             {
                 TemporaryCleanupAttempted = true;
-                if (cleanupFails) throw new UnauthorizedAccessException("Named temporary could not be removed.");
+                if (cleanupFails)
+                    throw new UnauthorizedAccessException("Named temporary could not be removed.");
             }
             File.Delete(path);
         }
         private void Installed(string destination)
         {
-            if (!finalPreparation || FailureBoundaryReached || Path.GetFileName(destination) != "write-recovery.json") return;
+            if (!finalPreparation || FailureBoundaryReached || Path.GetFileName(destination) != "write-recovery.json")
+                return;
             using var record = JsonDocument.Parse(File.ReadAllText(destination));
             var rows = record.RootElement.GetProperty("files");
-            if (rows.GetArrayLength() != 1 || !File.Exists(Path.Combine(root, rows[0].GetProperty("temporary").GetString()!))) return;
+            if (rows.GetArrayLength() != 1 || !File.Exists(Path.Combine(root, rows[0].GetProperty("temporary").GetString()!)))
+                return;
             FailureBoundaryReached = true;
             cancellation.Cancel();
         }
@@ -148,7 +174,8 @@ public sealed class StorageRecoveryVisibilityTests
     {
         public override void Flush(bool flushToDisk)
         {
-            if (flushToDisk) beforeDurability();
+            if (flushToDisk)
+                beforeDurability();
             base.Flush(flushToDisk);
         }
     }

@@ -15,13 +15,17 @@ public sealed class DiagnosticDisplayContractTests
         var input = Report with
         {
             SourceHealth = Enumerable.Range(0, 64).Select(index => new DiagnosticSource("Source" + index, "Supported", "Fresh", "Complete", "Observed", 0, 0, "None")).ToImmutableArray(),
-            Lifecycle = new() { OwnedTasks = Enumerable.Range(0, 32).Select(index => new DiagnosticTask("Task" + index, "Running")).ToImmutableArray() },
+            Lifecycle = new()
+            {
+                OwnedTasks = Enumerable.Range(0, 32).Select(index => new DiagnosticTask("Task" + index, "Running")).ToImmutableArray()
+            },
         };
 
         var report = DiagnosticReportSerializer.Prepare(input);
 
         DiagnosticReportSerializer.ValidateWireJson(report.Json);
-        Assert.Equal(input.SourceHealth, report.Model.SourceHealth); Assert.Equal(input.Lifecycle.OwnedTasks, report.Model.Lifecycle.OwnedTasks);
+        Assert.Equal(input.SourceHealth, report.Model.SourceHealth);
+        Assert.Equal(input.Lifecycle.OwnedTasks, report.Model.Lifecycle.OwnedTasks);
         Assert.Contains(new DiagnosticDisplayRow("sourceHealth[63].sourceKey", "Source63"), report.Sections[3].Rows);
         Assert.Contains(new DiagnosticDisplayRow("lifecycle.ownedTasks[31].name", "Task31"), report.Sections[1].Rows);
     }
@@ -41,8 +45,11 @@ public sealed class DiagnosticDisplayContractTests
     {
         var failure = DiagnosticRedactionPolicy.Failure(Report.GeneratedAtUtc, "Storage", "Write", "WriteFailed", "IOException");
 
-        Assert.Equal("Storage", failure.Component); Assert.Equal("Write", failure.Operation); Assert.Equal("WriteFailed", failure.Code);
-        Assert.Equal("IOException", failure.ExceptionType); Assert.False(string.IsNullOrWhiteSpace(failure.Message));
+        Assert.Equal("Storage", failure.Component);
+        Assert.Equal("Write", failure.Operation);
+        Assert.Equal("WriteFailed", failure.Code);
+        Assert.Equal("IOException", failure.ExceptionType);
+        Assert.False(string.IsNullOrWhiteSpace(failure.Message));
         Assert.Empty(failure.Frames);
     }
 
@@ -58,7 +65,10 @@ public sealed class DiagnosticDisplayContractTests
         var failure = DiagnosticRedactionPolicy.Failure(Report.GeneratedAtUtc, "Storage", "Write", "WriteFailed", "IOException");
         var input = Report with
         {
-            Runtime = new() { Dependencies = ImmutableDictionary<string, string>.Empty.Add("Zeta", "2.0").Add("Alpha", "1.0") },
+            Runtime = new()
+            {
+                Dependencies = ImmutableDictionary<string, string>.Empty.Add("Zeta", "2.0").Add("Alpha", "1.0")
+            },
             RecentFailures = [failure, failure with { Component = "Capture" }],
         };
 
@@ -99,7 +109,13 @@ public sealed class DiagnosticDisplayContractTests
     [InlineData("secret")]
     public void ProhibitedIdentityAndEnvironmentFieldsCannotEnterDynamicDiagnosticMaps(string key)
     {
-        var report = Report with { Runtime = new() { Dependencies = ImmutableDictionary<string, string>.Empty.Add(key, "1.0") } };
+        var report = Report with
+        {
+            Runtime = new()
+            {
+                Dependencies = ImmutableDictionary<string, string>.Empty.Add(key, "1.0")
+            }
+        };
 
         Assert.Throws<InvalidDataException>(() => DiagnosticReportSerializer.Prepare(report));
     }

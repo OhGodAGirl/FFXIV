@@ -1,7 +1,8 @@
+using System.Text.Json.Nodes;
 using Exportaramus.Features.CollectionData.Publication;
 using Exportaramus.Tests.Snapshots;
-using System.Text.Json.Nodes;
 namespace Exportaramus.Tests.ContractsV12;
+
 public sealed class BeastRichIdentifierBoundaryTests
 {
     [Theory]

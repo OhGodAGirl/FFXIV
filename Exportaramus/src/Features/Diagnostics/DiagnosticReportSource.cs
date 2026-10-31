@@ -8,6 +8,11 @@ public sealed class DiagnosticReportSource(DiagnosticMeasurements measurements)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var snapshot = Volatile.Read(ref current) ?? throw new InvalidOperationException("Verified diagnostic metadata is unavailable.");
-        return Task.FromResult(snapshot with { GeneratedAtUtc = DateTime.UtcNow, Performance = measurements.Snapshot(), RecentFailures = measurements.Failures });
+        return Task.FromResult(snapshot with
+        {
+            GeneratedAtUtc = DateTime.UtcNow,
+            Performance = measurements.Snapshot(),
+            RecentFailures = measurements.Failures
+        });
     }
 }

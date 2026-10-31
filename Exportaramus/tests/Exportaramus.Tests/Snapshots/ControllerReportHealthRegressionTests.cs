@@ -43,15 +43,22 @@ public sealed class ControllerReportHealthRegressionTests
         {
             controller.Dispose();
             await controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
-            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, true);
         }
     }
 
     private sealed class Port : ISnapshotCapturePort
     {
         public CollectionCatalog? Catalog { get; } = SnapshotFixture.Create().Catalog;
-        public bool FailNextCatalogPreparation { get; set; }
-        public int CatalogFailures { get; private set; }
+        public bool FailNextCatalogPreparation
+        {
+            get; set;
+        }
+        public int CatalogFailures
+        {
+            get; private set;
+        }
 
         public bool PrepareCatalog()
         {
@@ -68,7 +75,11 @@ public sealed class ControllerReportHealthRegressionTests
             throw new InvalidOperationException("No capture is scheduled or requested by this fixture.");
         public bool Advance() => throw new InvalidOperationException("No capture is pending.");
         public RawCaptureBatch? TakeResult() => null;
-        public void ResetSession() { }
-        public void Dispose() { }
+        public void ResetSession()
+        {
+        }
+        public void Dispose()
+        {
+        }
     }
 }

@@ -47,7 +47,11 @@ public sealed class CapabilityFactoryContractTests
         public void Begin(bool full, ulong id, long generation, DateTimeOffset now) => throw new InvalidOperationException();
         public bool Advance() => throw new InvalidOperationException();
         public RawCaptureBatch? TakeResult() => throw new InvalidOperationException();
-        public void ResetSession() { }
-        public void Dispose() { }
+        public void ResetSession()
+        {
+        }
+        public void Dispose()
+        {
+        }
     }
 }

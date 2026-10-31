@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
-using Microsoft.Win32.SafeHandles;
 using Exportaramus.Features.CollectionData.Capture;
 using Exportaramus.Features.CollectionData.Catalog;
 using Exportaramus.Features.Snapshots;
+using Microsoft.Win32.SafeHandles;
 
 namespace Exportaramus.Tests.Snapshots;
 
@@ -73,7 +73,8 @@ public sealed class OwnedControllerLifetimeTests
         public override void Post(SendOrPostCallback callback, object? state) => callbacks.Enqueue((callback, state));
         public void Drain()
         {
-            for (var i = 0; i < 16 && callbacks.TryDequeue(out var call); i++) call.Callback(call.State);
+            for (var i = 0; i < 16 && callbacks.TryDequeue(out var call); i++)
+                call.Callback(call.State);
         }
     }
 
@@ -85,16 +86,26 @@ public sealed class OwnedControllerLifetimeTests
         public void Begin(bool full, ulong contentId, long generation, DateTimeOffset now) => throw new InvalidOperationException();
         public bool Advance() => false;
         public RawCaptureBatch? TakeResult() => null;
-        public void ResetSession() { }
-        public void Dispose() { }
+        public void ResetSession()
+        {
+        }
+        public void Dispose()
+        {
+        }
     }
 
     private sealed class HeldRead : IAtomicFileOperations
     {
         public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        public CancellationToken Token { get; private set; }
-        public SafeWaitHandle? Handle { get; private set; }
+        public CancellationToken Token
+        {
+            get; private set;
+        }
+        public SafeWaitHandle? Handle
+        {
+            get; private set;
+        }
         public Stream OpenRead(string path) => new HeldStream(this);
         public void Replace(string source, string destination, string? backup) => throw new InvalidOperationException();
         public void Move(string source, string destination) => throw new InvalidOperationException();
@@ -103,7 +114,9 @@ public sealed class OwnedControllerLifetimeTests
         {
             public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token = default)
             {
-                owner.Token = token; owner.Handle = token.WaitHandle.SafeWaitHandle; owner.Entered.TrySetResult();
+                owner.Token = token;
+                owner.Handle = token.WaitHandle.SafeWaitHandle;
+                owner.Entered.TrySetResult();
                 await owner.Release.Task.ConfigureAwait(false);
                 return 0;
             }

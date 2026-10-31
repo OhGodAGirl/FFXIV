@@ -1,6 +1,6 @@
+using System.Security.Cryptography;
 using System.Text.Json;
 using Exportaramus.Features.CollectionData.Catalog;
-using System.Security.Cryptography;
 using Lumina;
 using Lumina.Excel.Sheets;
 
@@ -46,7 +46,13 @@ internal static class LocalGameDataVerification
         {
             var key = c.GetProperty("key").GetString()!;
             var values = c.GetProperty("ids").EnumerateArray().Select(v => v.GetUInt32()).ToArray();
-            return new { key, destinationCount = values.Length, localCandidateCount = local[key].Count, missingIds = values.Except(local[key]).ToArray() };
+            return new
+            {
+                key,
+                destinationCount = values.Length,
+                localCandidateCount = local[key].Count,
+                missingIds = values.Except(local[key]).ToArray()
+            };
         }).ToArray();
         var outfitSheet = game.GetExcelSheet<MirageStoreSetItem>()!;
         var outfitFailures = new List<uint>();
@@ -66,8 +72,10 @@ internal static class LocalGameDataVerification
         {
             var id = row.GetProperty("id").GetUInt32();
             var achievement = row.GetProperty("achievementId");
-            if (achievement.ValueKind != JsonValueKind.Null) linked++;
-            if (!local["relics"].Contains(id) || (achievement.ValueKind != JsonValueKind.Null && !achievementIds.Contains(achievement.GetUInt32()))) relicFailures.Add(id);
+            if (achievement.ValueKind != JsonValueKind.Null)
+                linked++;
+            if (!local["relics"].Contains(id) || (achievement.ValueKind != JsonValueKind.Null && !achievementIds.Contains(achievement.GetUInt32())))
+                relicFailures.Add(id);
         }
         var series = game.GetExcelSheet<VVDNotebookSeries>()!.Where(r => r.RowId != 0).Select(r => new { id = r.RowId, contents = r.Contents.Select(v => v.RowId).Where(v => v != 0).ToArray() }).ToArray();
         var baseline = (version is "2026.10.06.0000.0000" or "2026.10.16.0000.0000") && cabinets.Length == 3844 && fields.Length == 50

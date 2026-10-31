@@ -60,11 +60,15 @@ public static class MainPresenter
 
     public static string RelativeTime(DateTimeOffset? timestamp, DateTimeOffset now)
     {
-        if (!timestamp.HasValue) return "Never";
+        if (!timestamp.HasValue)
+            return "Never";
         var age = now - timestamp.Value;
-        if (age < TimeSpan.FromMinutes(1)) return "Just now";
-        if (age < TimeSpan.FromHours(1)) return $"{(int)age.TotalMinutes} minutes ago";
-        if (age < TimeSpan.FromDays(1)) return $"{(int)age.TotalHours} hours ago";
+        if (age < TimeSpan.FromMinutes(1))
+            return "Just now";
+        if (age < TimeSpan.FromHours(1))
+            return $"{(int)age.TotalMinutes} minutes ago";
+        if (age < TimeSpan.FromDays(1))
+            return $"{(int)age.TotalHours} hours ago";
         return $"{(int)age.TotalDays} days ago";
     }
 

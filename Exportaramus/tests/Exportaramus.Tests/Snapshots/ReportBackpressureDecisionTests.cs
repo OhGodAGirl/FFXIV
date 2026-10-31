@@ -12,7 +12,8 @@ public sealed class ReportBackpressureDecisionTests
     public void ReporterRefillAndOtherLabelsCannotBypassThePerReporterRate()
     {
         var limiter = new ReporterRateLimiter();
-        for (var i = 0; i < 10; i++) Assert.True(limiter.TryAccept("A", 0));
+        for (var i = 0; i < 10; i++)
+            Assert.True(limiter.TryAccept("A", 0));
         Assert.True(limiter.TryAccept("B", 0));
         Assert.False(limiter.TryAccept("A", 0));
         Assert.False(limiter.TryAccept("A", 1));
@@ -24,7 +25,8 @@ public sealed class ReportBackpressureDecisionTests
     public void EarlierClockSamplesDoNotMintTokensWhenTheClockReturns()
     {
         var limiter = new ReporterRateLimiter();
-        for (var i = 0; i < 10; i++) Assert.True(limiter.TryAccept("A", 0));
+        for (var i = 0; i < 10; i++)
+            Assert.True(limiter.TryAccept("A", 0));
         Assert.True(limiter.TryAccept("A", 4));
         Assert.True(limiter.TryAccept("A", 0));
         Assert.False(limiter.TryAccept("A", 4));
@@ -34,7 +36,8 @@ public sealed class ReportBackpressureDecisionTests
     public void ExpiredReporterLabelsDoNotAccumulateWithoutBound()
     {
         var limiter = new ReporterRateLimiter();
-        for (var i = 0; i < 1000; i++) Assert.True(limiter.TryAccept("Reporter " + i, i * 2));
+        for (var i = 0; i < 1000; i++)
+            Assert.True(limiter.TryAccept("Reporter " + i, i * 2));
         // Inspect retained storage to prove the documented resource bound, not just successful admission.
         var field = typeof(ReporterRateLimiter).GetField("reporters", BindingFlags.Instance | BindingFlags.NonPublic)!;
         Assert.InRange(((IDictionary)field.GetValue(limiter)!).Count, 1, 40);
@@ -55,7 +58,8 @@ public sealed class ReportBackpressureDecisionTests
         queue.SetScope(124, items, []);
 
         Assert.Empty(queue.TakeBatch());
-        for (var i = 0; i < 10; i++) Assert.Equal("Accepted", queue.TryEnqueue("124", 10001, "New", 2, SnapshotFixture.Now));
+        for (var i = 0; i < 10; i++)
+            Assert.Equal("Accepted", queue.TryEnqueue("124", 10001, "New", 2, SnapshotFixture.Now));
         Assert.Equal("RateLimited", queue.TryEnqueue("124", 10001, "New", 2, SnapshotFixture.Now));
         queue.Stop();
         Assert.Equal(0, queue.Count);
@@ -67,7 +71,8 @@ public sealed class ReportBackpressureDecisionTests
     [Fact]
     public void QueueBatchUsesItemThenOrdinalReporterOrder()
     {
-        var queue = new ReportedEvidenceQueue(); queue.SetScope(123, [1, 2], []);
+        var queue = new ReportedEvidenceQueue();
+        queue.SetScope(123, [1, 2], []);
         foreach (var (item, reporter) in new[] { (2u, "Z"), (1u, "Z"), (1u, "A") })
             Assert.Equal("Accepted", queue.TryEnqueue("123", item, reporter, 0, SnapshotFixture.Now));
 

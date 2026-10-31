@@ -10,5 +10,8 @@ public sealed record InventorySnapshot(
     ImmutableArray<InventoryLocationSnapshot> Locations)
 {
     [JsonIgnore]
-    public DateTimeOffset? RetainerRosterObservedAtUtc { get; init; }
+    public DateTimeOffset? RetainerRosterObservedAtUtc
+    {
+        get; init;
+    }
 }

@@ -12,12 +12,21 @@ public sealed class StorageReadinessPolicy
     public bool Poll(bool identityMatches, Func<string, bool> validated, Func<string, (bool Ready, ulong Fingerprint)> read,
         double monotonicNow, bool guidedOwnsEdges)
     {
-        if (!identityMatches) { Reset(); return false; }
+        if (!identityMatches)
+        {
+            Reset();
+            return false;
+        }
         var capture = false;
         foreach (var (key, edge) in edges)
         {
-            if (!validated(key)) { edge.Reset(); continue; }
-            if (!edge.IsDue(monotonicNow)) continue;
+            if (!validated(key))
+            {
+                edge.Reset();
+                continue;
+            }
+            if (!edge.IsDue(monotonicNow))
+                continue;
             try
             {
                 var (ready, fingerprint) = read(key);
@@ -27,7 +36,11 @@ public sealed class StorageReadinessPolicy
         }
         return capture;
     }
-    public void Reset() { foreach (var edge in edges.Values) edge.Reset(); }
+    public void Reset()
+    {
+        foreach (var edge in edges.Values)
+            edge.Reset();
+    }
 }
 
 

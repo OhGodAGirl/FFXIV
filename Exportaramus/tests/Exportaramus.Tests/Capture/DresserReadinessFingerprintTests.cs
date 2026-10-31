@@ -7,7 +7,8 @@ public sealed class DresserReadinessFingerprintTests
     private static ulong Fingerprint(params (uint Id, bool[] Slots)[] entries)
     {
         var hash = StorageFingerprint.Initial;
-        foreach (var entry in entries) hash = StorageFingerprint.AddDresserEntry(hash, entry.Id, entry.Slots);
+        foreach (var entry in entries)
+            hash = StorageFingerprint.AddDresserEntry(hash, entry.Id, entry.Slots);
         return hash;
     }
 
@@ -41,7 +42,8 @@ public sealed class DresserReadinessFingerprintTests
         Assert.NotEqual(Fingerprint((100, [])), Fingerprint((1_000_100, [])));
         bool[] bits = [true, false, true, false, false, false, false, false, false, false, false];
         var expected = StorageFingerprint.Add(StorageFingerprint.Initial, 200);
-        foreach (var bit in bits) expected = StorageFingerprint.Add(expected, bit ? 1ul : 0);
+        foreach (var bit in bits)
+            expected = StorageFingerprint.Add(expected, bit ? 1ul : 0);
         Assert.Equal(expected, Fingerprint((200, bits)));
         Assert.Throws<ArgumentException>(() => StorageFingerprint.AddDresserEntry(0, 200, [true]));
     }

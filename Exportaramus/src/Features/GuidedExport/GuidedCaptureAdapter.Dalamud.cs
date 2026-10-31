@@ -29,9 +29,17 @@ public sealed unsafe class GuidedCaptureAdapter
         IGameGui gui, IFramework framework, GuidedRuntimeValidation validation, Func<string> gameDataVersion,
         Func<GuidedSource, bool> managerReady, Action<GuidedEffect> capture, Action<GuidedEffect> save)
     {
-        this.player = player; this.objects = objects; this.target = target; this.conditions = conditions;
-        this.gui = gui; this.framework = framework; this.validation = validation; this.gameDataVersion = gameDataVersion;
-        this.managerReady = managerReady; this.capture = capture; this.save = save;
+        this.player = player;
+        this.objects = objects;
+        this.target = target;
+        this.conditions = conditions;
+        this.gui = gui;
+        this.framework = framework;
+        this.validation = validation;
+        this.gameDataVersion = gameDataVersion;
+        this.managerReady = managerReady;
+        this.capture = capture;
+        this.save = save;
     }
     private GuidedValidationFacts Facts => new(validation.SupervisedValidationComplete, validation.GameDataVersion,
         gameDataVersion(), validation.ObjectKind != default, validation.DresserBaseIds.Count, validation.ArmoireBaseIds.Count,
@@ -61,52 +69,79 @@ public sealed unsafe class GuidedCaptureAdapter
     public bool Execute(GuidedEffect effect, GuidedExportController controller, ulong expectedContentId, TimeSpan now)
     {
         var executed = TryExecute(effect, controller, expectedContentId, now);
-        if (!executed) controller.RejectEffect(effect, now);
+        if (!executed)
+            controller.RejectEffect(effect, now);
         return executed;
     }
     private bool TryExecute(GuidedEffect effect, GuidedExportController controller, ulong expectedContentId, TimeSpan now)
     {
         if (!GuidedAdapterPolicy.AuthorizeEffect(controller.OwnsWindowEdges, effect.Generation, controller.Generation,
-            effect.Kind, framework.IsInFrameworkUpdateThread, player.IsLoaded, player.ContentId, expectedContentId)) return false;
-        if (effect.Kind is GuidedEffectKind.SaveFull or GuidedEffectKind.SavePartial) { save(effect); return true; }
+            effect.Kind, framework.IsInFrameworkUpdateThread, player.IsLoaded, player.ContentId, expectedContentId))
+            return false;
+        if (effect.Kind is GuidedEffectKind.SaveFull or GuidedEffectKind.SavePartial)
+        {
+            save(effect);
+            return true;
+        }
         var frame = Observe(effect.Source, now, false);
-        if (!frame.RuntimeValidated || !frame.SafeConditions) return false;
+        if (!frame.RuntimeValidated || !frame.SafeConditions)
+            return false;
         if (effect.Kind == GuidedEffectKind.SelectArmoireMenu)
         {
             if (!menuPending || menuGeneration != effect.Generation || effect.Source != GuidedSource.Armoire ||
                 effect.TargetIdentity != menuTarget || frame.ArmoireMenuIdentity != effect.AddonIdentity || effect.AddonIdentity == 0 ||
-                !frame.Furnishings.Any(obj => obj.Identity == menuTarget && FurnishingPolicy.IsEligible(obj, GuidedSource.Armoire))) return false;
+                !frame.Furnishings.Any(obj => obj.Identity == menuTarget && FurnishingPolicy.IsEligible(obj, GuidedSource.Armoire)))
+                return false;
             var menu = gui.GetAddonByName<AtkUnitBase>("SelectString", 1);
-            if (menu == null || (ulong)menu != effect.AddonIdentity || !menu->IsReady || !menu->IsVisible) return false;
+            if (menu == null || (ulong)menu != effect.AddonIdentity || !menu->IsReady || !menu->IsVisible)
+                return false;
             menuPending = false;
             return menu->FireCallbackInt(0);
         }
         if (effect.Kind is GuidedEffectKind.Capture or GuidedEffectKind.CloseAddon)
         {
-            if (!frame.AddonReady || !frame.ManagerReady || frame.AddonIdentity != effect.AddonIdentity) return false;
-            if (effect.Kind == GuidedEffectKind.Capture) { capture(effect); return true; }
+            if (!frame.AddonReady || !frame.ManagerReady || frame.AddonIdentity != effect.AddonIdentity)
+                return false;
+            if (effect.Kind == GuidedEffectKind.Capture)
+            {
+                capture(effect);
+                return true;
+            }
             var exact = GetAddon(effect.Source);
-            if (exact == null || (ulong)exact != effect.AddonIdentity || !exact->IsReady || !exact->IsVisible) return false;
+            if (exact == null || (ulong)exact != effect.AddonIdentity || !exact->IsReady || !exact->IsVisible)
+                return false;
             if (effect.Source == GuidedSource.Dresser)
             {
                 var agent = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismPrismBox.Instance();
-                if (agent == null || !agent->IsAgentActive()) return false;
+                if (agent == null || !agent->IsAgentActive())
+                    return false;
                 agent->Hide();
             }
-            else _ = exact->Close(true);
+            else
+                _ = exact->Close(true);
             return true;
         }
         var furnishing = objects.FirstOrDefault(obj => obj.GameObjectId == effect.TargetIdentity);
-        if (furnishing is null || !furnishing.IsValid()) return false;
-        if (!frame.Furnishings.Any(obj => obj.Identity == effect.TargetIdentity && (effect.Kind == GuidedEffectKind.SelectTarget ? FurnishingPolicy.IsDiscoverable(obj, effect.Source) : FurnishingPolicy.IsEligible(obj, effect.Source)))) return false;
-        if (effect.Kind == GuidedEffectKind.SelectTarget) { target.Target = furnishing; return true; }
-        if (target.Target?.GameObjectId != effect.TargetIdentity || frame.ExpectedAddonPresent) return false;
+        if (furnishing is null || !furnishing.IsValid())
+            return false;
+        if (!frame.Furnishings.Any(obj => obj.Identity == effect.TargetIdentity && (effect.Kind == GuidedEffectKind.SelectTarget ? FurnishingPolicy.IsDiscoverable(obj, effect.Source) : FurnishingPolicy.IsEligible(obj, effect.Source))))
+            return false;
+        if (effect.Kind == GuidedEffectKind.SelectTarget)
+        {
+            target.Target = furnishing;
+            return true;
+        }
+        if (target.Target?.GameObjectId != effect.TargetIdentity || frame.ExpectedAddonPresent)
+            return false;
         var system = TargetSystem.Instance();
-        if (system == null) return false;
+        if (system == null)
+            return false;
         var existingMenu = gui.GetAddonByName<AtkUnitBase>("SelectString", 1);
-        if (existingMenu != null && existingMenu->IsVisible) return false;
+        if (existingMenu != null && existingMenu->IsVisible)
+            return false;
         menuPending = effect.Source == GuidedSource.Armoire;
-        menuTarget = effect.TargetIdentity; menuGeneration = effect.Generation;
+        menuTarget = effect.TargetIdentity;
+        menuGeneration = effect.Generation;
         _ = system->InteractWithObject((FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject*)furnishing.Address, true);
         return true;
     }

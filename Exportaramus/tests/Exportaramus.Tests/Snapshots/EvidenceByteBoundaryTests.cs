@@ -41,12 +41,16 @@ public sealed class EvidenceByteBoundaryTests
     public void EvidenceReaderAcceptsExactlyFourMibOfValidUtf8JsonAndRejectsOneMoreByte()
     {
         var maximum = ExactEvidence();
-        Assert.Equal(Limit, Encoding.UTF8.GetByteCount(maximum)); Assert.True(maximum.Length < Limit);
+        Assert.Equal(Limit, Encoding.UTF8.GetByteCount(maximum));
+        Assert.True(maximum.Length < Limit);
 
         var item = Assert.Single(CollectionStateReader.ReadReports(maximum, 1));
 
-        Assert.Equal(100u, item.ItemId); Assert.Equal("é", item.Reporter); Assert.Equal(DateTimeOffset.Parse("2026-09-06T00:00:00Z"), item.ReportedAtUtc);
-        var oversized = maximum + " "; Assert.Equal(Limit, oversized.Length);
+        Assert.Equal(100u, item.ItemId);
+        Assert.Equal("é", item.Reporter);
+        Assert.Equal(DateTimeOffset.Parse("2026-09-06T00:00:00Z"), item.ReportedAtUtc);
+        var oversized = maximum + " ";
+        Assert.Equal(Limit, oversized.Length);
         Assert.Throws<InvalidDataException>(() => CollectionStateReader.ReadReports(oversized, 1));
     }
 
@@ -54,7 +58,8 @@ public sealed class EvidenceByteBoundaryTests
     public async Task EvidenceStorageHonorsTheByteBoundaryAndFailedReplacementPreservesEveryAcceptedOutput()
     {
         var root = Path.Combine(AppContext.BaseDirectory, "isolated-test-recovery/evidence-boundary-proof", Guid.NewGuid().ToString("N"));
-        var storage = new AtomicSnapshotStorage(root); var maximum = ExactEvidence();
+        var storage = new AtomicSnapshotStorage(root);
+        var maximum = ExactEvidence();
         try
         {
             await storage.CommitAsync(1, "{\"revision\":1}", "{\"rich\":1}", maximum, true, true, SnapshotFixture.Now, default);

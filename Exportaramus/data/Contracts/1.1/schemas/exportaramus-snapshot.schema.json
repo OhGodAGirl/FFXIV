@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://exportaramus.local/schemas/1.1/exportaramus-snapshot.schema.json",
-  "title": "Exportaramus Collector's Compendium Snapshot 1.1",
+  "title": "Exportaramus Expanded Snapshot 1.1",
   "type": "object",
   "required": [
     "format",

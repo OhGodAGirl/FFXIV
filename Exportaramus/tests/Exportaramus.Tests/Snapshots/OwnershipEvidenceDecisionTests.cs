@@ -17,7 +17,10 @@ public sealed class OwnershipEvidenceDecisionTests
         var state = fixture.State with
         {
             CurrentItemPresence = fixture.State.CurrentItemPresence.ToImmutableDictionary(pair => pair.Key, pair => pair.Value with { Items = [] }),
-            Unlocks = fixture.State.Unlocks.SetItem("achievements", fixture.State.Unlocks["achievements"] with { UnlockedIds = unlocked ? [129u] : [] })
+            Unlocks = fixture.State.Unlocks.SetItem("achievements", fixture.State.Unlocks["achievements"] with
+            {
+                UnlockedIds = unlocked ? [129u] : []
+            })
         };
 
         var result = DerivedCollectionPolicy.Derive(fixture.Catalog.Collections["relics"], state);
@@ -42,12 +45,18 @@ public sealed class OwnershipEvidenceDecisionTests
         var presence = fixture.State.CurrentItemPresence.ToImmutableDictionary(pair => pair.Key, pair => pair.Value with
         {
             Items = pair.Key == "inventory" ? [.. new[] { first ? 2642u : 0u, second ? 2965u : 0u }.Where(id => id != 0).Select(id => new PresenceItem(id, 1))] : [],
-            Health = unknown && pair.Key == "retainers" ? pair.Value.Health with { SourceStatus = SourceStatus.Unavailable } : pair.Value.Health
+            Health = unknown && pair.Key == "retainers" ? pair.Value.Health with
+            {
+                SourceStatus = SourceStatus.Unavailable
+            } : pair.Value.Health
         });
         var definition = new CollectionDefinition("outfits", "Outfits", DataType.Derived, true,
             [new(45094, 45094, "Two-item outfit", false, RequiredItemIds: [2642, 2965])]);
 
-        var result = DerivedCollectionPolicy.Derive(definition, fixture.State with { CurrentItemPresence = presence });
+        var result = DerivedCollectionPolicy.Derive(definition, fixture.State with
+        {
+            CurrentItemPresence = presence
+        });
 
         Assert.Equal(expected.HasValue, result.Health.IsUsable);
         if (expected is { } owned)
@@ -82,16 +91,27 @@ public sealed class OwnershipEvidenceDecisionTests
         var fixture = SnapshotFixture.Create();
         var older = SnapshotFixture.Now.AddMinutes(-20);
         var presence = fixture.State.CurrentItemPresence.ToImmutableDictionary(pair => pair.Key, pair => pair.Value with { Items = [] });
-        presence = presence.SetItem("inventory", presence["inventory"] with { Items = [new(2642, 1)] });
+        presence = presence.SetItem("inventory", presence["inventory"] with
+        {
+            Items = [new(2642, 1)]
+        });
         presence = presence.SetItem("armoryChest", presence["armoryChest"] with
         {
             Items = [new(2965, 1)],
-            Health = presence["armoryChest"].Health with { SourceStatus = SourceStatus.Stale, CapabilityState = CapabilityState.Degraded, ObservedAtUtc = older }
+            Health = presence["armoryChest"].Health with
+            {
+                SourceStatus = SourceStatus.Stale,
+                CapabilityState = CapabilityState.Degraded,
+                ObservedAtUtc = older
+            }
         });
         var definition = new CollectionDefinition("outfits", "Outfits", DataType.Derived, true,
             [new(45094, 45094, "Two-item outfit", false, RequiredItemIds: [2642, 2965])]);
 
-        var result = DerivedCollectionPolicy.Derive(definition, fixture.State with { CurrentItemPresence = presence });
+        var result = DerivedCollectionPolicy.Derive(definition, fixture.State with
+        {
+            CurrentItemPresence = presence
+        });
 
         Assert.True(result.TotalKnown);
         Assert.True(Assert.Single(result.Items).Owned);
@@ -107,8 +127,14 @@ public sealed class OwnershipEvidenceDecisionTests
         var fixture = SnapshotFixture.Create();
         var state = fixture.State with
         {
-            Unlocks = fixture.State.Unlocks.SetItem("mounts", fixture.State.Unlocks["mounts"] with { UnlockedIds = [] }),
-            CurrentItemPresence = fixture.State.CurrentItemPresence.SetItem("armoire", fixture.State.CurrentItemPresence["armoire"] with { Items = [] }),
+            Unlocks = fixture.State.Unlocks.SetItem("mounts", fixture.State.Unlocks["mounts"] with
+            {
+                UnlockedIds = []
+            }),
+            CurrentItemPresence = fixture.State.CurrentItemPresence.SetItem("armoire", fixture.State.CurrentItemPresence["armoire"] with
+            {
+                Items = []
+            }),
             Quests = [new(1, QuestStatus.InProgress, 7)]
         };
 

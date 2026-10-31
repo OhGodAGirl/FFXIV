@@ -14,17 +14,33 @@ public sealed class PromptCaptureRegressionTests
     public async Task AChangedUnlockNoticeIncludesAnUnchangedRetainedPresenceSourceThatWasAlsoRead()
     {
         await using var run = new Scenario();
-        run.Port.State = run.Port.State with { Unlocks = run.Port.State.Unlocks.SetItem("orchestrions", run.Port.State.Unlocks["orchestrions"] with { UnlockedIds = [] }) };
+        run.Port.State = run.Port.State with
+        {
+            Unlocks = run.Port.State.Unlocks.SetItem("orchestrions", run.Port.State.Unlocks["orchestrions"] with
+            {
+                UnlockedIds = []
+            })
+        };
         await run.Initialize();
         run.Port.FailInventory = true;
-        run.Controller.HintSource("inventory", 123, 20); run.Update(20.25);
+        run.Controller.HintSource("inventory", 123, 20);
+        run.Update(20.25);
         await run.Pump(20.25, () => !run.Controller.Busy);
         var retained = run.Controller.Publication.Current!;
         Assert.Equal(SourceStatus.Stale, retained.Data.State.CurrentItemPresence["inventory"].Health.SourceStatus);
-        var notices = new List<string>(); run.Controller.ChangedV11 += notices.Add;
-        run.Port.State = run.Port.State with { Unlocks = run.Port.State.Unlocks.SetItem("orchestrions", run.Port.State.Unlocks["orchestrions"] with { UnlockedIds = [1] }) };
-        run.Controller.HintSource("orchestrions", 123, 21.5); run.Controller.HintSource("inventory", 123, 21.5);
-        run.Update(21.75); await run.Pump(21.75, () => !run.Controller.Busy);
+        var notices = new List<string>();
+        run.Controller.ChangedV11 += notices.Add;
+        run.Port.State = run.Port.State with
+        {
+            Unlocks = run.Port.State.Unlocks.SetItem("orchestrions", run.Port.State.Unlocks["orchestrions"] with
+            {
+                UnlockedIds = [1]
+            })
+        };
+        run.Controller.HintSource("orchestrions", 123, 21.5);
+        run.Controller.HintSource("inventory", 123, 21.5);
+        run.Update(21.75);
+        await run.Pump(21.75, () => !run.Controller.Busy);
         var accepted = run.Controller.Publication.Current!;
         Assert.Equal(retained.SourceFingerprints["inventory"], accepted.SourceFingerprints["inventory"]);
         Assert.Equal(new uint[] { 1 }, accepted.Data.State.Unlocks["orchestrions"].UnlockedIds);
@@ -40,14 +56,17 @@ public sealed class PromptCaptureRegressionTests
         await using var run = new Scenario();
         await run.Initialize();
         run.Port.FailNextRead = true;
-        run.Controller.RequestFull(); run.Update(10); run.Update(10);
+        run.Controller.RequestFull();
+        run.Update(10);
+        run.Update(10);
         var failure = run.Controller.Error;
         Assert.False(string.IsNullOrEmpty(failure));
         run.Update(20, 456);
         await run.Pump(20, () => run.Controller.Reports.Available && !run.Controller.Busy, 456);
         Assert.Null(run.Controller.Publication.Current);
         Assert.Equal(failure, run.Controller.Error);
-        run.Controller.RequestFull(); run.Update(21, 456);
+        run.Controller.RequestFull();
+        run.Update(21, 456);
         await run.Pump(21, () => run.Controller.Publication.Current is not null && !run.Controller.Busy, 456);
         Assert.Equal(456ul, run.Controller.Publication.Current!.Data.State.ContentId);
         Assert.Null(run.Controller.Error);
@@ -57,11 +76,13 @@ public sealed class PromptCaptureRegressionTests
     public void ADelayedHintIsEligibleAtItsDeadlineButNotAfterTheRetryWindow()
     {
         var atDeadline = new PromptCapturePolicy();
-        atDeadline.SetCharacter(123, 0); atDeadline.Take(15);
+        atDeadline.SetCharacter(123, 0);
+        atDeadline.Take(15);
         atDeadline.Hint("orchestrions", 123, 20);
         Assert.Contains("orchestrions", atDeadline.Take(35));
         var afterDeadline = new PromptCapturePolicy();
-        afterDeadline.SetCharacter(123, 0); afterDeadline.Take(15);
+        afterDeadline.SetCharacter(123, 0);
+        afterDeadline.Take(15);
         afterDeadline.Hint("orchestrions", 123, 20);
         Assert.DoesNotContain("orchestrions", afterDeadline.Take(35.001));
     }
@@ -88,8 +109,10 @@ public sealed class PromptCaptureRegressionTests
     {
         await using var run = new Scenario();
         await run.Initialize();
-        if (targeted) run.Controller.HintSource("orchestrions", 123, 20);
-        else run.Controller.RequestFull();
+        if (targeted)
+            run.Controller.HintSource("orchestrions", 123, 20);
+        else
+            run.Controller.RequestFull();
         run.Update(20.25); // Start the native read.
         run.Update(20.25); // Finish the read and start its worker; acceptance requires a later update.
         Assert.True(run.Controller.Busy);
@@ -103,7 +126,8 @@ public sealed class PromptCaptureRegressionTests
     public void DelayedRegistrationRetriesDoNotRunBeforeTheirScheduledDelay()
     {
         var policy = new PromptCapturePolicy();
-        policy.SetCharacter(123, 0); policy.Take(15);
+        policy.SetCharacter(123, 0);
+        policy.Take(15);
         policy.Hint("orchestrions", 123, 20);
         Assert.Contains("orchestrions", policy.Take(20.25));
         Assert.Contains("orchestrions", policy.Take(21.25));
@@ -117,7 +141,8 @@ public sealed class PromptCaptureRegressionTests
     public void QuestFallbackPreservesAnUnrelatedHintDueInTheSameFrame()
     {
         var policy = new PromptCapturePolicy();
-        policy.SetCharacter(123, 0); policy.Take(15);
+        policy.SetCharacter(123, 0);
+        policy.Take(15);
         policy.Hint("orchestrions", 123, 299.75);
         var sources = policy.Take(300);
         Assert.Contains("quests", sources);
@@ -141,7 +166,11 @@ public sealed class PromptCaptureRegressionTests
         var prior = SnapshotFixture.Create().State;
         var held = prior.CurrentItemPresence["inventory"];
         Assert.NotEmpty(held.Items);
-        var failed = held with { Items = [], Health = CaptureReadPolicy.Health(DataType.CurrentItemPresence, 2, SnapshotFixture.Now.AddSeconds(2), ReasonCode.CaptureFailed, true) };
+        var failed = held with
+        {
+            Items = [],
+            Health = CaptureReadPolicy.Health(DataType.CurrentItemPresence, 2, SnapshotFixture.Now.AddSeconds(2), ReasonCode.CaptureFailed, true)
+        };
         var retained = TargetedCaptureMerge.Apply(prior, Presence(failed), 2, SnapshotFixture.Now.AddSeconds(2));
         Assert.Equal(held.Items, retained.CurrentItemPresence["inventory"].Items);
         Assert.Equal(SourceStatus.Stale, retained.CurrentItemPresence["inventory"].Health.SourceStatus);
@@ -157,14 +186,18 @@ public sealed class PromptCaptureRegressionTests
     private sealed class Scenario : IAsyncDisposable
     {
         private readonly string path = Path.Combine(AppContext.BaseDirectory, "prompt-regression", Guid.NewGuid().ToString("N"));
-        public SnapshotController Controller { get; }
+        public SnapshotController Controller
+        {
+            get;
+        }
         public Port Port { get; } = new();
         public Scenario() => Controller = new(Port, new(path), null);
         public void Update(double seconds, ulong contentId = 123) => Controller.Update(contentId, "Fixture", false, false, seconds, SnapshotFixture.Now.AddSeconds(seconds));
         public async Task Initialize()
         {
             await Pump(0, () => Controller.Reports.Available && !Controller.Busy);
-            Controller.RequestFull(); Update(5);
+            Controller.RequestFull();
+            Update(5);
             await Pump(5, () => Controller.Publication.Current is not null && !Controller.Busy);
         }
         public async Task Pump(double seconds, Func<bool> finished, ulong contentId = 123)
@@ -173,13 +206,16 @@ public sealed class PromptCaptureRegressionTests
             while (!finished())
             {
                 Assert.True(deadline.Elapsed < TimeSpan.FromSeconds(5), Controller.Error);
-                Update(seconds, contentId); await Task.Delay(1);
+                Update(seconds, contentId);
+                await Task.Delay(1);
             }
         }
         public async ValueTask DisposeAsync()
         {
-            Controller.Dispose(); await Controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
-            if (Directory.Exists(path)) Directory.Delete(path, true);
+            Controller.Dispose();
+            await Controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
+            if (Directory.Exists(path))
+                Directory.Delete(path, true);
         }
     }
 
@@ -200,11 +236,17 @@ public sealed class PromptCaptureRegressionTests
                 pair => pair.Key == "inventory" && FailInventory ? CaptureReadPolicy.FailedPresence(true, generation, now, ReasonCode.CaptureFailed) : pair.Value), sources.Contains("quests") ? State.Quests : []);
         public bool Advance()
         {
-            if (FailNextRead) { FailNextRead = false; throw new IOException("Controlled capture failure."); }
+            if (FailNextRead)
+            {
+                FailNextRead = false;
+                throw new IOException("Controlled capture failure.");
+            }
             return true;
         }
         public RawCaptureBatch? TakeResult() => result;
         public void ResetSession() => result = null;
-        public void Dispose() { }
+        public void Dispose()
+        {
+        }
     }
 }

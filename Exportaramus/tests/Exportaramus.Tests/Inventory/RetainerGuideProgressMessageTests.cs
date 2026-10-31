@@ -72,18 +72,52 @@ public sealed class RetainerGuideProgressMessageTests
     {
         public ImmutableArray<InventoryRetainer> Roster { get; init; } = [new(11, "First")];
         public List<string> Actions { get; } = [];
-        public bool CleanupReady { get; set; }
-        public int CleanupRequests { get; private set; }
+        public bool CleanupReady
+        {
+            get; set;
+        }
+        public int CleanupRequests
+        {
+            get; private set;
+        }
         public bool ListReady => true;
         public bool InventoryVisible => false;
         public bool IsSafe(ulong contentId) => contentId == 1;
         public bool OpenBell() => throw new InvalidOperationException("The roster is already visible.");
-        public bool TryReadRoster(out ImmutableArray<InventoryRetainer> roster) { roster = Roster; return true; }
-        public bool SelectRetainer(ulong id) { Actions.Add($"select:{id}"); return true; }
-        public bool OpenInventory(ulong id) { Actions.Add($"open:{id}"); return true; }
-        public bool CaptureInventory(ulong contentId, ulong id) { Actions.Add($"capture:{contentId}:{id}"); return true; }
-        public bool CloseInventory(ulong id) { Actions.Add($"close:{id}"); return true; }
-        public bool QuitRetainer(ulong id) { Actions.Add($"quit:{id}"); return true; }
-        public bool CloseOverviewAndInventory() { CleanupRequests++; return CleanupReady; }
+        public bool TryReadRoster(out ImmutableArray<InventoryRetainer> roster)
+        {
+            roster = Roster;
+            return true;
+        }
+        public bool SelectRetainer(ulong id)
+        {
+            Actions.Add($"select:{id}");
+            return true;
+        }
+        public bool OpenInventory(ulong id)
+        {
+            Actions.Add($"open:{id}");
+            return true;
+        }
+        public bool CaptureInventory(ulong contentId, ulong id)
+        {
+            Actions.Add($"capture:{contentId}:{id}");
+            return true;
+        }
+        public bool CloseInventory(ulong id)
+        {
+            Actions.Add($"close:{id}");
+            return true;
+        }
+        public bool QuitRetainer(ulong id)
+        {
+            Actions.Add($"quit:{id}");
+            return true;
+        }
+        public bool CloseOverviewAndInventory()
+        {
+            CleanupRequests++;
+            return CleanupReady;
+        }
     }
 }

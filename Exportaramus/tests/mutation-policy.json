@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 2,
+  "status": "required",
+  "tool": "dotnet-stryker",
+  "version": "4.16.0",
+  "minimumMutationScore": 100,
+  "targets": [
+    "All handwritten pure provider and canonical contract decisions in the maintained source inventory; the canonical consumer client and example reader require separate instrumentation."
+  ],
+  "excludedDecisionFiles": [],
+  "command": "From tests/Exportaramus.Testable: dotnet stryker --config-file ../stryker-config.json --skip-version-check",
+  "instrumentationProof": "Reconcile actual instrumented source files and their SHA-256 values with the configured source inventory. A score from one project does not establish coverage of separately referenced projects or the consumer/example scope.",
+  "targetInventoryProof": "tools/contract-quality-scope.py --output-dir <fresh-output-directory>",
+  "notApplicableReason": "",
+  "reviewedSurvivors": [],
+  "reviewEvidencePolicy": "Preserve every raw status and score. Only exact, individually substantiated equivalence or compiler non-viability may be reconciled. A valid CompileError or default-filtered block can be resolved as IndependentlyKilled only by its exact replacement, a complete passing configured baseline, and a complete failing configured mutant run with no missing or skipped cases. Raw Timeout, NoCoverage, RuntimeError, and Pending cannot be waived.",
+  "campaignEvidence": [
+    "Exact source inventory before and after execution",
+    "Tool and SDK identities and resolved dependency hashes",
+    "Raw mutation reports and process exit codes",
+    "Exact source-file instrumentation inventory",
+    "Individual evidence for any reviewed equivalence or compiler non-viability"
+  ],
+  "lastRun": "Run results are written separately; this policy is not evidence that a campaign passed."
+}

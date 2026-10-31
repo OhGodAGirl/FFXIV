@@ -10,9 +10,24 @@ public sealed record DiagnosticUi
     public double UiScale { get; init; } = 1;
     public bool WideActions { get; init; } = true;
     public int CollectionColumnCount { get; init; } = 3;
-    public bool FontReady { get; init; }
-    public int PushedStyleVarCount { get; init; }
-    public int PushedColorCount { get; init; }
-    public bool ReduceMotion { get; init; }
-    public long ViewStateRevision { get; init; }
+    public bool FontReady
+    {
+        get; init;
+    }
+    public int PushedStyleVarCount
+    {
+        get; init;
+    }
+    public int PushedColorCount
+    {
+        get; init;
+    }
+    public bool ReduceMotion
+    {
+        get; init;
+    }
+    public long ViewStateRevision
+    {
+        get; init;
+    }
 }

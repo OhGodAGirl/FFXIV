@@ -23,8 +23,14 @@ public sealed class GuidedExportController
     private bool menuRequested;
     private GuidedSource source;
     private string prompt = "";
-    public GuidedState State { get; private set; }
-    public long Generation { get; private set; }
+    public GuidedState State
+    {
+        get; private set;
+    }
+    public long Generation
+    {
+        get; private set;
+    }
     public GuidedSource CurrentSource => source;
     public bool OwnsWindowEdges => IsActive(State);
     public GuidedView View => new(State, Label(State), prompt, IsActive(State),
@@ -35,7 +41,8 @@ public sealed class GuidedExportController
     {
         if (command == GuidedCommand.Start && !IsActive(State))
         {
-            if (!frame.LoggedIn || frame.ContentId == 0 || frame.Stopping) return GuidedEffect.None;
+            if (!frame.LoggedIn || frame.ContentId == 0 || frame.Stopping)
+                return GuidedEffect.None;
             contentId = frame.ContentId;
             Generation++;
             dresserAttempts = armoireAttempts = 0;
@@ -47,7 +54,8 @@ public sealed class GuidedExportController
             return GuidedEffect.None;
         }
 
-        if (!IsActive(State)) return GuidedEffect.None;
+        if (!IsActive(State))
+            return GuidedEffect.None;
         if (command == GuidedCommand.Cancel || frame.Stopping || !frame.LoggedIn || frame.ContentId != contentId)
         {
             Generation++;
@@ -74,7 +82,8 @@ public sealed class GuidedExportController
                         AdvanceAfterClose(frame.Now);
                     }
                 }
-                else Transition(NeedState, frame.Now);
+                else
+                    Transition(NeedState, frame.Now);
             }
             return GuidedEffect.None;
         }
@@ -99,7 +108,8 @@ public sealed class GuidedExportController
 
         if (State is GuidedState.NeedDresser or GuidedState.NeedArmoire)
         {
-            if (frame.Now < retryAt) return GuidedEffect.None;
+            if (frame.Now < retryAt)
+                return GuidedEffect.None;
             if (frame.ExpectedAddonPresent)
             {
                 appearedAt = frame.Now;
@@ -135,7 +145,10 @@ public sealed class GuidedExportController
                 Transition(NeedState, frame.Now);
                 return GuidedEffect.None;
             }
-            if (source == GuidedSource.Dresser) dresserAttempts++; else armoireAttempts++;
+            if (source == GuidedSource.Dresser)
+                dresserAttempts++;
+            else
+                armoireAttempts++;
             appearedAt = null;
             menuRequested = false;
             Transition(WaitReadyState, frame.Now);
@@ -170,7 +183,11 @@ public sealed class GuidedExportController
                     retryAt = frame.Now + RetryDelay;
                     Transition(NeedState, frame.Now);
                 }
-                else { Transition(NeedState, frame.Now); prompt = "Automatic interaction paused. Open the window manually to continue automatically."; }
+                else
+                {
+                    Transition(NeedState, frame.Now);
+                    prompt = "Automatic interaction paused. Open the window manually to continue automatically.";
+                }
             }
             return GuidedEffect.None;
         }
@@ -189,7 +206,10 @@ public sealed class GuidedExportController
             }
             if (frame.CaptureResult == GuidedResult.Succeeded)
             {
-                if (source == GuidedSource.Dresser) dresserCompleted = true; else armoireCompleted = true;
+                if (source == GuidedSource.Dresser)
+                    dresserCompleted = true;
+                else
+                    armoireCompleted = true;
                 Transition(CloseState, frame.Now);
             }
             else if (frame.CaptureResult == GuidedResult.Failed)
@@ -222,7 +242,8 @@ public sealed class GuidedExportController
     private bool ExactReady(GuidedFrame frame) => frame.ExpectedAddonPresent && frame.AddonReady && frame.ManagerReady && frame.AddonIdentity == capturedAddon;
     public void RejectEffect(GuidedEffect effect, TimeSpan now)
     {
-        if (effect.Generation != Generation || !OwnsWindowEdges) return;
+        if (effect.Generation != Generation || !OwnsWindowEdges)
+            return;
         Pause("The requested action could not complete. Open the requested window manually, then select Continue.", now);
     }
     private int Attempts => source == GuidedSource.Dresser ? dresserAttempts : armoireAttempts;
@@ -233,7 +254,13 @@ public sealed class GuidedExportController
     private GuidedState CloseState => source == GuidedSource.Dresser ? GuidedState.RequestDresserClose : GuidedState.RequestArmoireClose;
     private GuidedState WaitClosedState => source == GuidedSource.Dresser ? GuidedState.WaitForDresserClosed : GuidedState.WaitForArmoireClosed;
     private GuidedEffect Effect(GuidedEffectKind kind) => new(kind, source, targetIdentity, capturedAddon, Generation);
-    private void Transition(GuidedState state, TimeSpan now) { State = state; enteredAt = now; if (state is not (GuidedState.Paused or GuidedState.PausedWithPartial)) prompt = Label(state); }
+    private void Transition(GuidedState state, TimeSpan now)
+    {
+        State = state;
+        enteredAt = now;
+        if (state is not (GuidedState.Paused or GuidedState.PausedWithPartial))
+            prompt = Label(state);
+    }
     private void AdvanceAfterClose(TimeSpan now)
     {
         if (source == GuidedSource.Dresser)
@@ -242,7 +269,8 @@ public sealed class GuidedExportController
             retryAt = now;
             Transition(GuidedState.NeedArmoire, now);
         }
-        else Transition(GuidedState.SaveFullSnapshot, now);
+        else
+            Transition(GuidedState.SaveFullSnapshot, now);
     }
     private void Pause(string message, TimeSpan now)
     {
@@ -252,8 +280,10 @@ public sealed class GuidedExportController
     public static bool IsActive(GuidedState state) => state is not (GuidedState.Idle or GuidedState.Completed or GuidedState.Cancelled or GuidedState.Failed);
     public static string Label(GuidedState state)
     {
-        if (state == GuidedState.NeedDresser || state == GuidedState.RequestDresserInteraction || state == GuidedState.WaitForDresserReady) return "Opening Dresser";
-        if (state == GuidedState.NeedArmoire || state == GuidedState.RequestArmoireInteraction || state == GuidedState.WaitForArmoireReady) return "Opening Armoire";
+        if (state == GuidedState.NeedDresser || state == GuidedState.RequestDresserInteraction || state == GuidedState.WaitForDresserReady)
+            return "Opening Dresser";
+        if (state == GuidedState.NeedArmoire || state == GuidedState.RequestArmoireInteraction || state == GuidedState.WaitForArmoireReady)
+            return "Opening Armoire";
         return state switch
         {
             GuidedState.CaptureDresser => "Capturing Dresser",

@@ -4,3 +4,7 @@
 /data/Diagnostics/** -text whitespace=cr-at-eol
 /src/Contracts/** -text whitespace=cr-at-eol
 /tests/fixtures/** -text whitespace=cr-at-eol
+
+/tests/Exportaramus.ConsumerKit.Tests/** -text whitespace=cr-at-eol
+/project/ConsumerKit/** -text whitespace=cr-at-eol
+/examples/CollectionExample/** -text whitespace=cr-at-eol

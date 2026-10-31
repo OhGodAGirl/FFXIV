@@ -62,7 +62,8 @@ public sealed class ThemePolicyTests
         foreach (var property in typeof(ThemePalette).GetProperties())
         {
             var color = (Vector4)property.GetValue(palette)!;
-            foreach (var component in new[] { color.X, color.Y, color.Z, color.W }) Assert.InRange(component, 0, 1);
+            foreach (var component in new[] { color.X, color.Y, color.Z, color.W })
+                Assert.InRange(component, 0, 1);
         }
         if (id is 1 or 4 or 7)
         {
@@ -75,7 +76,8 @@ public sealed class ThemePolicyTests
     {
         static double Linear(float c) => c <= .04045 ? c / 12.92 : Math.Pow((c + .055) / 1.055, 2.4);
         static double Luminance(Vector4 c) => .2126 * Linear(c.X) + .7152 * Linear(c.Y) + .0722 * Linear(c.Z);
-        var x = Luminance(a); var y = Luminance(b);
+        var x = Luminance(a);
+        var y = Luminance(b);
         return (Math.Max(x, y) + .05) / (Math.Min(x, y) + .05);
     }
 }

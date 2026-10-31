@@ -12,7 +12,11 @@ public sealed class GuidedFinalMutationTests
     [InlineData(GuidedSource.Armoire)]
     public void DiscoveryAcceptsAValidFurnishingAtThePlayersPosition(GuidedSource source)
     {
-        var furnishing = Dresser with { Source = source, Distance = 0 };
+        var furnishing = Dresser with
+        {
+            Source = source,
+            Distance = 0
+        };
 
         Assert.True(FurnishingPolicy.IsDiscoverable(furnishing, source));
         Assert.Same(furnishing, FurnishingPolicy.Discover([furnishing], source, 0));
@@ -21,8 +25,16 @@ public sealed class GuidedFinalMutationTests
     [Fact]
     public void DiscoveryChoosesTheNearestCandidateWithoutAMatchingTarget()
     {
-        var near = Dresser with { Identity = 30, Distance = 4 };
-        var far = Dresser with { Identity = 5, Distance = 12 };
+        var near = Dresser with
+        {
+            Identity = 30,
+            Distance = 4
+        };
+        var far = Dresser with
+        {
+            Identity = 5,
+            Distance = 12
+        };
 
         Assert.Same(near, FurnishingPolicy.Discover([far, near], GuidedSource.Dresser, 99));
         Assert.Same(near, FurnishingPolicy.Discover([near, far], GuidedSource.Dresser, 0));
@@ -31,8 +43,14 @@ public sealed class GuidedFinalMutationTests
     [Fact]
     public void EquidistantDiscoveryUsesTheLowestIdentityRegardlessOfInputOrder()
     {
-        var low = Dresser with { Identity = 5 };
-        var high = Dresser with { Identity = 30 };
+        var low = Dresser with
+        {
+            Identity = 5
+        };
+        var high = Dresser with
+        {
+            Identity = 30
+        };
 
         Assert.Same(low, FurnishingPolicy.Discover([high, low], GuidedSource.Dresser, 0));
         Assert.Same(low, FurnishingPolicy.Discover([low, high], GuidedSource.Dresser, 0));
@@ -41,8 +59,16 @@ public sealed class GuidedFinalMutationTests
     [Fact]
     public void AValidCurrentTargetTakesPriorityOverANearerFurnishing()
     {
-        var near = Dresser with { Identity = 5, Distance = 1 };
-        var targeted = Dresser with { Identity = 30, Distance = 12 };
+        var near = Dresser with
+        {
+            Identity = 5,
+            Distance = 1
+        };
+        var targeted = Dresser with
+        {
+            Identity = 30,
+            Distance = 12
+        };
 
         Assert.Same(targeted, FurnishingPolicy.Discover([near, targeted], GuidedSource.Dresser, 30));
         Assert.Same(targeted, FurnishingPolicy.Discover([targeted, near], GuidedSource.Dresser, 30));
@@ -56,7 +82,11 @@ public sealed class GuidedFinalMutationTests
     public void WaitingPromptExplainsTheCurrentCompatibilityOrSafetyBlock(bool runtimeValidated, bool safe, string expected)
     {
         var controller = new GuidedExportController();
-        var frame = Frame() with { RuntimeValidated = runtimeValidated, SafeConditions = safe };
+        var frame = Frame() with
+        {
+            RuntimeValidated = runtimeValidated,
+            SafeConditions = safe
+        };
         controller.Update(frame, GuidedCommand.Start);
 
         Assert.Equal(GuidedEffectKind.None, controller.Update(frame).Kind);
@@ -64,7 +94,11 @@ public sealed class GuidedFinalMutationTests
         Assert.Equal(expected, controller.View.Prompt);
         Assert.False(controller.View.Paused);
 
-        controller.Update(frame with { RuntimeValidated = true, SafeConditions = true });
+        controller.Update(frame with
+        {
+            RuntimeValidated = true,
+            SafeConditions = true
+        });
         Assert.Equal(GuidedState.RequestDresserInteraction, controller.State);
         Assert.Equal("Opening Dresser", controller.View.Prompt);
     }
@@ -76,7 +110,10 @@ public sealed class GuidedFinalMutationTests
     {
         var (controller, frame) = BeginSource(source);
 
-        Assert.Equal(GuidedEffectKind.None, controller.Update(frame with { Furnishings = [] }).Kind);
+        Assert.Equal(GuidedEffectKind.None, controller.Update(frame with
+        {
+            Furnishings = []
+        }).Kind);
         Assert.Equal(NeedState(source), controller.State);
         Assert.Equal(expected, controller.View.Prompt);
         Assert.False(controller.View.Paused);
@@ -89,8 +126,15 @@ public sealed class GuidedFinalMutationTests
     public void OutOfRangePromptNamesTheTargetAndLeavesMovementToThePlayer(GuidedSource source, string name)
     {
         var (controller, frame) = BeginSource(source);
-        var far = (source == GuidedSource.Dresser ? Dresser : Armoire) with { Distance = 12.5 };
-        frame = frame with { Furnishings = [far], CurrentTarget = 99 };
+        var far = (source == GuidedSource.Dresser ? Dresser : Armoire) with
+        {
+            Distance = 12.5
+        };
+        frame = frame with
+        {
+            Furnishings = [far],
+            CurrentTarget = 99
+        };
 
         var selection = controller.Update(frame);
         Assert.Equal(GuidedEffectKind.SelectTarget, selection.Kind);
@@ -98,7 +142,10 @@ public sealed class GuidedFinalMutationTests
         Assert.Equal($"Move closer to the targeted {name} ({12.5:F1} yalms). Movement is left to you.", controller.View.Prompt);
         Assert.Equal(NeedState(source), controller.State);
         Assert.False(controller.View.Paused);
-        Assert.Equal(GuidedEffectKind.None, controller.Update(frame with { CurrentTarget = far.Identity }).Kind);
+        Assert.Equal(GuidedEffectKind.None, controller.Update(frame with
+        {
+            CurrentTarget = far.Identity
+        }).Kind);
     }
 
     [Theory]
@@ -115,10 +162,16 @@ public sealed class GuidedFinalMutationTests
             Assert.Equal(source, interaction.Source);
             Assert.Equal(frame.CurrentTarget, interaction.TargetIdentity);
 
-            frame = frame with { Now = frame.Now + TimeSpan.FromMilliseconds(899) };
+            frame = frame with
+            {
+                Now = frame.Now + TimeSpan.FromMilliseconds(899)
+            };
             Assert.Equal(GuidedEffectKind.None, controller.Update(frame).Kind);
             Assert.Equal(WaitReadyState(source), controller.State);
-            frame = frame with { Now = frame.Now + TimeSpan.FromMilliseconds(1) };
+            frame = frame with
+            {
+                Now = frame.Now + TimeSpan.FromMilliseconds(1)
+            };
             Assert.Equal(GuidedEffectKind.None, controller.Update(frame).Kind);
             Assert.Equal(NeedState(source), controller.State);
 
@@ -129,20 +182,32 @@ public sealed class GuidedFinalMutationTests
             }
 
             Assert.Equal(source == GuidedSource.Dresser ? "Opening Dresser" : "Opening Armoire", controller.View.Prompt);
-            Assert.Equal(GuidedEffectKind.None, controller.Update(frame with { Now = frame.Now + TimeSpan.FromMilliseconds(149) }).Kind);
+            Assert.Equal(GuidedEffectKind.None, controller.Update(frame with
+            {
+                Now = frame.Now + TimeSpan.FromMilliseconds(149)
+            }).Kind);
             Assert.Equal(NeedState(source), controller.State);
-            frame = frame with { Now = frame.Now + TimeSpan.FromMilliseconds(150) };
+            frame = frame with
+            {
+                Now = frame.Now + TimeSpan.FromMilliseconds(150)
+            };
         }
 
         Assert.Equal(GuidedEffectKind.None, controller.Update(frame).Kind);
         Assert.Equal(expected, controller.View.Prompt);
         Assert.False(controller.View.Paused);
         Assert.Equal(NeedState(source), controller.State);
-        frame = frame with { Now = frame.Now + TimeSpan.FromSeconds(30) };
+        frame = frame with
+        {
+            Now = frame.Now + TimeSpan.FromSeconds(30)
+        };
         Assert.Equal(GuidedEffectKind.None, controller.Update(frame).Kind);
         Assert.Equal(expected, controller.View.Prompt);
 
-        var ready = Ready(frame) with { Furnishings = [] };
+        var ready = Ready(frame) with
+        {
+            Furnishings = []
+        };
         Assert.Equal(GuidedEffectKind.None, controller.Update(ready).Kind);
         Assert.Equal(GuidedEffectKind.None, controller.Update(ready).Kind);
         Assert.Equal(CaptureState(source), controller.State);
@@ -157,7 +222,10 @@ public sealed class GuidedFinalMutationTests
         var (controller, frame) = BeginSource(source);
         controller.Update(frame);
         Assert.Equal(GuidedEffectKind.Interact, controller.Update(frame).Kind);
-        var ready = Ready(frame) with { ArmoireMenuIdentity = 90 };
+        var ready = Ready(frame) with
+        {
+            ArmoireMenuIdentity = 90
+        };
 
         Assert.Equal(GuidedEffectKind.None, controller.Update(ready).Kind);
         Assert.Equal(CaptureState(source), controller.State);
@@ -173,24 +241,40 @@ public sealed class GuidedFinalMutationTests
         var (controller, frame) = BeginSource(GuidedSource.Armoire);
         controller.Update(frame);
         Assert.Equal(GuidedEffectKind.Interact, controller.Update(frame).Kind);
-        Assert.Equal(GuidedEffectKind.SelectArmoireMenu, controller.Update(frame with { ArmoireMenuIdentity = 90 }).Kind);
+        Assert.Equal(GuidedEffectKind.SelectArmoireMenu, controller.Update(frame with
+        {
+            ArmoireMenuIdentity = 90
+        }).Kind);
         controller.Update(frame, GuidedCommand.Cancel);
 
-        frame = Frame() with { Now = TimeSpan.FromSeconds(1) };
+        frame = Frame() with
+        {
+            Now = TimeSpan.FromSeconds(1)
+        };
         controller.Update(frame, GuidedCommand.Start);
         CaptureOpenWindow(controller, frame, GuidedSource.Dresser);
         Assert.Equal(GuidedEffectKind.CloseAddon, controller.Update(Ready(frame)).Kind);
         controller.Update(frame);
         Assert.Equal(GuidedState.NeedArmoire, controller.State);
 
-        frame = frame with { CurrentTarget = 20, AddonIdentity = 43 };
+        frame = frame with
+        {
+            CurrentTarget = 20,
+            AddonIdentity = 43
+        };
         Assert.Equal(GuidedEffectKind.None, controller.Update(Ready(frame)).Kind);
         Assert.Equal(GuidedState.WaitForArmoireReady, controller.State);
-        var menu = controller.Update(frame with { ArmoireMenuIdentity = 91 });
+        var menu = controller.Update(frame with
+        {
+            ArmoireMenuIdentity = 91
+        });
         Assert.Equal(GuidedEffectKind.SelectArmoireMenu, menu.Kind);
         Assert.Equal(91UL, menu.AddonIdentity);
         Assert.Equal(GuidedSource.Armoire, menu.Source);
-        Assert.NotEqual(GuidedEffectKind.SelectArmoireMenu, controller.Update(frame with { ArmoireMenuIdentity = 91 }).Kind);
+        Assert.NotEqual(GuidedEffectKind.SelectArmoireMenu, controller.Update(frame with
+        {
+            ArmoireMenuIdentity = 91
+        }).Kind);
     }
 
     [Fact]
@@ -199,14 +283,21 @@ public sealed class GuidedFinalMutationTests
         var (controller, frame) = BeginSource(GuidedSource.Dresser);
         CaptureOpenWindow(controller, frame, GuidedSource.Dresser);
         Assert.Equal(GuidedEffectKind.CloseAddon, controller.Update(Ready(frame)).Kind);
-        frame = frame with { Now = TimeSpan.FromSeconds(5) };
+        frame = frame with
+        {
+            Now = TimeSpan.FromSeconds(5)
+        };
         controller.Update(Ready(frame));
         Assert.Equal(GuidedState.PausedWithPartial, controller.State);
         Assert.Equal("Glamour Dresser captured; Armoire is incomplete. Close the captured window manually, then select Continue.", controller.View.Prompt);
 
         controller.Update(frame, GuidedCommand.Continue);
         Assert.Equal(GuidedState.NeedArmoire, controller.State);
-        frame = frame with { CurrentTarget = 20, AddonIdentity = 43 };
+        frame = frame with
+        {
+            CurrentTarget = 20,
+            AddonIdentity = 43
+        };
         controller.Update(frame);
         var interaction = controller.Update(frame);
         Assert.Equal(GuidedEffectKind.Interact, interaction.Kind);
@@ -230,7 +321,10 @@ public sealed class GuidedFinalMutationTests
         controller.Update(ready);
         Assert.Equal(GuidedEffectKind.Capture, controller.Update(ready).Kind);
 
-        controller.Update(ready with { CaptureResult = GuidedResult.Failed });
+        controller.Update(ready with
+        {
+            CaptureResult = GuidedResult.Failed
+        });
         Assert.Equal(GuidedState.PausedWithPartial, controller.State);
         Assert.Equal(GuidedState.PausedWithPartial, controller.View.State);
         Assert.Equal("Glamour Dresser captured; Armoire is incomplete. Capture failed. Reopen the requested window manually, then select Continue.", controller.View.Prompt);
@@ -264,7 +358,11 @@ public sealed class GuidedFinalMutationTests
             CaptureOpenWindow(controller, frame, GuidedSource.Dresser);
             Assert.Equal(GuidedEffectKind.CloseAddon, controller.Update(Ready(frame)).Kind);
             controller.Update(frame);
-            frame = frame with { CurrentTarget = 20, AddonIdentity = 43 };
+            frame = frame with
+            {
+                CurrentTarget = 20,
+                AddonIdentity = 43
+            };
         }
 
         Assert.Equal(NeedState(source), controller.State);
@@ -281,7 +379,10 @@ public sealed class GuidedFinalMutationTests
         var capture = controller.Update(ready);
         Assert.Equal(GuidedEffectKind.Capture, capture.Kind);
         Assert.Equal(source, capture.Source);
-        controller.Update(ready with { CaptureResult = GuidedResult.Succeeded });
+        controller.Update(ready with
+        {
+            CaptureResult = GuidedResult.Succeeded
+        });
         Assert.Equal(source == GuidedSource.Dresser ? GuidedState.RequestDresserClose : GuidedState.RequestArmoireClose, controller.State);
     }
 }

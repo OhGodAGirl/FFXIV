@@ -31,15 +31,30 @@ public sealed class InventoryIpcProvider : IDisposable
     }
     public void Update(InventorySnapshot? value)
     {
-        if (disposed || ReferenceEquals(value, current)) return;
+        if (disposed || ReferenceEquals(value, current))
+            return;
         var json = InventoryQuery.Snapshot(value);
-        Volatile.Write(ref current, value); Volatile.Write(ref prepared, json);
-        try { if (value is null) withdrawn.SendMessage(json); else changed.SendMessage(json); } catch (Exception) { }
+        Volatile.Write(ref current, value);
+        Volatile.Write(ref prepared, json);
+        try
+        {
+            if (value is null)
+                withdrawn.SendMessage(json);
+            else
+                changed.SendMessage(json);
+        }
+        catch (Exception) { }
     }
     public void Dispose()
     {
-        if (disposed) return;
-        Update(null); disposed = true;
-        try { capabilities.UnregisterFunc(); } finally { try { snapshot.UnregisterFunc(); } finally { item.UnregisterFunc(); } }
+        if (disposed)
+            return;
+        Update(null);
+        disposed = true;
+        try
+        {
+            capabilities.UnregisterFunc();
+        }
+        finally { try { snapshot.UnregisterFunc(); } finally { item.UnregisterFunc(); } }
     }
 }

@@ -11,7 +11,10 @@ public sealed record MainViewState(long Revision, MainStatus Status, string Stat
 {
     public Exportaramus.Features.Inventory.InventoryPresentation Inventory { get; init; } = Exportaramus.Features.Inventory.InventoryPresentation.Empty;
     public string HealthTooltip { get; init; } = "";
-    public bool RetainersActive { get; init; }
+    public bool RetainersActive
+    {
+        get; init;
+    }
     public string RetainersMessage { get; init; } = "";
     public bool HasSnapshot => !Rows.IsEmpty;
     public string CollectionCountText { get; } = $"{Rows.Length} Collections";

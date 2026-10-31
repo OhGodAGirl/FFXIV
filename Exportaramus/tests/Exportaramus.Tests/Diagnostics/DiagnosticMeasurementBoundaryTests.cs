@@ -26,8 +26,10 @@ public sealed class DiagnosticMeasurementBoundaryTests
         Assert.Throws<IOException>(() => measurements.Measure<int>("Serialize", () => throw new IOException("private text")));
 
         var failure = Assert.Single(measurements.Failures);
-        Assert.Equal("Pipeline", failure.Component); Assert.Equal("Serialize", failure.Operation);
-        Assert.Equal("OperationFailed", failure.Code); Assert.Equal("IOException", failure.ExceptionType);
+        Assert.Equal("Pipeline", failure.Component);
+        Assert.Equal("Serialize", failure.Operation);
+        Assert.Equal("OperationFailed", failure.Code);
+        Assert.Equal("IOException", failure.ExceptionType);
     }
     [Theory]
     [InlineData(0, 0, false)]
@@ -44,7 +46,8 @@ public sealed class DiagnosticMeasurementBoundaryTests
         measurements.Record("Capture", duration, bytes);
 
         Assert.Equal(unrepresentable, measurements.HasUnrepresentableSamples);
-        if (unrepresentable) Assert.Empty(measurements.Snapshot());
+        if (unrepresentable)
+            Assert.Empty(measurements.Snapshot());
         else
         {
             var metric = Assert.Single(measurements.Snapshot()).Value;

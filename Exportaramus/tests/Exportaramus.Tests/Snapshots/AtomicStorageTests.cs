@@ -15,7 +15,8 @@ public sealed class AtomicStorageTests : IDisposable
         var storage = new AtomicSnapshotStorage(root);
         Assert.Null(await storage.ReadAsync(1, false, default));
         var first = await storage.CommitAsync(1, "{\"revision\":1}", "{\"rich\":1}", "{\"items\":[]}", true, true, now, default);
-        Assert.Equal(1, first.HistoryCount); Assert.NotNull(first.LatestHistoryUtc);
+        Assert.Equal(1, first.HistoryCount);
+        Assert.NotNull(first.LatestHistoryUtc);
         Assert.Equal("{\"revision\":1}", await storage.ReadAsync(1, false, default));
         Assert.Equal("{\"items\":[]}", await storage.ReadAsync(1, true, default));
         Assert.Equal("{\"rich\":1}", await File.ReadAllTextAsync(storage.CanonicalPath));
@@ -32,7 +33,8 @@ public sealed class AtomicStorageTests : IDisposable
         var unrelated = Path.Combine(root, "snapshots", "manual-snapshot-unrelated.json");
         await File.WriteAllTextAsync(unrelated, "keep");
         var second = await storage.CommitAsync(1, "{\"at\":2}", "{\"at\":2}", null, false, true, now.AddSeconds(1), default);
-        Assert.Equal(1, second.HistoryCount); Assert.Equal("{\"at\":2}", await File.ReadAllTextAsync(storage.CanonicalPath));
+        Assert.Equal(1, second.HistoryCount);
+        Assert.Equal("{\"at\":2}", await File.ReadAllTextAsync(storage.CanonicalPath));
         Assert.Equal("keep", await File.ReadAllTextAsync(unrelated));
     }
 
@@ -44,7 +46,8 @@ public sealed class AtomicStorageTests : IDisposable
         await Assert.ThrowsAnyAsync<Exception>(() => storage.CommitAsync(1, "{}", "invalid", null, true, false, now, default));
         Assert.Equal("{\"old\":true}", await storage.ReadAsync(1, false, default));
         Assert.Equal("{\"old\":true}", await File.ReadAllTextAsync(storage.CanonicalPath));
-        using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => storage.CommitAsync(1, "{}", "{}", null, true, false, now, cancellation.Token));
         Assert.Empty(Directory.GetFiles(root, "*.tmp", SearchOption.AllDirectories));
         Assert.Empty(Directory.GetFiles(root, "*.bak", SearchOption.AllDirectories));
@@ -101,7 +104,8 @@ public sealed class AtomicStorageTests : IDisposable
         var recovered = new AtomicSnapshotStorage(root);
         Assert.Equal("{\"old\":true}", await recovered.ReadAsync(1, false, default));
         Assert.Equal("Recovered", recovered.RecoveryState);
-        Assert.False(File.Exists(temporary + ".bak")); Assert.False(File.Exists(Path.Combine(root, "state", "write-recovery.json")));
+        Assert.False(File.Exists(temporary + ".bak"));
+        Assert.False(File.Exists(Path.Combine(root, "state", "write-recovery.json")));
     }
 
     [Fact]
@@ -109,21 +113,26 @@ public sealed class AtomicStorageTests : IDisposable
     {
         var original = new AtomicSnapshotStorage(root);
         await original.CommitAsync(1, "{}", null, "{\"old\":true}", false, false, now, default);
-        var path = original.CharacterPath(1); var temporary = path + "." + new string('b', 32) + ".tmp";
-        await File.WriteAllTextAsync(temporary, "{\"new\":true}"); File.Replace(temporary, path, temporary + ".bak");
+        var path = original.CharacterPath(1);
+        var temporary = path + "." + new string('b', 32) + ".tmp";
+        await File.WriteAllTextAsync(temporary, "{\"new\":true}");
+        File.Replace(temporary, path, temporary + ".bak");
         WriteRecovery(true, (path, temporary, true, false));
         Assert.Equal("{\"new\":true}", await new AtomicSnapshotStorage(root).ReadAsync(1, false, default));
-        var evidence = original.EvidencePath(1); var evidenceTemporary = evidence + "." + new string('c', 32) + ".tmp";
+        var evidence = original.EvidencePath(1);
+        var evidenceTemporary = evidence + "." + new string('c', 32) + ".tmp";
         File.Move(evidence, evidenceTemporary + ".bak");
         WriteRecovery(false, (evidence, evidenceTemporary, true, false));
         Assert.Null(await new AtomicSnapshotStorage(root).ReadAsync(1, true, default));
-        Assert.False(File.Exists(evidence)); Assert.False(File.Exists(evidenceTemporary + ".bak"));
+        Assert.False(File.Exists(evidence));
+        Assert.False(File.Exists(evidenceTemporary + ".bak"));
     }
 
     [Fact]
     public async Task RecoveryRemovesNewInterruptedFileAndRestoresRetainedHistory()
     {
-        var storage = new AtomicSnapshotStorage(root); var path = storage.CharacterPath(1);
+        var storage = new AtomicSnapshotStorage(root);
+        var path = storage.CharacterPath(1);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(path, "{\"new\":true}");
         var temporary = path + "." + new string('d', 32) + ".tmp";
@@ -138,7 +147,9 @@ public sealed class AtomicStorageTests : IDisposable
     [Fact]
     public async Task MalformedRecoveryCannotDeleteUnrelatedPaths()
     {
-        var path = Path.Combine(root, "unrelated.json"); Directory.CreateDirectory(root); await File.WriteAllTextAsync(path, "keep");
+        var path = Path.Combine(root, "unrelated.json");
+        Directory.CreateDirectory(root);
+        await File.WriteAllTextAsync(path, "keep");
         WriteRecovery(false, (path, path + "." + new string('f', 32) + ".tmp", false, false));
         await Assert.ThrowsAsync<InvalidDataException>(() => new AtomicSnapshotStorage(root).ReadAsync(1, false, default));
         Assert.Equal("keep", await File.ReadAllTextAsync(path));
@@ -175,7 +186,8 @@ public sealed class AtomicStorageTests : IDisposable
             BeforeDelete = path => { if (path.EndsWith(".bak", StringComparison.Ordinal)) { if (unauthorized) throw new UnauthorizedAccessException(); throw new IOException(); } },
         });
         var result = await storage.CommitAsync(1, "{\"accepted\":true}", null, null, false, false, now, default);
-        Assert.Equal(0, result.HistoryCount); Assert.Equal("Pending", storage.RecoveryState);
+        Assert.Equal(0, result.HistoryCount);
+        Assert.Equal("Pending", storage.RecoveryState);
         var recovered = new AtomicSnapshotStorage(root);
         Assert.Equal("{\"accepted\":true}", await recovered.ReadAsync(1, false, default));
         Assert.Equal("Recovered", recovered.RecoveryState);
@@ -184,7 +196,8 @@ public sealed class AtomicStorageTests : IDisposable
     [Fact]
     public async Task GrowingReadCannotBypassLimitAfterInitialLengthCheck()
     {
-        var original = new AtomicSnapshotStorage(root); await original.CommitAsync(1, "{}", null, null, false, false, now, default);
+        var original = new AtomicSnapshotStorage(root);
+        await original.CommitAsync(1, "{}", null, null, false, false, now, default);
         var storage = new AtomicSnapshotStorage(root, new FaultFiles { Read = _ => new GrowingStream(new byte[4194305]) });
         await Assert.ThrowsAsync<InvalidDataException>(() => storage.ReadAsync(1, false, default));
     }
@@ -192,33 +205,45 @@ public sealed class AtomicStorageTests : IDisposable
     [Fact]
     public async Task PreparedButUncommittedRecoveryCleansOnlyNamedTemporaries()
     {
-        var storage = new AtomicSnapshotStorage(root); await storage.CommitAsync(1, "{\"old\":true}", null, null, false, false, now, default);
-        var path = storage.CharacterPath(1); var temporary = path + "." + new string('1', 32) + ".tmp";
+        var storage = new AtomicSnapshotStorage(root);
+        await storage.CommitAsync(1, "{\"old\":true}", null, null, false, false, now, default);
+        var path = storage.CharacterPath(1);
+        var temporary = path + "." + new string('1', 32) + ".tmp";
         await File.WriteAllTextAsync(temporary, "{\"candidate\":true}");
-        var newPath = storage.CharacterPath(2); Directory.CreateDirectory(Path.GetDirectoryName(newPath)!);
-        var newTemporary = newPath + "." + new string('2', 32) + ".tmp"; await File.WriteAllTextAsync(newTemporary, "{}");
-        var absentPath = storage.CharacterPath(3); var absentTemporary = absentPath + "." + new string('3', 32) + ".tmp";
-        var unrelated = Path.Combine(root, "unrelated.tmp"); await File.WriteAllTextAsync(unrelated, "keep");
+        var newPath = storage.CharacterPath(2);
+        Directory.CreateDirectory(Path.GetDirectoryName(newPath)!);
+        var newTemporary = newPath + "." + new string('2', 32) + ".tmp";
+        await File.WriteAllTextAsync(newTemporary, "{}");
+        var absentPath = storage.CharacterPath(3);
+        var absentTemporary = absentPath + "." + new string('3', 32) + ".tmp";
+        var unrelated = Path.Combine(root, "unrelated.tmp");
+        await File.WriteAllTextAsync(unrelated, "keep");
         WriteRecovery(false, (path, temporary, true, false), (newPath, newTemporary, false, false), (absentPath, absentTemporary, false, false));
         Assert.Equal("{\"old\":true}", await new AtomicSnapshotStorage(root).ReadAsync(1, false, default));
-        Assert.False(File.Exists(temporary)); Assert.False(File.Exists(newTemporary)); Assert.Equal("keep", await File.ReadAllTextAsync(unrelated));
+        Assert.False(File.Exists(temporary));
+        Assert.False(File.Exists(newTemporary));
+        Assert.Equal("keep", await File.ReadAllTextAsync(unrelated));
     }
 
     [Fact]
     public async Task MissingBackupDuringRollbackIsReportedAndJournalIsPreserved()
     {
-        var original = new AtomicSnapshotStorage(root); await original.CommitAsync(1, "{\"old\":true}", null, null, false, false, now, default);
+        var original = new AtomicSnapshotStorage(root);
+        await original.CommitAsync(1, "{\"old\":true}", null, null, false, false, now, default);
         var storage = new AtomicSnapshotStorage(root, new FaultFiles
         {
             BeforeMove = (_, destination) =>
             {
-                if (!destination.EndsWith("current-snapshot.json", StringComparison.Ordinal)) return;
-                foreach (var backup in Directory.GetFiles(root, "*.bak", SearchOption.AllDirectories)) File.Delete(backup);
+                if (!destination.EndsWith("current-snapshot.json", StringComparison.Ordinal))
+                    return;
+                foreach (var backup in Directory.GetFiles(root, "*.bak", SearchOption.AllDirectories))
+                    File.Delete(backup);
                 throw new IOException("Failure with an unavailable prior backup");
             },
         });
         await Assert.ThrowsAsync<IOException>(() => storage.CommitAsync(1, "{\"new\":true}", "{}", null, false, false, now, default));
-        Assert.Equal("Failed", storage.RecoveryState); Assert.True(File.Exists(Path.Combine(root, "state", "write-recovery.json")));
+        Assert.Equal("Failed", storage.RecoveryState);
+        Assert.True(File.Exists(Path.Combine(root, "state", "write-recovery.json")));
         await Assert.ThrowsAsync<IOException>(() => new AtomicSnapshotStorage(root).ReadAsync(1, false, default));
     }
 
@@ -229,7 +254,8 @@ public sealed class AtomicStorageTests : IDisposable
         {
             BeforeMove = (_, destination) =>
             {
-                if (!destination.EndsWith("current-snapshot.json", StringComparison.Ordinal)) return;
+                if (!destination.EndsWith("current-snapshot.json", StringComparison.Ordinal))
+                    return;
                 File.Delete(Path.Combine(root, "snapshots", "characters", "1", "collection-data.json"));
                 throw new IOException();
             },
@@ -241,9 +267,11 @@ public sealed class AtomicStorageTests : IDisposable
     [Fact]
     public async Task TooManyRecoveryEntriesRejectBeforeReplacingAnyCurrentFile()
     {
-        var storage = new AtomicSnapshotStorage(root); await storage.CommitAsync(1, "{\"old\":true}", null, null, false, false, now, default);
+        var storage = new AtomicSnapshotStorage(root);
+        await storage.CommitAsync(1, "{\"old\":true}", null, null, false, false, now, default);
         var directory = Path.Combine(root, "snapshots");
-        for (int i = 0; i < 90; i++) await File.WriteAllTextAsync(Path.Combine(directory, $"manual-snapshot-20260905-000000-{i:000}.json"), "{}");
+        for (int i = 0; i < 90; i++)
+            await File.WriteAllTextAsync(Path.Combine(directory, $"manual-snapshot-20260905-000000-{i:000}.json"), "{}");
         await Assert.ThrowsAsync<InvalidDataException>(() => storage.CommitAsync(1, "{}", "{}", null, true, false, now, default));
         Assert.Equal("{\"old\":true}", await storage.ReadAsync(1, false, default));
     }
@@ -265,7 +293,9 @@ public sealed class AtomicStorageTests : IDisposable
     [InlineData("size")]
     public async Task RecoveryRejectsMalformedRecordsWithoutMutatingFiles(string defect)
     {
-        var storage = new AtomicSnapshotStorage(root); var path = storage.CharacterPath(1); Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        var storage = new AtomicSnapshotStorage(root);
+        var path = storage.CharacterPath(1);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(path, "keep");
         var temporary = path + "." + new string('f', 32) + ".tmp";
         WriteRecovery(false, (path, temporary, true, false));
@@ -274,12 +304,25 @@ public sealed class AtomicStorageTests : IDisposable
         var entries = json["files"]!.AsArray();
         switch (defect)
         {
-            case "format": json["format"] = "other"; break;
-            case "version": json["version"] = 2; break;
-            case "empty": entries.Clear(); break;
-            case "count": while (entries.Count < 65) entries.Add(entries[0]!.DeepClone()); break;
-            case "duplicate": entries.Add(entries[0]!.DeepClone()); break;
-            case "temporary": entries[0]!["temporary"] = "../elsewhere.tmp"; break;
+            case "format":
+                json["format"] = "other";
+                break;
+            case "version":
+                json["version"] = 2;
+                break;
+            case "empty":
+                entries.Clear();
+                break;
+            case "count":
+                while (entries.Count < 65)
+                    entries.Add(entries[0]!.DeepClone());
+                break;
+            case "duplicate":
+                entries.Add(entries[0]!.DeepClone());
+                break;
+            case "temporary":
+                entries[0]!["temporary"] = "../elsewhere.tmp";
+                break;
             case "temporaryPrefix":
                 entries[0]!["temporary"] = "unrelated/" + entries[0]!["temporary"]!.GetValue<string>();
                 entries[0]!["backup"] = entries[0]!["temporary"]!.GetValue<string>() + ".bak";
@@ -291,17 +334,30 @@ public sealed class AtomicStorageTests : IDisposable
                 entries[0]!["temporary"] = destination + "." + new string('f', 32) + ".tmp";
                 entries[0]!["backup"] = entries[0]!["temporary"]!.GetValue<string>() + ".bak";
                 break;
-            case "backup": entries[0]!["backup"] = "../elsewhere.bak"; break;
-            case "delete": entries[0]!["delete"] = true; break;
-            case "deleteMissing": entries[0]!["delete"] = true; entries[0]!["existed"] = false; break;
+            case "backup":
+                entries[0]!["backup"] = "../elsewhere.bak";
+                break;
+            case "delete":
+                entries[0]!["delete"] = true;
+                break;
+            case "deleteMissing":
+                entries[0]!["delete"] = true;
+                entries[0]!["existed"] = false;
+                break;
             case "deleteCanonical":
-                entries[0]!["destination"] = "current-snapshot.json"; entries[0]!["temporary"] = "current-snapshot.json." + new string('f', 32) + ".tmp";
-                entries[0]!["backup"] = entries[0]!["temporary"]!.GetValue<string>() + ".bak"; entries[0]!["delete"] = true; break;
-            case "size": json["padding"] = new string('x', 65536); break;
+                entries[0]!["destination"] = "current-snapshot.json";
+                entries[0]!["temporary"] = "current-snapshot.json." + new string('f', 32) + ".tmp";
+                entries[0]!["backup"] = entries[0]!["temporary"]!.GetValue<string>() + ".bak";
+                entries[0]!["delete"] = true;
+                break;
+            case "size":
+                json["padding"] = new string('x', 65536);
+                break;
         }
         await File.WriteAllTextAsync(recovery, json.ToJsonString());
         await Assert.ThrowsAsync<InvalidDataException>(() => storage.ReadAsync(1, false, default));
-        Assert.Equal("Failed", storage.RecoveryState); Assert.Equal("keep", await File.ReadAllTextAsync(path));
+        Assert.Equal("Failed", storage.RecoveryState);
+        Assert.Equal("keep", await File.ReadAllTextAsync(path));
     }
 
     [Fact]
@@ -313,12 +369,14 @@ public sealed class AtomicStorageTests : IDisposable
         {
             BeforeDelete = path =>
         {
-            if (path.EndsWith(".bak", StringComparison.Ordinal)) File.Delete(Path.Combine(root, "state", "write-recovery.json"));
+            if (path.EndsWith(".bak", StringComparison.Ordinal))
+                File.Delete(Path.Combine(root, "state", "write-recovery.json"));
         }
         };
         var next = new AtomicSnapshotStorage(root, files);
         await next.CommitAsync(1, "{\"new\":true}", null, null, false, false, now, default);
-        Assert.Equal("None", next.RecoveryState); Assert.Equal("{\"new\":true}", await next.ReadAsync(1, false, default));
+        Assert.Equal("None", next.RecoveryState);
+        Assert.Equal("{\"new\":true}", await next.ReadAsync(1, false, default));
     }
 
     private sealed class FaultFiles : IAtomicFileOperations
@@ -328,9 +386,21 @@ public sealed class AtomicStorageTests : IDisposable
         public Action<string>? BeforeDelete;
         public Func<string, Stream>? Read;
         public Stream OpenRead(string path) => Read?.Invoke(path) ?? new AtomicFileOperations().OpenRead(path);
-        public void Replace(string source, string destination, string? backup) { BeforeReplace?.Invoke(source, destination, backup); File.Replace(source, destination, backup); }
-        public void Move(string source, string destination) { BeforeMove?.Invoke(source, destination); File.Move(source, destination); }
-        public void Delete(string path) { BeforeDelete?.Invoke(path); File.Delete(path); }
+        public void Replace(string source, string destination, string? backup)
+        {
+            BeforeReplace?.Invoke(source, destination, backup);
+            File.Replace(source, destination, backup);
+        }
+        public void Move(string source, string destination)
+        {
+            BeforeMove?.Invoke(source, destination);
+            File.Move(source, destination);
+        }
+        public void Delete(string path)
+        {
+            BeforeDelete?.Invoke(path);
+            File.Delete(path);
+        }
     }
 
     private sealed class GrowingStream(byte[] bytes) : MemoryStream(bytes)
@@ -357,5 +427,9 @@ public sealed class AtomicStorageTests : IDisposable
         }));
     }
 
-    public void Dispose() { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    public void Dispose()
+    {
+        if (Directory.Exists(root))
+            Directory.Delete(root, true);
+    }
 }

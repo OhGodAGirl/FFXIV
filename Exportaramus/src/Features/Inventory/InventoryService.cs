@@ -22,14 +22,22 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
     private string? lastCacheFailure;
     private DateTimeOffset retryAt;
 
-    public string? LastCacheFailure { get { lock (sync) return lastCacheFailure; } }
+    public string? LastCacheFailure
+    {
+        get
+        {
+            lock (sync)
+                return lastCacheFailure;
+        }
+    }
     public InventorySnapshot? GetSnapshot() => Volatile.Read(ref snapshot);
 
     public void SetCharacter(ulong contentId)
     {
         lock (sync)
         {
-            if (disposed || (snapshot?.ContentId ?? 0) == contentId) return;
+            if (disposed || (snapshot?.ContentId ?? 0) == contentId)
+                return;
             generation++;
             Volatile.Write(ref snapshot, contentId == 0 ? null : InventoryPolicy.Empty(contentId, ++revision));
             restorePending = contentId != 0 && cache is not null;
@@ -40,25 +48,37 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
     {
         lock (sync)
         {
-            if (!IsCurrent(contentId)) return false;
+            if (!IsCurrent(contentId))
+                return false;
             var rosterObservedAt = observedAt ?? clock.GetUtcNow();
-            if (rosterObservedAt == default || snapshot!.RetainerRosterObservedAtUtc > rosterObservedAt) return false;
+            if (rosterObservedAt == default || snapshot!.RetainerRosterObservedAtUtc > rosterObservedAt)
+                return false;
             var retainers = new Dictionary<ulong, InventoryRetainer>();
             foreach (var retainer in roster)
             {
                 if (retainer is null || retainer.RetainerId == 0 || !InventoryPolicy.ValidName(retainer.Name)
-                    || retainers.Count == InventoryPolicy.MaximumRetainers || !retainers.TryAdd(retainer.RetainerId, retainer)) return false;
+                    || retainers.Count == InventoryPolicy.MaximumRetainers || !retainers.TryAdd(retainer.RetainerId, retainer))
+                    return false;
             }
             var locations = snapshot!.Locations.Where(location => location.Key.Kind != InventoryLocationKind.Retainer).ToList();
             foreach (var retainer in retainers.Values)
             {
                 var key = new InventoryLocationKey(InventoryLocationKind.Retainer, retainer.RetainerId);
                 var old = snapshot.Locations.FirstOrDefault(location => location.Key == key);
-                locations.Add(old is null ? InventoryPolicy.Unknown(key, retainer.Name) : old with { Name = retainer.Name });
+                locations.Add(old is null ? InventoryPolicy.Unknown(key, retainer.Name) : old with
+                {
+                    Name = retainer.Name
+                });
             }
             var ordered = InventoryPolicy.Order(locations);
-            if (snapshot.RetainerRosterKnown && snapshot.Locations.SequenceEqual(ordered)) return false;
-            Publish(snapshot with { RetainerRosterKnown = true, RetainerRosterObservedAtUtc = rosterObservedAt.ToUniversalTime(), Locations = ordered });
+            if (snapshot.RetainerRosterKnown && snapshot.Locations.SequenceEqual(ordered))
+                return false;
+            Publish(snapshot with
+            {
+                RetainerRosterKnown = true,
+                RetainerRosterObservedAtUtc = rosterObservedAt.ToUniversalTime(),
+                Locations = ordered
+            });
             return true;
         }
     }
@@ -67,15 +87,18 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
     {
         lock (sync)
         {
-            if (!CanAccept(contentId, key, name) || observedAt == default) return false;
+            if (!CanAccept(contentId, key, name) || observedAt == default)
+                return false;
             // CanAccept guarantees a standard location or a member of the current Retainer roster.
             var old = snapshot!.Locations.First(location => location.Key == key);
-            if (old.ObservedAtUtc > observedAt) return false;
+            if (old.ObservedAtUtc > observedAt || old.AttemptedAtUtc > observedAt)
+                return false;
             var quantified = key.Kind is not (InventoryLocationKind.Armoire or InventoryLocationKind.GlamourDresser);
             if (!InventoryPolicy.TryNormalize(items, out var normalized, quantified))
                 return MarkUnavailable(contentId, key, name, observedAt, true);
             if (old is { State: InventoryObservationState.Observed } && old.Name == name
-                && old.Items.SequenceEqual(normalized) && observedAt - old.ObservedAtUtc!.Value < TimeSpan.FromMinutes(1)) return false;
+                && old.Items.SequenceEqual(normalized) && observedAt - old.ObservedAtUtc!.Value < TimeSpan.FromMinutes(1))
+                return false;
             Replace(new(key, name, InventoryObservationState.Observed, observedAt.ToUniversalTime(), observedAt.ToUniversalTime(), normalized));
             return true;
         }
@@ -85,13 +108,21 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
     {
         lock (sync)
         {
-            if (!CanAccept(contentId, key, name) || attemptedAt == default) return false;
+            if (!CanAccept(contentId, key, name) || attemptedAt == default)
+                return false;
             // CanAccept guarantees this location exists in the current snapshot.
             var old = snapshot!.Locations.First(location => location.Key == key);
-            if (old.AttemptedAtUtc > attemptedAt) return false;
+            if (old.AttemptedAtUtc > attemptedAt)
+                return false;
             var state = readFailed ? InventoryObservationState.ReadFailed : old.HasObservation ? InventoryObservationState.Retained : InventoryObservationState.Unknown;
-            if (old.State == state && old.Name == name) return false;
-            Replace(old with { Name = name, State = state, AttemptedAtUtc = attemptedAt.ToUniversalTime() });
+            if (old.State == state && old.Name == name)
+                return false;
+            Replace(old with
+            {
+                Name = name,
+                State = state,
+                AttemptedAtUtc = attemptedAt.ToUniversalTime()
+            });
             return true;
         }
     }
@@ -101,7 +132,8 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
     {
         lock (sync)
         {
-            if (disposed || cache is null || worker is { IsCompleted: false }) return;
+            if (disposed || cache is null || worker is { IsCompleted: false })
+                return;
             if (worker is not null)
             {
                 try
@@ -113,7 +145,8 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
                         Publish(restored);
                     }
                     if (workerWrite is not null && pendingWrites.TryGetValue(workerWrite.ContentId, out var pending)
-                        && ReferenceEquals(pending, workerWrite)) pendingWrites.Remove(workerWrite.ContentId);
+                        && ReferenceEquals(pending, workerWrite))
+                        pendingWrites.Remove(workerWrite.ContentId);
                     lastCacheFailure = null;
                     retryAt = default;
                 }
@@ -154,19 +187,26 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
 
     private void Publish(InventorySnapshot value)
     {
-        value = value with { Revision = ++revision };
+        value = value with
+        {
+            Revision = ++revision
+        };
         Volatile.Write(ref snapshot, value);
-        if (cache is null) return;
+        if (cache is null)
+            return;
         // Bounded per-character coalescing retains final writes across ordinary character switches.
-        if (pendingWrites.ContainsKey(value.ContentId) || pendingWrites.Count < 16) pendingWrites[value.ContentId] = value;
-        else lastCacheFailure = "InventoryCacheQueueFull";
+        if (pendingWrites.ContainsKey(value.ContentId) || pendingWrites.Count < 16)
+            pendingWrites[value.ContentId] = value;
+        else
+            lastCacheFailure = "InventoryCacheQueueFull";
     }
 
     public ValueTask DisposeAsync()
     {
         lock (sync)
         {
-            if (disposal is not null) return new(disposal);
+            if (disposal is not null)
+                return new(disposal);
             disposed = true;
             generation++;
             Volatile.Write(ref snapshot, null);
@@ -177,12 +217,21 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
             pendingWrites.Clear();
             disposal = Task.Run(async () =>
             {
-                try { if (owned is not null) await owned.ConfigureAwait(false); } catch (Exception) { }
+                try
+                {
+                    if (owned is not null)
+                        await owned.ConfigureAwait(false);
+                }
+                catch (Exception) { }
                 // Final writes own only immutable values and cache handles, never host services.
                 using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
                 if (cache is not null)
                     foreach (var value in finalWrites)
-                        try { await cache.SaveAsync(value, deadline.Token).ConfigureAwait(false); } catch (Exception) { }
+                        try
+                        {
+                            await cache.SaveAsync(value, deadline.Token).ConfigureAwait(false);
+                        }
+                        catch (Exception) { }
                 lifetime.Dispose();
             });
             return new(disposal);

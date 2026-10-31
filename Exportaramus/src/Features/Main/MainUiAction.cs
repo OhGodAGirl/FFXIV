@@ -1,3 +1,6 @@
 namespace Exportaramus.Features.Main;
 
-public enum MainUiAction { None, Close, Sync, ToggleReduceMotion }
+public enum MainUiAction
+{
+    None, Close, Sync, ToggleReduceMotion
+}

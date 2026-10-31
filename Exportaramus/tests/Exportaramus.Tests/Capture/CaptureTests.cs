@@ -16,12 +16,15 @@ public sealed class CaptureTests
     {
         var read = CaptureReadPolicy.Presence([new(9, 2), new(3, 1), new(9, 3), new(0, 0)], true, true, 4, Now);
         Assert.Equal(new[] { new PresenceItem(3, 1), new PresenceItem(9, 5) }, read.Items.ToArray());
-        Assert.True(read.Health.IsUsable); Assert.Equal(Now, read.Health.ObservedAtUtc);
+        Assert.True(read.Health.IsUsable);
+        Assert.Equal(Now, read.Health.ObservedAtUtc);
         Assert.Equal(ReasonCode.None, read.Health.ReasonCode);
         var empty = CaptureReadPolicy.Presence([], true, true, 5, Now);
-        Assert.Empty(empty.Items); Assert.Equal(SourceStatus.Fresh, empty.Health.SourceStatus);
+        Assert.Empty(empty.Items);
+        Assert.Equal(SourceStatus.Fresh, empty.Health.SourceStatus);
         var overflow = CaptureReadPolicy.Presence([new(9, uint.MaxValue), new(9, 1)], true, true, 6, Now);
-        Assert.Equal(ReasonCode.QuantityOverflow, overflow.Health.ReasonCode); Assert.Empty(overflow.Items);
+        Assert.Equal(ReasonCode.QuantityOverflow, overflow.Health.ReasonCode);
+        Assert.Empty(overflow.Items);
         var maximum = CaptureReadPolicy.Presence([new(9, uint.MaxValue)], true, true, 6, Now);
         Assert.Equal(uint.MaxValue, maximum.Items[0].Quantity);
     }
@@ -30,19 +33,23 @@ public sealed class CaptureTests
     public void MembershipOmitsQuantitiesAndRejectsIncompleteObservations()
     {
         var set = CaptureReadPolicy.Presence([new(4, null), new(4, 23)], false, true, 1, Now);
-        Assert.Equal(new PresenceItem(4, null), Assert.Single(set.Items)); Assert.False(set.SupportsQuantity);
+        Assert.Equal(new PresenceItem(4, null), Assert.Single(set.Items));
+        Assert.False(set.SupportsQuantity);
         var incomplete = CaptureReadPolicy.Presence([new(4, 1)], true, false, 1, Now);
-        Assert.Equal(ReasonCode.IncompleteContainerSet, incomplete.Health.ReasonCode); Assert.Null(incomplete.Health.ObservedAtUtc);
+        Assert.Equal(ReasonCode.IncompleteContainerSet, incomplete.Health.ReasonCode);
+        Assert.Null(incomplete.Health.ObservedAtUtc);
         foreach (uint? bad in new uint?[] { null, 0 })
         {
             var failure = CaptureReadPolicy.Presence([new(4, bad)], true, true, 1, Now);
-            Assert.Equal(ReasonCode.CaptureFailed, failure.Health.ReasonCode); Assert.Empty(failure.Items);
+            Assert.Equal(ReasonCode.CaptureFailed, failure.Health.ReasonCode);
+            Assert.Empty(failure.Items);
         }
         var tooMany = CaptureReadPolicy.Presence(Enumerable.Range(1, 50001).Select(i => new PresenceItem((uint)i, 1)), true, true, 1, Now);
         Assert.Equal(ReasonCode.OutputSizeLimitExceeded, tooMany.Health.ReasonCode);
         var pending = CaptureReadPolicy.FailedPresence(false, 1, Now, ReasonCode.PatchValidationRequired, false);
         Assert.Equal(CapabilityState.UnavailablePendingValidation, pending.Health.CapabilityState);
-        Assert.Equal(ProvenanceType.None, pending.Health.ProvenanceType); Assert.False(pending.Health.IsUsable);
+        Assert.Equal(ProvenanceType.None, pending.Health.ProvenanceType);
+        Assert.False(pending.Health.IsUsable);
     }
 
     [Fact]
@@ -50,13 +57,15 @@ public sealed class CaptureTests
     {
         var accumulator = new RetainerAccumulator();
         var first = accumulator.Observe(1, [10, 20], 10, Presence(7, 3), 1, Now);
-        Assert.Equal(ReasonCode.IncompleteRetainerSet, first.Health.ReasonCode); Assert.Empty(first.Items);
+        Assert.Equal(ReasonCode.IncompleteRetainerSet, first.Health.ReasonCode);
+        Assert.Empty(first.Items);
         var complete = accumulator.Observe(1, [20, 10], 20, Presence(7, 2), 2, Now);
         Assert.Equal(new PresenceItem(7, 5), Assert.Single(complete.Items));
         var removed = accumulator.Observe(1, [10, 20], 10, CaptureReadPolicy.Presence([], true, true, 3, Now), 3, Now);
         Assert.Equal(new PresenceItem(7, 2), Assert.Single(removed.Items));
         var changed = accumulator.Observe(1, [10, 30], 30, Presence(8, 1), 4, Now);
-        Assert.Empty(changed.Items); Assert.Equal(ReasonCode.IncompleteRetainerSet, changed.Health.ReasonCode);
+        Assert.Empty(changed.Items);
+        Assert.Equal(ReasonCode.IncompleteRetainerSet, changed.Health.ReasonCode);
         var replacement = accumulator.Observe(1, [10, 30], 10, Presence(9, 1), 5, Now);
         Assert.Equal(new uint[] { 8, 9 }, replacement.Items.Select(i => i.ItemId));
         var switched = accumulator.Observe(2, [10, 30], 10, Presence(50, 1), 6, Now);
@@ -76,18 +85,33 @@ public sealed class CaptureTests
         Assert.Equal(ReasonCode.IncompleteRetainerSet, accumulator.Observe(1, [10], 99, Presence(1, 1), 1, Now).Health.ReasonCode);
         Assert.Equal(ReasonCode.IncompleteRetainerSet, accumulator.Observe(1, [10], 10, null, 1, Now).Health.ReasonCode);
         Assert.Equal(ReasonCode.IncompleteRetainerSet, accumulator.Observe(1, [10], 10, CaptureReadPolicy.FailedPresence(true, 1, Now, ReasonCode.CaptureFailed), 1, Now).Health.ReasonCode);
-        var stale = Presence(1, 1); stale = stale with { Health = stale.Health with { SourceStatus = SourceStatus.Stale } };
+        var stale = Presence(1, 1);
+        stale = stale with
+        {
+            Health = stale.Health with
+            {
+                SourceStatus = SourceStatus.Stale
+            }
+        };
         Assert.Equal(ReasonCode.IncompleteRetainerSet, accumulator.Observe(1, [10], 10, stale, 1, Now).Health.ReasonCode);
-        Assert.Equal(ReasonCode.IncompleteRetainerSet, accumulator.Observe(1, [10], 10, Presence(1, 1) with { Health = null! }, 1, Now).Health.ReasonCode);
+        Assert.Equal(ReasonCode.IncompleteRetainerSet, accumulator.Observe(1, [10], 10, Presence(1, 1) with
+        {
+            Health = null!
+        }, 1, Now).Health.ReasonCode);
     }
 
     [Fact]
     public void CatalogCacheScopesExactLanguageAndVersion()
     {
-        var cache = new CollectionCatalogCache(); Assert.Null(cache.Get("English", "one"));
-        var catalog = Catalog(); cache.Set(catalog);
-        Assert.Same(catalog, cache.Get("English", "one")); Assert.Null(cache.Get("French", "one")); Assert.Null(cache.Get("English", "two"));
-        cache.Invalidate(); Assert.Null(cache.Get("English", "one"));
+        var cache = new CollectionCatalogCache();
+        Assert.Null(cache.Get("English", "one"));
+        var catalog = Catalog();
+        cache.Set(catalog);
+        Assert.Same(catalog, cache.Get("English", "one"));
+        Assert.Null(cache.Get("French", "one"));
+        Assert.Null(cache.Get("English", "two"));
+        cache.Invalidate();
+        Assert.Null(cache.Get("English", "one"));
     }
 
     [Fact]
@@ -97,15 +121,20 @@ public sealed class CaptureTests
         using var operation = new CollectionReadOperation(fake, Catalog(), true, 1, 1, Now);
         Assert.False(operation.Advance(1));
         bool completed = false;
-        for (var step = 0; step < 2 + 1 + CollectionReadOperation.PhysicalSources.Length + 1 && !completed; step++) completed = operation.Advance(1);
+        for (var step = 0; step < 2 + 1 + CollectionReadOperation.PhysicalSources.Length + 1 && !completed; step++)
+            completed = operation.Advance(1);
         Assert.True(completed, "Two unlock rows, one collection result, seven physical sources and completion must finish.");
         Assert.Equal(new uint[] { 1 }, operation.Result!.Unlocks["mounts"].UnlockedIds);
-        Assert.Equal(7, operation.Result.CurrentItemPresence.Count); Assert.True(operation.Advance());
+        Assert.Equal(7, operation.Result.CurrentItemPresence.Count);
+        Assert.True(operation.Advance());
         Assert.Equal(2, fake.UnlockReads);
         fake = new FakeReader { Validated = false };
         using var pending = new CollectionReadOperation(fake, Catalog(), true, 1, 1, Now);
-        Assert.False(pending.Advance(1)); Assert.Equal(0, fake.PresenceReads);
-        Assert.True(pending.Advance()); Assert.Empty(pending.Result!.Unlocks["mounts"].UnlockedIds); Assert.Equal(0, fake.UnlockReads);
+        Assert.False(pending.Advance(1));
+        Assert.Equal(0, fake.PresenceReads);
+        Assert.True(pending.Advance());
+        Assert.Empty(pending.Result!.Unlocks["mounts"].UnlockedIds);
+        Assert.Equal(0, fake.UnlockReads);
         Assert.Equal(CapabilityState.UnavailablePendingValidation, pending.Result.Unlocks["mounts"].Health.CapabilityState);
         var health = pending.Result.Unlocks["mounts"].Health;
         Assert.Equal(SourceStatus.Unavailable, health.SourceStatus);
@@ -118,19 +147,29 @@ public sealed class CaptureTests
     [Fact]
     public void CaptureRejectsIdentityChangesAndDoesNotLeakPartialRows()
     {
-        var fake = new FakeReader(); using var operation = new CollectionReadOperation(fake, Catalog(), true, 1, 1, Now);
-        operation.Advance(1); fake.Identity = false;
-        Assert.True(operation.Advance()); Assert.True(operation.Rejected); Assert.Null(operation.Result);
+        var fake = new FakeReader();
+        using var operation = new CollectionReadOperation(fake, Catalog(), true, 1, 1, Now);
+        operation.Advance(1);
+        fake.Identity = false;
+        Assert.True(operation.Advance());
+        Assert.True(operation.Rejected);
+        Assert.Null(operation.Result);
         fake.Identity = true;
-        Assert.True(operation.Advance()); Assert.Null(operation.Result);
+        Assert.True(operation.Advance());
+        Assert.Null(operation.Result);
         Assert.Throws<ArgumentOutOfRangeException>(() => new CollectionReadOperation(new FakeReader(), Catalog(), true, 1, 1, Now).Advance(0));
         Assert.Throws<ArgumentOutOfRangeException>(() => new CollectionReadOperation(new FakeReader(), Catalog(), true, 1, 1, Now).Advance(2049));
-        using var disposed = new CollectionReadOperation(fake, Catalog(), true, 1, 1, Now); disposed.Dispose(); Assert.True(disposed.Advance());
+        using var disposed = new CollectionReadOperation(fake, Catalog(), true, 1, 1, Now);
+        disposed.Dispose();
+        Assert.True(disposed.Advance());
         var finalReader = new FakeReader { IdentityCallsBeforeLoss = 8 };
         using var finalIdentity = new CollectionReadOperation(finalReader, Catalog(), false, 1, 1, Now);
-        Assert.True(finalIdentity.Advance()); Assert.True(finalIdentity.Rejected); Assert.Null(finalIdentity.Result);
+        Assert.True(finalIdentity.Advance());
+        Assert.True(finalIdentity.Rejected);
+        Assert.Null(finalIdentity.Result);
         finalReader.IdentityCallsBeforeLoss = int.MaxValue;
-        Assert.True(finalIdentity.Advance()); Assert.Null(finalIdentity.Result);
+        Assert.True(finalIdentity.Advance());
+        Assert.Null(finalIdentity.Result);
     }
 
     [Fact]
@@ -141,12 +180,14 @@ public sealed class CaptureTests
             var reader = new FakeReader { Failure = exception };
             var measurements = new DiagnosticMeasurements();
             using var operation = new CollectionReadOperation(reader, Catalog(), true, 1, 1, Now, measurements);
-            Assert.True(operation.Advance()); Assert.Empty(operation.Result!.Unlocks["mounts"].UnlockedIds);
+            Assert.True(operation.Advance());
+            Assert.Empty(operation.Result!.Unlocks["mounts"].UnlockedIds);
             Assert.Equal(exception is SourceReadException ? ReasonCode.NotLoadedThisSession : ReasonCode.CaptureFailed, operation.Result.Unlocks["mounts"].Health.ReasonCode);
             Assert.Equal(7, operation.Result.CurrentItemPresence.Count);
             Assert.Equal(1, reader.UnlockReads);
             var failure = Assert.Single(measurements.Failures);
-            Assert.Equal("Capture", failure.Component); Assert.Equal("mounts", failure.Operation);
+            Assert.Equal("Capture", failure.Component);
+            Assert.Equal("mounts", failure.Operation);
             Assert.Equal(operation.Result.Unlocks["mounts"].Health.ReasonCode.ToString(), failure.Code);
             Assert.True(measurements.Snapshot().ContainsKey("Source.mounts"));
         }
@@ -155,14 +196,20 @@ public sealed class CaptureTests
     [Fact]
     public void LightweightSkipsUnlocksAndFullCapturesQuestProgress()
     {
-        var fake = new FakeReader(); using var light = new CollectionReadOperation(fake, Catalog(), false, 1, 1, Now);
-        Assert.True(light.Advance()); Assert.Empty(light.Result!.Unlocks); Assert.Equal(0, fake.UnlockReads);
+        var fake = new FakeReader();
+        using var light = new CollectionReadOperation(fake, Catalog(), false, 1, 1, Now);
+        Assert.True(light.Advance());
+        Assert.Empty(light.Result!.Unlocks);
+        Assert.Equal(0, fake.UnlockReads);
         Assert.Equal(new[] { "armoire", "armoryChest", "chocoboSaddlebag", "glamourDresser", "inventory", "premiumSaddlebag", "retainers" }, light.Result.CurrentItemPresence.Keys.Order());
         using var quests = new CollectionReadOperation(fake, Catalog("quests"), true, 1, 1, Now);
-        Assert.True(quests.Advance()); Assert.Equal(2, quests.Result!.Quests.Length);
-        Assert.Equal(QuestStatus.Completed, quests.Result.Quests[0].Status); Assert.Equal(QuestStatus.InProgress, quests.Result.Quests[1].Status);
+        Assert.True(quests.Advance());
+        Assert.Equal(2, quests.Result!.Quests.Length);
+        Assert.Equal(QuestStatus.Completed, quests.Result.Quests[0].Status);
+        Assert.Equal(QuestStatus.InProgress, quests.Result.Quests[1].Status);
         using var derived = new CollectionReadOperation(fake, Catalog("outfits", DataType.Derived), true, 1, 1, Now);
-        Assert.True(derived.Advance()); Assert.Empty(derived.Result!.Unlocks);
+        Assert.True(derived.Advance());
+        Assert.Empty(derived.Result!.Unlocks);
     }
 
     [Fact]
@@ -172,12 +219,15 @@ public sealed class CaptureTests
         catalog = catalog with
         {
             Collections = catalog.Collections.SetItem("mounts", catalog.Collections["mounts"] with
-            { Items = Enumerable.Range(1, 50001).Select(i => new CatalogItem((uint)i, (uint)i, "Fixture", false)).ToImmutableArray() })
+            {
+                Items = Enumerable.Range(1, 50001).Select(i => new CatalogItem((uint)i, (uint)i, "Fixture", false)).ToImmutableArray()
+            })
         };
         using var operation = new CollectionReadOperation(new FakeReader { AllUnlocked = true }, catalog, true, 1, 1, Now);
         bool completed = false;
         var maximumSlices = (50001 + 1 + CollectionReadOperation.PhysicalSources.Length + 2047) / 2048 + 1;
-        for (var slice = 0; slice < maximumSlices && !completed; slice++) completed = operation.Advance(2048);
+        for (var slice = 0; slice < maximumSlices && !completed; slice++)
+            completed = operation.Advance(2048);
         Assert.True(completed, "Capture must finish within the known catalog work budget.");
         Assert.Empty(operation.Result!.Unlocks["mounts"].UnlockedIds);
         Assert.Equal(ReasonCode.OutputSizeLimitExceeded, operation.Result.Unlocks["mounts"].Health.ReasonCode);
@@ -189,12 +239,18 @@ public sealed class CaptureTests
     public void WindowEdgesCoalesceAndIgnoreGuidedOwnedChanges()
     {
         var edge = new StorageWindowEdgePolicy();
-        Assert.True(edge.IsDue(0)); Assert.True(edge.Observe(true, 4, 0, false));
-        Assert.False(edge.Observe(true, 5, .9, false)); Assert.False(edge.IsDue(.9));
-        Assert.True(edge.Observe(true, 5, 1, false)); Assert.False(edge.Observe(true, 5, 2, false));
-        Assert.False(edge.Observe(false, 0, 3, false)); Assert.True(edge.Observe(true, 5, 4, false));
-        Assert.False(edge.Observe(true, 6, 5, true)); Assert.False(edge.Observe(true, 6, 6, false));
-        edge.Reset(); Assert.True(edge.Observe(true, 6, 7, false));
+        Assert.True(edge.IsDue(0));
+        Assert.True(edge.Observe(true, 4, 0, false));
+        Assert.False(edge.Observe(true, 5, .9, false));
+        Assert.False(edge.IsDue(.9));
+        Assert.True(edge.Observe(true, 5, 1, false));
+        Assert.False(edge.Observe(true, 5, 2, false));
+        Assert.False(edge.Observe(false, 0, 3, false));
+        Assert.True(edge.Observe(true, 5, 4, false));
+        Assert.False(edge.Observe(true, 6, 5, true));
+        Assert.False(edge.Observe(true, 6, 6, false));
+        edge.Reset();
+        Assert.True(edge.Observe(true, 6, 7, false));
     }
 
     [Fact]
@@ -223,9 +279,18 @@ public sealed class CaptureTests
         public bool AllUnlocked;
         public bool IdentityMatches(ulong contentId) => Identity && --IdentityCallsBeforeLoss >= 0;
         public bool IsAvailable(string key, string version) => Validated;
-        public bool ReadUnlock(string key, CatalogItem row) { UnlockReads++; if (Failure != null) throw Failure; return AllUnlocked || row.Id == 1; }
+        public bool ReadUnlock(string key, CatalogItem row)
+        {
+            UnlockReads++;
+            if (Failure != null)
+                throw Failure;
+            return AllUnlocked || row.Id == 1;
+        }
         public QuestState ReadQuest(uint id, bool completed) => new(id, completed ? QuestStatus.Completed : QuestStatus.InProgress, completed ? null : (byte)1);
         public CurrentItemPresenceState ReadPresence(string source, CollectionCatalog catalog, ulong contentId, long generation, DateTimeOffset now)
-        { PresenceReads++; return CaptureReadPolicy.Presence([], source is not ("armoire" or "glamourDresser"), true, generation, now); }
+        {
+            PresenceReads++;
+            return CaptureReadPolicy.Presence([], source is not ("armoire" or "glamourDresser"), true, generation, now);
+        }
     }
 }

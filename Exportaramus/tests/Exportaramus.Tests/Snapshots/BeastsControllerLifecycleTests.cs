@@ -60,10 +60,17 @@ public sealed class BeastsControllerLifecycleTests
             await Pump(controller, () => controller.Reports.Available, 0);
             switch (transition)
             {
-                case "logout": controller.Update(0, "", true, false, 1, SnapshotFixture.Now.AddSeconds(1)); break;
-                case "character": controller.Update(456, "Another fixture", false, false, 1, SnapshotFixture.Now.AddSeconds(1)); break;
-                case "dispose": controller.Dispose(); break;
-                default: throw new InvalidOperationException("Unknown transition fixture");
+                case "logout":
+                    controller.Update(0, "", true, false, 1, SnapshotFixture.Now.AddSeconds(1));
+                    break;
+                case "character":
+                    controller.Update(456, "Another fixture", false, false, 1, SnapshotFixture.Now.AddSeconds(1));
+                    break;
+                case "dispose":
+                    controller.Dispose();
+                    break;
+                default:
+                    throw new InvalidOperationException("Unknown transition fixture");
             }
 
             using var notice = JsonDocument.Parse(Assert.Single(canonical));
@@ -90,7 +97,8 @@ public sealed class BeastsControllerLifecycleTests
         for (var attempt = 0; attempt < 500; attempt++)
         {
             controller.Update(123, "Fixture", false, false, monotonic, SnapshotFixture.Now.AddSeconds(monotonic));
-            if (completed()) return;
+            if (completed())
+                return;
             await Task.Delay(2);
         }
         Assert.Fail("Controller did not reach the expected state: " + controller.Error);
@@ -100,7 +108,8 @@ public sealed class BeastsControllerLifecycleTests
     {
         controller.Dispose();
         await controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
-        if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        if (Directory.Exists(directory))
+            Directory.Delete(directory, true);
     }
 
     private sealed class Port : ISnapshotCapturePort

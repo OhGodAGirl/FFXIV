@@ -11,13 +11,15 @@ public static class InventoryRetainerPresencePolicy
     {
         CurrentItemPresenceState Failed(ReasonCode reason, bool validated = true) =>
             CaptureReadPolicy.FailedPresence(true, generation, captureStartedAtUtc, reason, validated);
-        if (!trustedCurrentBuild) return Failed(ReasonCode.PatchValidationRequired, false);
+        if (!trustedCurrentBuild)
+            return Failed(ReasonCode.PatchValidationRequired, false);
         if (contentId == 0 || snapshot is null || snapshot.ContentId != contentId)
             return Failed(ReasonCode.IdentityUnavailable);
         if (!snapshot.RetainerRosterKnown || snapshot.Locations.IsDefault
             || snapshot.Locations.Length > InventoryPolicy.MaximumRetainers + Enum.GetValues<InventoryLocationKind>().Length - 1)
             return Failed(ReasonCode.IncompleteRetainerSet);
-        if (captureStartedAtUtc == default) return Failed(ReasonCode.CaptureFailed);
+        if (captureStartedAtUtc == default)
+            return Failed(ReasonCode.CaptureFailed);
         var ids = new HashSet<ulong>();
         var items = new List<PresenceItem>();
         var oldest = captureStartedAtUtc;
@@ -25,8 +27,10 @@ public static class InventoryRetainerPresencePolicy
         var restored = false;
         foreach (var location in snapshot.Locations)
         {
-            if (location is null) return Failed(ReasonCode.CaptureFailed);
-            if (location.Key.Kind != InventoryLocationKind.Retainer) continue;
+            if (location is null)
+                return Failed(ReasonCode.CaptureFailed);
+            if (location.Key.Kind != InventoryLocationKind.Retainer)
+                continue;
             if (!location.Key.IsValid || !ids.Add(location.Key.RetainerId)
                 || ids.Count > InventoryPolicy.MaximumRetainers)
                 return Failed(ReasonCode.IncompleteRetainerSet);
@@ -44,8 +48,10 @@ public static class InventoryRetainerPresencePolicy
                 if (item is null || item.ItemId is 0 or >= 1000000 || !itemIds.Add(item.ItemId))
                     return Failed(ReasonCode.CaptureFailed);
                 var total = (ulong)item.NormalQuantity + item.HighQualityQuantity;
-                if (total == 0) return Failed(ReasonCode.CaptureFailed);
-                if (total > uint.MaxValue) return Failed(ReasonCode.QuantityOverflow);
+                if (total == 0)
+                    return Failed(ReasonCode.CaptureFailed);
+                if (total > uint.MaxValue)
+                    return Failed(ReasonCode.QuantityOverflow);
                 items.Add(new(item.ItemId, (uint)total));
             }
         }

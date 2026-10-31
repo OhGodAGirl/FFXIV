@@ -1,9 +1,9 @@
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
-using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
 using CabinetRow = Lumina.Excel.Sheets.Cabinet;
@@ -16,10 +16,18 @@ internal static unsafe class ApiContractProbe
     internal static void Verify(IDataManager data, IUnlockState unlock, IPlayerState player,
         IFramework framework, IGameGui gui, IDalamudPluginInterface pi, AtkUnitBase* addon)
     {
-        _ = player.IsLoaded; _ = player.ContentId; _ = player.CharacterName;
+        _ = player.IsLoaded;
+        _ = player.ContentId;
+        _ = player.CharacterName;
         _ = framework.IsInFrameworkUpdateThread;
-        _ = data.Language; _ = data.Excel; _ = data.GameData.Repositories.Values;
-        foreach (var repository in data.GameData.Repositories.Values) { _ = repository.ExpansionId; _ = repository.Version; }
+        _ = data.Language;
+        _ = data.Excel;
+        _ = data.GameData.Repositories.Values;
+        foreach (var repository in data.GameData.Repositories.Values)
+        {
+            _ = repository.ExpansionId;
+            _ = repository.Version;
+        }
         _ = unlock.IsMountUnlocked(default(Mount));
         _ = unlock.IsCompanionUnlocked(default(Companion));
         _ = unlock.IsEmoteUnlocked(default(Emote));
@@ -35,16 +43,19 @@ internal static unsafe class ApiContractProbe
         _ = unlock.IsLeveCompleted(default(Leve));
         _ = unlock.IsCharaMakeCustomizeUnlocked(default(CharaMakeCustomize));
         _ = unlock.IsQuestCompleted(default(Quest));
-        _ = unlock.IsAchievementListLoaded; _ = unlock.IsAchievementComplete(default(Lumina.Excel.Sheets.Achievement));
+        _ = unlock.IsAchievementListLoaded;
+        _ = unlock.IsAchievementComplete(default(Lumina.Excel.Sheets.Achievement));
         _ = UIState.Instance()->IsAetheryteUnlocked(1);
         _ = UIState.Instance()->IsTripleTriadNpcBeaten(2293762);
         _ = QuestManager.Instance()->IsQuestAccepted(1);
-        _ = QuestManager.IsQuestComplete(1); _ = QuestManager.GetQuestSequence(1);
+        _ = QuestManager.IsQuestComplete(1);
+        _ = QuestManager.GetQuestSequence(1);
         _ = UIState.Instance()->Cabinet.IsCabinetLoaded();
         _ = UIState.Instance()->Cabinet.IsItemInCabinet(0);
         _ = UIState.Instance()->Achievement.IsLoaded();
         var mirage = MirageManager.Instance();
-        _ = mirage->PrismBoxLoaded; _ = mirage->PrismBoxItemIds[799];
+        _ = mirage->PrismBoxLoaded;
+        _ = mirage->PrismBoxItemIds[799];
         _ = mirage->IsSetSlotUnlocked(1, 0);
         _ = UIModule.Instance()->GetMycNoteModule()->Unk48[0];
         _ = UIModule.Instance()->GetMycNoteModule()->Unk80[0];
@@ -53,26 +64,39 @@ internal static unsafe class ApiContractProbe
         foreach (var type in Containers)
         {
             var container = inventory->GetInventoryContainer(type);
-            _ = container->IsLoaded; _ = container->Size;
+            _ = container->IsLoaded;
+            _ = container->Size;
             var slot = container->GetInventorySlot(0);
-            _ = slot->GetBaseItemId(); _ = slot->GetQuantity();
+            _ = slot->GetBaseItemId();
+            _ = slot->GetQuantity();
         }
         var retainers = RetainerManager.Instance();
-        _ = retainers->IsReady; _ = retainers->GetRetainerCount();
+        _ = retainers->IsReady;
+        _ = retainers->GetRetainerCount();
         var retainer = retainers->GetRetainerBySortedIndex(0);
-        _ = retainer->RetainerId; _ = retainer->Available; _ = retainers->GetActiveRetainer();
-        _ = gui.GetAddonByName<AtkUnitBase>("MiragePrismPrismBox", 1); _ = gui.GetUIModule();
-        _ = addon->IsReady; _ = addon->IsVisible; bool closeRequest = addon->Close(true); _ = closeRequest;
+        _ = retainer->RetainerId;
+        _ = retainer->Available;
+        _ = retainers->GetActiveRetainer();
+        _ = gui.GetAddonByName<AtkUnitBase>("MiragePrismPrismBox", 1);
+        _ = gui.GetUIModule();
+        _ = addon->IsReady;
+        _ = addon->IsVisible;
+        bool closeRequest = addon->Close(true);
+        _ = closeRequest;
         _ = TargetSystem.Instance()->SetHardTarget(null, false, false, 0);
         _ = TargetSystem.Instance()->InteractWithObject(null, false);
         var read = pi.GetIpcProvider<string>("Exportaramus.CollectionData.GetSnapshot");
-        read.RegisterFunc(() => ""); read.UnregisterFunc();
+        read.RegisterFunc(() => "");
+        read.UnregisterFunc();
         pi.GetIpcProvider<string, object?>("Exportaramus.CollectionData.SnapshotChanged").SendMessage("");
         var report = pi.GetIpcProvider<string, uint, string, string>("Exportaramus.CollectionData.ReportOwnershipEvidence");
-        report.RegisterFunc((_, _, _) => "Unavailable"); report.UnregisterFunc();
+        report.RegisterFunc((_, _, _) => "Unavailable");
+        report.UnregisterFunc();
         _ = pi.GetIpcSubscriber<string>("Exportaramus.CollectionData.GetSnapshot").InvokeFunc();
         var changed = pi.GetIpcSubscriber<string, object?>("Exportaramus.CollectionData.SnapshotChanged");
-        System.Action<string> handler = _ => { }; changed.Subscribe(handler); changed.Unsubscribe(handler);
+        System.Action<string> handler = _ => { };
+        changed.Subscribe(handler);
+        changed.Unsubscribe(handler);
         _ = pi.GetIpcSubscriber<string, uint, string, string>("Exportaramus.CollectionData.ReportOwnershipEvidence").InvokeFunc("1", 1, "Probe");
     }
 

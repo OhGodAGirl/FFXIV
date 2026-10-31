@@ -38,7 +38,8 @@ public sealed class RecoveryTemporaryPathBoundaryTests
             Assert.Equal("Failed", storage.Diagnostic.RecoveryState);
             Assert.Equal("ReadFailed", storage.Diagnostic.LastRead.FailureCode);
             Assert.Equal(before.Keys.Order(), Directory.GetFiles(root, "*", SearchOption.AllDirectories).Order());
-            foreach (var pair in before) Assert.Equal(pair.Value, await File.ReadAllBytesAsync(pair.Key));
+            foreach (var pair in before)
+                Assert.Equal(pair.Value, await File.ReadAllBytesAsync(pair.Key));
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
     }

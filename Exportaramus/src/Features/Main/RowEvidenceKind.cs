@@ -3,4 +3,7 @@ using Exportaramus.Features.GuidedExport;
 
 namespace Exportaramus.Features.Main;
 
-public enum RowEvidenceKind { PermanentUnlock, CurrentItemPresence, Derived }
+public enum RowEvidenceKind
+{
+    PermanentUnlock, CurrentItemPresence, Derived
+}

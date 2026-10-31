@@ -44,11 +44,15 @@ public sealed class ControllerIncompleteWorkerTests
             files.Release.TrySetResult();
             try
             {
-                if (update is not null) await update.WaitAsync(TimeSpan.FromSeconds(5));
+                if (update is not null)
+                    await update.WaitAsync(TimeSpan.FromSeconds(5));
             }
             finally
             {
-                try { controller.Dispose(); }
+                try
+                {
+                    controller.Dispose();
+                }
                 finally { await controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5)); }
                 Directory.Delete(directory, true);
             }
@@ -62,8 +66,12 @@ public sealed class ControllerIncompleteWorkerTests
         public void Begin(bool full, ulong contentId, long generation, DateTimeOffset now) => throw new InvalidOperationException("No capture is expected during restoration.");
         public bool Advance() => false;
         public RawCaptureBatch? TakeResult() => null;
-        public void ResetSession() { }
-        public void Dispose() { }
+        public void ResetSession()
+        {
+        }
+        public void Dispose()
+        {
+        }
     }
 
     private sealed class HeldRead : IAtomicFileOperations

@@ -91,11 +91,21 @@ public sealed class CatalogBoundaryContractTests
     private sealed class Rows : IEnumerator<(string Key, CatalogItem Item)>
     {
         public int Available { get; init; } = 100;
-        public int MoveCount { get; private set; }
-        public bool Disposed { get; private set; }
+        public int MoveCount
+        {
+            get; private set;
+        }
+        public bool Disposed
+        {
+            get; private set;
+        }
         public (string Key, CatalogItem Item) Current => ("mounts", new((uint)MoveCount, (uint)MoveCount, "Mount", false));
         object IEnumerator.Current => Current;
-        public bool MoveNext() { ObjectDisposedException.ThrowIf(Disposed, this); return ++MoveCount <= Available; }
+        public bool MoveNext()
+        {
+            ObjectDisposedException.ThrowIf(Disposed, this);
+            return ++MoveCount <= Available;
+        }
         public void Reset() => throw new NotSupportedException();
         public void Dispose() => Disposed = true;
     }
