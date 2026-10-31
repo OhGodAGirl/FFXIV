@@ -41,8 +41,7 @@ public sealed class OfflinePerformanceTests(ITestOutputHelper output)
         // execution context. Thread setup, warmup and result reporting are outside each sample.
         var measurementThread = new Thread(() =>
         {
-            for (var i = 0; i < 100; i++)
-                _ = MeasureGetterBlock(store);
+            for (var i = 0; i < 100; i++) _ = MeasureGetterBlock(store);
             for (var sample = 0; sample < samples.Length; sample++)
             {
                 var measured = MeasureGetterBlock(store);
@@ -50,8 +49,7 @@ public sealed class OfflinePerformanceTests(ITestOutputHelper output)
                 allocation += measured.Bytes;
             }
         });
-        using (ExecutionContext.SuppressFlow())
-            measurementThread.Start();
+        using (ExecutionContext.SuppressFlow()) measurementThread.Start();
         measurementThread.Join();
         Array.Sort(samples);
         output.WriteLine($"Offline cached getter pair p95={samples[94]:F6} ms; allocated={allocation} bytes; payload={payloadBytes} bytes.");
@@ -85,13 +83,10 @@ public sealed class OfflinePerformanceTests(ITestOutputHelper output)
         long allocation = 0;
         var measurementThread = new Thread(() =>
         {
-            for (var i = 0; i < 100; i++)
-                _ = MeasurePreparedReads(state, report, section);
-            for (var i = 0; i < 100; i++)
-                allocation += MeasurePreparedReads(state, report, section);
+            for (var i = 0; i < 100; i++) _ = MeasurePreparedReads(state, report, section);
+            for (var i = 0; i < 100; i++) allocation += MeasurePreparedReads(state, report, section);
         });
-        using (ExecutionContext.SuppressFlow())
-            measurementThread.Start();
+        using (ExecutionContext.SuppressFlow()) measurementThread.Start();
         measurementThread.Join();
         output.WriteLine($"Offline layout/prepared display reads allocated={allocation} bytes over 100,000 iterations.");
         Assert.Equal(0, allocation);
@@ -120,15 +115,13 @@ public sealed class OfflinePerformanceTests(ITestOutputHelper output)
         var bundle = Bundle(4 * 1024 * 1024);
         var guided = new GuidedExportController().View;
         MainViewState Prepare() => MainSnapshotPresenter.Prepare(bundle, true, null, false, false, guided, SnapshotFixture.Now, true);
-        for (var i = 0; i < 1000; i++)
-            _ = Prepare();
+        for (var i = 0; i < 1000; i++) _ = Prepare();
         var samples = new double[100];
         var before = GC.GetAllocatedBytesForCurrentThread();
         for (var sample = 0; sample < samples.Length; sample++)
         {
             var start = Stopwatch.GetTimestamp();
-            for (var i = 0; i < 100; i++)
-                _ = Prepare();
+            for (var i = 0; i < 100; i++) _ = Prepare();
             samples[sample] = Stopwatch.GetElapsedTime(start).TotalMilliseconds / 100;
         }
         var perPreparation = (GC.GetAllocatedBytesForCurrentThread() - before) / 10000;
@@ -144,8 +137,7 @@ public sealed class OfflinePerformanceTests(ITestOutputHelper output)
     {
         var queue = new ReportedEvidenceQueue();
         queue.SetScope(123, [100], []);
-        for (var i = 0; i < 1000; i++)
-            queue.TryEnqueue("123", 100, "Offline fixture", i * 2, SnapshotFixture.Now);
+        for (var i = 0; i < 1000; i++) queue.TryEnqueue("123", 100, "Offline fixture", i * 2, SnapshotFixture.Now);
         var samples = new double[100];
         for (var sample = 0; sample < samples.Length; sample++)
         {

@@ -26,10 +26,8 @@ public sealed class MutationCollectBoundaryTests
         for (var index = 0; index < additions; index++)
             ids[keys[index / 49999]].Add(1000000001u + (uint)(index % 49999));
         ids[keys[^2]][0] = PowerOfTen(9 - Math.Min(9, surplus));
-        if (surplus > 9)
-            ids[keys[^3]][0] = PowerOfTen(9 - (surplus - 9));
-        if (byteCount == 1048577)
-            ids[keys[^1]][0] = 1000000000;
+        if (surplus > 9) ids[keys[^3]][0] = PowerOfTen(9 - (surplus - 9));
+        if (byteCount == 1048577) ids[keys[^1]][0] = 1000000000;
         var expected = JsonSerializer.Serialize(ids);
         Assert.Equal(byteCount, Encoding.UTF8.GetByteCount(expected));
         Assert.All(ids.Values, values => { Assert.InRange(values.Count, 1, 50000); Assert.Equal(values.Count, values.Distinct().Count()); });
@@ -74,8 +72,7 @@ public sealed class MutationCollectBoundaryTests
     {
         FFXIVCollectContract? contract = FFXIVCollectContract.LoadEmbedded();
         var data = ProductCollectTests.CompleteProjection(contract);
-        if (reason == "missing-contract")
-            contract = null;
+        if (reason == "missing-contract") contract = null;
         if (reason == "incompatible-version")
             contract = contract! with
             {
@@ -97,8 +94,7 @@ public sealed class MutationCollectBoundaryTests
     private static uint PowerOfTen(int exponent)
     {
         uint result = 1;
-        for (var index = 0; index < exponent; index++)
-            result *= 10;
+        for (var index = 0; index < exponent; index++) result *= 10;
         return result;
     }
 }

@@ -74,17 +74,22 @@ Newly added collectibles may not be included until Exportaramus is updated.
 
 ### Building From Source
 
-On Windows, install Git and the .NET SDK specified in `global.json`. Set `DALAMUD_HOME` to the directory containing the Dalamud API 15 development assemblies. To download, build, and test the source, run:
+On Windows, install Git and the .NET SDK specified in `global.json`. Use PowerShell 7.5 or newer. Set `DALAMUD_HOME` to an existing Dalamud API 15 development directory, or run the dependency download shown below. It downloads a pinned, checksum-verified API 15 archive without installing or launching the game. To download, build, and test the source, run:
 
 ```powershell
 git clone https://github.com/OhGodAGirl/FFXIV.git
 cd FFXIV/Exportaramus
+./tools/Get-BuildDependencies.ps1
 dotnet restore project/Exportaramus.slnx --locked-mode
 dotnet build project/Exportaramus.slnx -c Release --no-restore -p:ShouldUnsetParentConfigurationAndPlatform=false
 dotnet test tests/Exportaramus.Tests/Exportaramus.Tests.csproj -c Release --no-build --no-restore -- xUnit.MaxParallelThreads=2
 ```
 
 The plugin package is written to `project/bin/Release/Exportaramus/latest.zip`.
+
+The download sets `DALAMUD_HOME` for the current PowerShell session. On later sessions, set `$env:DALAMUD_HOME = (Resolve-Path .tools/dalamud/15.0.3.9).Path` instead of downloading again. You can pass `-Destination` to select another new directory.
+
+GitHub Actions runs the offline checks on Windows for Exportaramus pushes and pull requests. Results and the build package are retained for seven days; a passing run does not publish a release or establish in-game acceptance.
 
 ### Building the Consumer Kit
 

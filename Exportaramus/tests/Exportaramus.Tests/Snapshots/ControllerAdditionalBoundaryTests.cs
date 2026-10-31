@@ -40,8 +40,7 @@ public sealed class ControllerAdditionalBoundaryTests
         var clock = Stopwatch.StartNew();
         while (run.Controller.DiagnosticTasks.Single(task => task.Name == "CollectionOutput").State != "Completed")
         {
-            if (clock.Elapsed > TimeSpan.FromSeconds(5))
-                Assert.Fail("Output preparation did not complete.");
+            if (clock.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Output preparation did not complete.");
             await Task.Delay(1);
         }
         run.Port.CatalogReady = false;
@@ -53,8 +52,7 @@ public sealed class ControllerAdditionalBoundaryTests
         clock.Restart();
         while (!run.Controller.Reports.Available || run.Controller.Busy)
         {
-            if (clock.Elapsed > TimeSpan.FromSeconds(5))
-                Assert.Fail("Second character restoration did not complete.");
+            if (clock.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Second character restoration did not complete.");
             run.Controller.Update(456, "Second", false, false, 6, SnapshotFixture.Now.AddSeconds(6));
             await Task.Delay(1);
         }
@@ -105,8 +103,7 @@ public sealed class ControllerAdditionalBoundaryTests
     {
         await using var run = new Harness();
         await run.Restore(0);
-        if (manual)
-            run.Controller.RequestFull();
+        if (manual) run.Controller.RequestFull();
         await run.Accept(manual ? 5 : 15, 1, CaptureType.Full);
         var historyRoot = Path.Combine(Path.GetDirectoryName(run.Storage.CanonicalPath)!, "snapshots");
         var file = Assert.Single(Directory.GetFiles(historyRoot, "*-snapshot-*.json"));

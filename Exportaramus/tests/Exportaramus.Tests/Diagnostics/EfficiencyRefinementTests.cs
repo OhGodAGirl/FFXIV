@@ -95,8 +95,7 @@ public sealed class EfficiencyRefinementTests
     public async Task CapturesRemainBoundedAndIndependentAcrossConcurrentResetAndRecording()
     {
         var measurements = new DiagnosticMeasurements();
-        for (var i = 0; i < 300; i++)
-            measurements.Record("Draw", i, i * 2);
+        for (var i = 0; i < 300; i++) measurements.Record("Draw", i, i * 2);
         measurements.Record("draw", 7, 14);
         var before = measurements.Snapshot();
         var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -104,8 +103,7 @@ public sealed class EfficiencyRefinementTests
         {
             await start.Task;
             measurements.ResetMeasurements();
-            for (var i = 0; i < 300; i++)
-                measurements.Record("Draw", 1000 + i, 2000 + i);
+            for (var i = 0; i < 300; i++) measurements.Record("Draw", 1000 + i, 2000 + i);
         });
         try
         {

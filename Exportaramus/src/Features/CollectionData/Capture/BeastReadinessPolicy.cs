@@ -11,8 +11,7 @@ public sealed class BeastReadinessPolicy
             Reset();
             return false;
         }
-        if (!edge.IsDue(now))
-            return false;
+        if (!edge.IsDue(now)) return false;
         try
         {
             var observation = read();

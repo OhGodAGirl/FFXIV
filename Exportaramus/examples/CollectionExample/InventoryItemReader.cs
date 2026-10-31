@@ -72,8 +72,7 @@ public static class InventoryItemReader
             var retainerId = Text(row, "retainerId");
             Require(kind == "Retainer" ? Identity(retainerId) : retainerId == "0");
             Require(keys.Add((kind, retainerId)));
-            if (kind == "Retainer")
-                Require(++retainerCount <= 10);
+            if (kind == "Retainer") Require(++retainerCount <= 10);
             var name = Text(row, "name");
             Require(name.Length is > 0 and <= 64 && !name.Any(char.IsControl));
             var state = Text(row, "state");
@@ -127,7 +126,6 @@ public static class InventoryItemReader
 
     private static void Require(bool condition)
     {
-        if (!condition)
-            throw new InvalidDataException("The Inventory V1 response is not valid for this request.");
+        if (!condition) throw new InvalidDataException("The Inventory V1 response is not valid for this request.");
     }
 }

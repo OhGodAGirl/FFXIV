@@ -71,10 +71,8 @@ public sealed class EmbeddedProductDataTests
     public void DiagnosticMetadataRejectsUnverifiableOrIncompatibleFields(string property, string replacement)
     {
         var root = JsonNode.Parse(EmbeddedProductData.Read("ffxiv-collect-contract.json"))!;
-        if (property == "mappingHash")
-            root["artifacts"]!["identifierMappingsSha256"] = replacement;
-        else
-            root[property] = replacement;
+        if (property == "mappingHash") root["artifacts"]!["identifierMappingsSha256"] = replacement;
+        else root[property] = replacement;
         Assert.False(EmbeddedProductData.TryDiagnosticContract(Encoding.UTF8.GetBytes(root.ToJsonString()), EmbeddedProductData.Read("identifier-mappings.json"), out var metadata, out var error));
         Assert.Null(metadata);
         Assert.Equal("FFXIV Collect diagnostic metadata is invalid.", error);

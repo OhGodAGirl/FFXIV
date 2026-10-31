@@ -24,8 +24,7 @@ internal static class OperationsRenderer
         var second = StackInformation(size.X) ? Drawing.Offset(16, 90) : new Vector2(size.X * .48f, 40 * u);
         ImGui.SetCursorScreenPos(pos + second);
         var reduceMotion = state.ReduceMotion;
-        if (ImGui.Checkbox("Reduce Motion##ReduceMotion", ref reduceMotion))
-            dispatch(MainIntent.ToggleReduceMotion);
+        if (ImGui.Checkbox("Reduce Motion##ReduceMotion", ref reduceMotion)) dispatch(MainIntent.ToggleReduceMotion);
         Drawing.Tooltip(TooltipId.ReduceMotion);
         ImGui.SetCursorScreenPos(pos + second + Drawing.Offset(0, 26));
         ImGui.TextColored(VisualTokens.Muted, "Disable nonessential animation");
@@ -34,12 +33,10 @@ internal static class OperationsRenderer
         ImGui.GetWindowDrawList().AddLine(pos + new Vector2(12 * u, actionY - 10 * u), pos + new Vector2(size.X - 12 * u, actionY - 10 * u), Drawing.Color(VisualTokens.Border));
         var buttonWidth = stackButtons ? size.X - 24 * u : (size.X - 32 * u) / 2;
         ImGui.SetCursorScreenPos(pos + new Vector2(12 * u, actionY));
-        if (Drawing.Button(state.RetainersActive ? "Cancel Retainers" : "Retainers", "##Retainers", new(buttonWidth, 36 * u), state.RetainersActive || state.CanGuide && !state.Guided.Active, state.ReduceMotion, "Storage"))
-            dispatch(MainIntent.Retainers);
+        if (Drawing.Button(state.RetainersActive ? "Cancel Retainers" : "Retainers", "##Retainers", new(buttonWidth, 36 * u), state.RetainersActive || state.CanGuide && !state.Guided.Active, state.ReduceMotion, "Storage")) dispatch(MainIntent.Retainers);
 
         ImGui.SetCursorScreenPos(pos + new Vector2(stackButtons ? 12 * u : 20 * u + buttonWidth, actionY + (stackButtons ? 44 * u : 0)));
-        if (returnGuidedFocus)
-            ImGui.SetKeyboardFocusHere();
+        if (returnGuidedFocus) ImGui.SetKeyboardFocusHere();
         if (Drawing.Button(state.Guided.Active ? "Cancel Capture" : "Dresser & Armoire", "##GuidedCapture", new(buttonWidth, 36 * u), state.Guided.Active || state.CanGuide && !state.RetainersActive, state.ReduceMotion, state.Guided.Active ? "" : "Capture", state.Guided.Active))
             dispatch(state.Guided.Active ? MainIntent.CancelGuided : MainIntent.GuidedCapture);
         Drawing.Tooltip(TooltipId.GuidedCapture);

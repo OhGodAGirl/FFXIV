@@ -30,8 +30,7 @@ public sealed record BeastsExportContract(string GameDataVersion, ImmutableHashS
     {
         var assembly = typeof(BeastsExportContract).Assembly;
         using var stream = assembly.GetManifestResourceStream(assembly.GetManifestResourceNames().Single(name => name.EndsWith(".beasts-export-contract.json", StringComparison.Ordinal)))!;
-        using var buffer = new MemoryStream();
-        stream.CopyTo(buffer);
+        using var buffer = new MemoryStream(); stream.CopyTo(buffer);
         return Load(buffer.ToArray());
     }
 }

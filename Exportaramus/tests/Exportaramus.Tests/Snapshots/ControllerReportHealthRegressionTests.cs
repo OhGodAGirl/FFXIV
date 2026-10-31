@@ -43,8 +43,7 @@ public sealed class ControllerReportHealthRegressionTests
         {
             controller.Dispose();
             await controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
-            if (Directory.Exists(directory))
-                Directory.Delete(directory, true);
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
         }
     }
 

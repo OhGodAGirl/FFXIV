@@ -58,8 +58,7 @@ public sealed class MutationStaleWorkerTests
             files.Release.TrySetResult();
             try
             {
-                if (switching is not null)
-                    await switching.WaitAsync(TimeSpan.FromSeconds(5));
+                if (switching is not null) await switching.WaitAsync(TimeSpan.FromSeconds(5));
             }
             finally
             {
@@ -78,8 +77,7 @@ public sealed class MutationStaleWorkerTests
         var clock = Stopwatch.StartNew();
         while (!predicate())
         {
-            if (clock.Elapsed > TimeSpan.FromSeconds(5))
-                throw new TimeoutException("Fixture did not reach its explicitly controlled state.");
+            if (clock.Elapsed > TimeSpan.FromSeconds(5)) throw new TimeoutException("Fixture did not reach its explicitly controlled state.");
             advance?.Invoke();
             await Task.Delay(1);
         }

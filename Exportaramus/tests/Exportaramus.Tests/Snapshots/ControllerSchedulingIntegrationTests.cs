@@ -23,8 +23,7 @@ public sealed class ControllerSchedulingIntegrationTests
         var wait = Stopwatch.StartNew();
         while (run.Controller.DiagnosticTasks.Single(task => task.Name == "CollectionOutput").State != "Completed")
         {
-            if (wait.Elapsed > TimeSpan.FromSeconds(5))
-                Assert.Fail("Owned output worker did not complete.");
+            if (wait.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Owned output worker did not complete.");
             await Task.Delay(1);
         }
         Assert.Null(run.Controller.Publication.Current);
@@ -182,8 +181,7 @@ public sealed class ControllerSchedulingIntegrationTests
             var clock = Stopwatch.StartNew();
             while (!finished())
             {
-                if (clock.Elapsed > TimeSpan.FromSeconds(5))
-                    Assert.Fail("Controller did not reach its public completion state: " + Controller.Error);
+                if (clock.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Controller did not reach its public completion state: " + Controller.Error);
                 ControllerPumpStep.Advance(Controller, () => Update(now));
                 await Task.Delay(1);
             }
@@ -192,8 +190,7 @@ public sealed class ControllerSchedulingIntegrationTests
         {
             Controller.Dispose();
             await Controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
-            if (Directory.Exists(root))
-                Directory.Delete(root, true);
+            if (Directory.Exists(root)) Directory.Delete(root, true);
         }
     }
 

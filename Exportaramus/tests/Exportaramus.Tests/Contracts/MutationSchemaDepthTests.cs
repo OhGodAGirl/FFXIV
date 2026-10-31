@@ -41,8 +41,7 @@ public sealed class MutationSchemaDepthTests
                 "properties" => new JsonObject { [keyword] = new JsonObject { ["a"] = child } },
                 _ => new JsonObject { [keyword] = child },
             };
-            if (keyword == "items")
-                input = new JsonArray(input);
+            if (keyword == "items") input = new JsonArray(input);
             else if (keyword is "properties" or "additionalProperties")
                 input = new JsonObject { ["a"] = input };
         }
@@ -70,8 +69,7 @@ public sealed class MutationSchemaDepthTests
         };
         thread.Start();
         Assert.True(thread.Join(TimeSpan.FromSeconds(10)), "Finite vocabulary evaluation did not terminate.");
-        if (failure is not null)
-            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+        if (failure is not null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
     }
 
     [Theory]

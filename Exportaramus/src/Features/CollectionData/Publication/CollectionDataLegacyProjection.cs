@@ -41,8 +41,7 @@ public static class CollectionDataLegacyProjection
         var root = JsonNode.Parse(canonical)!.AsObject();
         root["schemaVersion"] = v11 ? "1.1" : "1.0";
         root["sourceCapabilities"]!.AsObject().Remove("beasts");
-        if (!v11)
-            root["sourceCapabilities"]!.AsObject().Remove("facewear");
+        if (!v11) root["sourceCapabilities"]!.AsObject().Remove("facewear");
         var keys = v11 ? Exportaramus.ConsumerKit.V1_1.CollectionDataSemanticValidator.UnlockKeys : CollectionDataSemanticValidator.UnlockKeys;
         root["unlockKeys"] = new JsonArray(keys.Select(key => (JsonNode?)JsonValue.Create(key)).ToArray());
         foreach (var gate in root["gates"]!.AsObject().ToArray())
@@ -60,8 +59,7 @@ public static class CollectionDataLegacyProjection
         if (root["changedSources"] is JsonArray sources)
         {
             var retained = sources.Select(node => node!.GetValue<string>()).Where(key => key != "beasts" && (v11 || key != "facewear")).ToArray();
-            if (retained.Length == 0)
-                return null;
+            if (retained.Length == 0) return null;
             root["changedSources"] = new JsonArray(retained.Select(key => (JsonNode?)JsonValue.Create(key)).ToArray());
         }
         return root.ToJsonString();

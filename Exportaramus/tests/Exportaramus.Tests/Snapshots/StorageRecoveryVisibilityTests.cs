@@ -67,12 +67,9 @@ public sealed class StorageRecoveryVisibilityTests
 
             Assert.True(operations.FailureBoundaryReached);
             Assert.True(operations.TemporaryCleanupAttempted);
-            if (cleanupFails)
-                Assert.IsType<UnauthorizedAccessException>(exception);
-            else if (finalPreparation)
-                Assert.IsAssignableFrom<OperationCanceledException>(exception);
-            else
-                Assert.IsType<IOException>(exception);
+            if (cleanupFails) Assert.IsType<UnauthorizedAccessException>(exception);
+            else if (finalPreparation) Assert.IsAssignableFrom<OperationCanceledException>(exception);
+            else Assert.IsType<IOException>(exception);
             Assert.Equal("{\"old\":true}", await File.ReadAllTextAsync(storage.CharacterPath(1)));
             Assert.Equal("Failed", storage.Diagnostic.LastWrite.Status);
             Assert.Equal("WriteFailed", storage.Diagnostic.LastWrite.FailureCode);
@@ -151,19 +148,16 @@ public sealed class StorageRecoveryVisibilityTests
             if (path.EndsWith(".tmp", StringComparison.Ordinal))
             {
                 TemporaryCleanupAttempted = true;
-                if (cleanupFails)
-                    throw new UnauthorizedAccessException("Named temporary could not be removed.");
+                if (cleanupFails) throw new UnauthorizedAccessException("Named temporary could not be removed.");
             }
             File.Delete(path);
         }
         private void Installed(string destination)
         {
-            if (!finalPreparation || FailureBoundaryReached || Path.GetFileName(destination) != "write-recovery.json")
-                return;
+            if (!finalPreparation || FailureBoundaryReached || Path.GetFileName(destination) != "write-recovery.json") return;
             using var record = JsonDocument.Parse(File.ReadAllText(destination));
             var rows = record.RootElement.GetProperty("files");
-            if (rows.GetArrayLength() != 1 || !File.Exists(Path.Combine(root, rows[0].GetProperty("temporary").GetString()!)))
-                return;
+            if (rows.GetArrayLength() != 1 || !File.Exists(Path.Combine(root, rows[0].GetProperty("temporary").GetString()!))) return;
             FailureBoundaryReached = true;
             cancellation.Cancel();
         }
@@ -174,8 +168,7 @@ public sealed class StorageRecoveryVisibilityTests
     {
         public override void Flush(bool flushToDisk)
         {
-            if (flushToDisk)
-                beforeDurability();
+            if (flushToDisk) beforeDurability();
             base.Flush(flushToDisk);
         }
     }

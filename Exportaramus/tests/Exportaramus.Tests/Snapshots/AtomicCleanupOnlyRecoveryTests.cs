@@ -20,20 +20,16 @@ public sealed class AtomicCleanupOnlyRecoveryTests : IDisposable
         {
             Opening = (path, mode) =>
             {
-                if (retry && Path.GetFileName(path) == "write-recovery.json.tmp")
-                    throw new IOException("Journal writes remain unavailable while cleanup can proceed.");
-                if (!retry && !afterRestoration && mode == FileMode.CreateNew && ++payloads == 2)
-                    throw new IOException("Payload preparation unavailable.");
+                if (retry && Path.GetFileName(path) == "write-recovery.json.tmp") throw new IOException("Journal writes remain unavailable while cleanup can proceed.");
+                if (!retry && !afterRestoration && mode == FileMode.CreateNew && ++payloads == 2) throw new IOException("Payload preparation unavailable.");
             },
             Installed = destination =>
             {
-                if (!retry && afterRestoration && Path.GetFileName(destination).StartsWith("automatic-snapshot-", StringComparison.Ordinal))
-                    cancellation.Cancel();
+                if (!retry && afterRestoration && Path.GetFileName(destination).StartsWith("automatic-snapshot-", StringComparison.Ordinal)) cancellation.Cancel();
             },
             Deleting = path =>
             {
-                if (!retry && (afterRestoration ? path.EndsWith(".bak", StringComparison.Ordinal) : path.EndsWith(".tmp", StringComparison.Ordinal)))
-                    throw new IOException("Cleanup temporarily unavailable.");
+                if (!retry && (afterRestoration ? path.EndsWith(".bak", StringComparison.Ordinal) : path.EndsWith(".tmp", StringComparison.Ordinal))) throw new IOException("Cleanup temporarily unavailable.");
             },
         };
         var storage = new AtomicSnapshotStorage(root, operations);
@@ -63,8 +59,7 @@ public sealed class AtomicCleanupOnlyRecoveryTests : IDisposable
             Moving = (_, destination) => { if (phase == 0 && Path.GetFileName(destination).StartsWith("automatic-snapshot-", StringComparison.Ordinal)) throw new IOException("History installation unavailable."); },
             Copying = (_, destination) =>
             {
-                if (phase == 0 && Path.GetFullPath(destination).StartsWith(Path.GetDirectoryName(original.CharacterPath(1))!, StringComparison.Ordinal))
-                    throw new IOException("Initial character restore unavailable.");
+                if (phase == 0 && Path.GetFullPath(destination).StartsWith(Path.GetDirectoryName(original.CharacterPath(1))!, StringComparison.Ordinal)) throw new IOException("Initial character restore unavailable.");
             },
             Deleting = path => { if (phase == 1 && path.EndsWith(".bak", StringComparison.Ordinal)) throw new IOException("Cleanup temporarily unavailable."); },
             Opening = (path, _) => { if (phase == 2 && Path.GetFileName(path) == "write-recovery.json.tmp") throw new IOException("Journal writes unavailable while cleanup can proceed."); },

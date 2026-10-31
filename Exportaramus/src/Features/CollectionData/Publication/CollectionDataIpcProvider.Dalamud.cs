@@ -87,9 +87,7 @@ public sealed class CollectionDataIpcProvider : IDisposable
     }
     public void Dispose()
     {
-        if (disposed)
-            return;
-        disposed = true;
+        if (disposed) return; disposed = true;
         if (beasts)
         {
             controller.ChangedV12 -= SendChanged;

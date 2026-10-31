@@ -21,10 +21,8 @@ public sealed class ControllerMutationContractTests
         var notices = new List<string>();
         run.Controller.Withdrawn += notices.Add;
         var before = DateTimeOffset.UtcNow;
-        if (stopping)
-            run.Controller.Dispose();
-        else
-            run.Controller.Update(0, "", true, false, 10, SnapshotFixture.Now.AddSeconds(10));
+        if (stopping) run.Controller.Dispose();
+        else run.Controller.Update(0, "", true, false, 10, SnapshotFixture.Now.AddSeconds(10));
         var after = DateTimeOffset.UtcNow;
         var payload = Assert.Single(notices);
         Assert.True(CollectionDataSemanticValidator.ValidateWithdrawn(payload).Success);
@@ -36,10 +34,8 @@ public sealed class ControllerMutationContractTests
         Assert.Equal("123", value.GetProperty("contentId").GetString());
         Assert.Equal(stopping ? "ProviderStopping" : "LoggedOut", value.GetProperty("reasonCode").GetString());
         var time = value.GetProperty("withdrawnAtUtc").GetDateTimeOffset();
-        if (stopping)
-            Assert.InRange(time, before, after);
-        else
-            Assert.Equal(SnapshotFixture.Now.AddSeconds(10), time);
+        if (stopping) Assert.InRange(time, before, after);
+        else Assert.Equal(SnapshotFixture.Now.AddSeconds(10), time);
     }
 
     [Fact]

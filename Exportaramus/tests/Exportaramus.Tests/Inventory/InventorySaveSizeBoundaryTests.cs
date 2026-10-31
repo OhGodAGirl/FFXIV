@@ -78,7 +78,6 @@ public sealed class InventorySaveSizeBoundaryTests : IDisposable
         var target = Path.GetFullPath(directory);
         if (!target.StartsWith(root, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The test directory must remain inside its scratch root.");
-        if (Directory.Exists(target))
-            Directory.Delete(target, true);
+        if (Directory.Exists(target)) Directory.Delete(target, true);
     }
 }

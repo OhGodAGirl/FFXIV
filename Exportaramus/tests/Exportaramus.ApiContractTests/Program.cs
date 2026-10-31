@@ -48,8 +48,7 @@ internal static class Program
             {
                 var body = method.GetMethodBody();
                 Console.WriteLine(method + ": exceptionHandlers=" + body?.ExceptionHandlingClauses.Count + "; il=" + Convert.ToHexString(body?.GetILAsByteArray() ?? []));
-                foreach (var clause in body?.ExceptionHandlingClauses ?? [])
-                    Console.WriteLine("Handler: " + clause.Flags);
+                foreach (var clause in body?.ExceptionHandlingClauses ?? []) Console.WriteLine("Handler: " + clause.Flags);
                 var il = body?.GetILAsByteArray() ?? [];
                 for (var offset = 0; offset + 4 < il.Length; offset++)
                     if (il[offset] is 0x28 or 0x6f)

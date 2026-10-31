@@ -24,10 +24,7 @@ public static class ConfigurationFile
             Directory.CreateDirectory(Path.GetDirectoryName(exactPath)!);
             await writeTemporary(temporary, json, new UTF8Encoding(false), cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            if (File.Exists(exactPath))
-                File.Replace(temporary, exactPath, null);
-            else
-                File.Move(temporary, exactPath);
+            if (File.Exists(exactPath)) File.Replace(temporary, exactPath, null); else File.Move(temporary, exactPath);
         }
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }

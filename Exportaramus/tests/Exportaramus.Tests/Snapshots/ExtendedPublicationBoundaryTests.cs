@@ -126,10 +126,8 @@ public sealed class ExtendedPublicationBoundaryTests
         var prints = CollectionFingerprint.Sources(data);
         var bundle = SnapshotBundlePreparation.Prepare(new(data, 1, CollectionDataSerializer.Compact(data, 1), null, CollectionFingerprint.Combined(prints), prints,
             PreparedFFXIVCollectExport.Unavailable("test"), 0, null), null, false);
-        if (emptyCatalog)
-            Assert.Empty(bundle.ConfirmedPartialCounts);
-        else
-            Assert.Equal(0, bundle.ConfirmedPartialCounts["outfits"]);
+        if (emptyCatalog) Assert.Empty(bundle.ConfirmedPartialCounts);
+        else Assert.Equal(0, bundle.ConfirmedPartialCounts["outfits"]);
     }
     [Theory]
     [InlineData(false)]

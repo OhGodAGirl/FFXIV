@@ -10,8 +10,7 @@ public sealed record InventoryPresentation(string Summary, ImmutableArray<string
     public static InventoryPresentation Empty { get; } = new("Waiting for character", [], null);
     public static InventoryPresentation Prepare(InventorySnapshot? snapshot, AcceptedSnapshotBundle? collections, DateTimeOffset now)
     {
-        if (snapshot is null)
-            return Empty;
+        if (snapshot is null) return Empty;
         var retainers = snapshot.Locations.Where(location => location.Key.Kind == InventoryLocationKind.Retainer).ToArray();
         var observed = retainers.Count(location => location.HasObservation);
         var summary = snapshot.RetainerRosterKnown ? $"Retainers: {observed}/{retainers.Length} captured" : "Retainer list not yet observed";
@@ -23,8 +22,7 @@ public sealed record InventoryPresentation(string Summary, ImmutableArray<string
         {
             var ids = snapshot.Locations.Where(location => location.HasObservation).SelectMany(location => location.Items).Select(item => item.ItemId).ToHashSet();
             foreach (var source in collections.Data.State.CurrentItemPresence.Values.Where(source => source.Health.IsUsable))
-                foreach (var item in source.Items)
-                    ids.Add(item.ItemId);
+                foreach (var item in source.Items) ids.Add(item.ItemId);
             outfits = definition.Items.Count(item => !item.RequiredItemIds.IsDefaultOrEmpty && item.RequiredItemIds.All(ids.Contains));
         }
         return new(summary, rows, outfits)

@@ -141,8 +141,7 @@ public sealed class SnapshotFinalMutationTests
         for (var attempt = 0; attempt < 500; attempt++)
         {
             controller.Update(123, "Fixture", false, false, monotonic, SnapshotFixture.Now.AddSeconds(monotonic));
-            if (completed())
-                return;
+            if (completed()) return;
             await Task.Delay(2);
         }
         Assert.Fail("Controller did not reach the expected state: " + controller.Error);
@@ -152,8 +151,7 @@ public sealed class SnapshotFinalMutationTests
     {
         controller.Dispose();
         await controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
-        if (Directory.Exists(directory))
-            Directory.Delete(directory, true);
+        if (Directory.Exists(directory)) Directory.Delete(directory, true);
     }
 
     private sealed class Port : ISnapshotCapturePort

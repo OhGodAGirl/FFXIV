@@ -18,8 +18,7 @@ public sealed class BoundedCatalogProjection : ICatalogProjectionBuilder
     public BoundedCatalogProjection(string language, string version, IEnumerator<(string Key, CatalogItem Item)> rows,
         Func<(string Language, string Version)> identity, Func<double> milliseconds, DiagnosticMeasurements? measurements = null)
     {
-        if (string.IsNullOrWhiteSpace(version))
-            throw new InvalidOperationException("Game data version is unavailable.");
+        if (string.IsNullOrWhiteSpace(version)) throw new InvalidOperationException("Game data version is unavailable.");
         this.language = language;
         this.version = version;
         this.rows = rows;
@@ -35,10 +34,8 @@ public sealed class BoundedCatalogProjection : ICatalogProjectionBuilder
     public bool Advance(int maximumRows = 256) => measurements.Measure("CatalogProjectionSlice", () => AdvanceCore(maximumRows));
     private bool AdvanceCore(int maximumRows)
     {
-        if (finished)
-            return true;
-        if (maximumRows is < 1 or > 2048)
-            throw new ArgumentOutOfRangeException(nameof(maximumRows));
+        if (finished) return true;
+        if (maximumRows is < 1 or > 2048) throw new ArgumentOutOfRangeException(nameof(maximumRows));
         var current = identity();
         if (current.Language != language || current.Version != version)
             throw new InvalidOperationException("Game data changed during catalog projection.");
@@ -58,10 +55,8 @@ public sealed class BoundedCatalogProjection : ICatalogProjectionBuilder
                 // Keep display metadata for the dynamic Dresser collection; publication selects only observed IDs.
                 items.Add(("glamour_dresser", entry.Item));
             }
-            else if (entry.Item.Id != 0)
-                items.Add(entry);
-            if (milliseconds() - start >= 1)
-                break;
+            else if (entry.Item.Id != 0) items.Add(entry);
+            if (milliseconds() - start >= 1) break;
         }
         return false;
     }

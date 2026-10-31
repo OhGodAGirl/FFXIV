@@ -38,14 +38,12 @@ internal static class Drawing
     }
     internal static void Heading(string text, IFontHandle font)
     {
-        using (font.Push())
-            ImGui.TextColored(VisualTokens.Heading, text);
+        using (font.Push()) ImGui.TextColored(VisualTokens.Heading, text);
     }
     internal static void Tooltip(TooltipId id)
     {
         var text = Tooltips.Approved(id);
-        if (text is not null && ImGui.IsItemHovered())
-            ImGui.SetTooltip(text);
+        if (text is not null && ImGui.IsItemHovered()) ImGui.SetTooltip(text);
     }
     internal static bool Button(string label, string id, Vector2 size, bool enabled, bool reduceMotion, string icon = "", bool cancel = false)
     {

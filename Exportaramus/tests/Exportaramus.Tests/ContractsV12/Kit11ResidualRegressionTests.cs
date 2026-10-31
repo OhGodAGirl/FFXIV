@@ -19,10 +19,8 @@ public sealed class Kit11ResidualRegressionTests
     public void RichAdmissionPreservesSpecificVersionFailure(string? version, CollectionDataValidationCode expected)
     {
         var root = Rich();
-        if (version is null)
-            root.Remove("schemaVersion");
-        else
-            root["schemaVersion"] = version;
+        if (version is null) root.Remove("schemaVersion");
+        else root["schemaVersion"] = version;
         Assert.Equal(expected, CollectionDataSemanticValidator.ValidateRich(root.ToJsonString()).Code);
     }
 

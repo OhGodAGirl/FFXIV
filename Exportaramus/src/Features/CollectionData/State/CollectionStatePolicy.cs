@@ -23,8 +23,7 @@ public static class CollectionStatePolicy
 
     public static CurrentItemPresenceState Resolve(CurrentItemPresenceState? prior, CurrentItemPresenceState observed, bool sameCharacter, bool retain)
     {
-        if (observed.Health.IsUsable)
-            return observed;
+        if (observed.Health.IsUsable) return observed;
         if (sameCharacter && retain && prior is not null && prior.Health.IsUsable && CanRetain(observed.Health))
             return prior with
             {
@@ -50,8 +49,7 @@ public static class CollectionStatePolicy
 
     public static CollectionState Restore(CollectionState state, ulong activeId, Guid session, DateTimeOffset now)
     {
-        if (activeId == 0 || activeId != state.ContentId)
-            throw new InvalidDataException("Stored character does not match the active scope.");
+        if (activeId == 0 || activeId != state.ContentId) throw new InvalidDataException("Stored character does not match the active scope.");
         CollectionSourceStatus RestoreHealth(CollectionSourceStatus health) => health.IsUsable
             ? Stale(health, ReasonCode.RestoredFromDisk, "Restored from disk.", true) : health;
         return state with

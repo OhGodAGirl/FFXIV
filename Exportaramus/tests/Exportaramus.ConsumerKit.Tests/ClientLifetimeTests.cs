@@ -151,10 +151,8 @@ public sealed class ClientLifetimeTests
         var transport = new FakeTransport();
         if (fault == "invalid")
             transport.Snapshot = "{";
-        if (fault == "session")
-            transport.Snapshot = ContractFixture.Edit(transport.Snapshot, value => value["providerSessionId"] = ContractFixture.OtherSession);
-        if (fault == "character")
-            transport.Snapshot = ContractFixture.Edit(transport.Snapshot, value => value["contentId"] = "42");
+        if (fault == "session") transport.Snapshot = ContractFixture.Edit(transport.Snapshot, value => value["providerSessionId"] = ContractFixture.OtherSession);
+        if (fault == "character") transport.Snapshot = ContractFixture.Edit(transport.Snapshot, value => value["contentId"] = "42");
         await using var client = Client(transport);
         await client.TickAsync(ContractFixture.Character, ContractFixture.Now);
         Assert.Equal(CollectionDataAvailability.Rejected, client.View.Availability);
@@ -357,8 +355,7 @@ public sealed class ClientLifetimeTests
         var notice = ContractFixture.Edit(ContractFixture.Read("snapshot-withdrawn-valid.json"),
             value => value["providerSessionId"] = ContractFixture.OtherSession);
         transport.Snapshot = "";
-        for (var i = 0; i < 17; i++)
-            client.Withdrawn(notice);
+        for (var i = 0; i < 17; i++) client.Withdrawn(notice);
 
         // Act.
         await client.TickAsync(ContractFixture.Character, ContractFixture.Now.AddSeconds(1));
@@ -401,18 +398,15 @@ public sealed class ClientLifetimeTests
         Task? cleanup = null;
         transport.BeforeSnapshotReturns = () =>
         {
-            if (dispose)
-                cleanup = client.DisposeAsync().AsTask();
-            else
-                _ = client.TickAsync("42", ContractFixture.Now);
+            if (dispose) cleanup = client.DisposeAsync().AsTask();
+            else _ = client.TickAsync("42", ContractFixture.Now);
         };
 
         // Act.
         var pending = client.TickAsync(ContractFixture.Character, ContractFixture.Now);
         worker.CompleteNext();
         await pending;
-        if (cleanup is not null)
-            await cleanup;
+        if (cleanup is not null) await cleanup;
 
         // Assert: neither success nor failure from the old scope overwrites the new state.
         Assert.Null(client.View.Snapshot);

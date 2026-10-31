@@ -256,8 +256,7 @@ public sealed class InventoryCacheTests : IDisposable
         var saved = InventoryServiceTests.Saved(1);
         await cache.SaveAsync(saved, default);
         var prior = await File.ReadAllBytesAsync(cache.CharacterPath(1));
-        using var cancellation = new CancellationTokenSource();
-        cancellation.Cancel();
+        using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cache.SaveAsync(saved, cancellation.Token));
         Assert.Equal("InventoryCacheInvalid", (await Assert.ThrowsAsync<InvalidDataException>(() => cache.SaveAsync(saved with { Locations = [saved.Locations[0] with { Items = [new(100, uint.MaxValue, 1)] }] }, default))).Message);
         Assert.Equal(prior, await File.ReadAllBytesAsync(cache.CharacterPath(1)));

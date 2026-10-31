@@ -78,8 +78,7 @@ public sealed class CollectionDataV12Tests : IDisposable
         var result = V12.ValidateSnapshot(CollectionDataSerializer.CompactV12(Data([], health), 3), "123");
         Assert.True(result.Success, result.Code.ToString());
         Assert.Equal(included, result.Value!.Unlocks.ContainsKey("beasts"));
-        if (included)
-            Assert.Equal(SnapshotFixture.Now, DateTimeOffset.Parse(result.Value.SourceHealth["beasts"].ObservedAtUtc!));
+        if (included) Assert.Equal(SnapshotFixture.Now, DateTimeOffset.Parse(result.Value.SourceHealth["beasts"].ObservedAtUtc!));
     }
 
     [Fact]
@@ -164,8 +163,7 @@ public sealed class CollectionDataV12Tests : IDisposable
         };
         var export = FFXIVCollectImportSerializer.Serialize(data, contract);
         Assert.Equal(included, JsonNode.Parse(export.Json!)!.AsObject().ContainsKey("beasts"));
-        if (included)
-            Assert.Empty(JsonNode.Parse(export.Json!)!["beasts"]!.AsArray());
+        if (included) Assert.Empty(JsonNode.Parse(export.Json!)!["beasts"]!.AsArray());
     }
 
     [Fact]

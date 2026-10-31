@@ -146,8 +146,7 @@ public sealed class ControllerPublicOutputBoundaryTests
         for (var attempt = 0; attempt < 500; attempt++)
         {
             controller.Update(id, id == 0 ? "" : "Fixture", loggedOut, zoning, monotonic, SnapshotFixture.Now.AddSeconds(monotonic));
-            if (complete())
-                return;
+            if (complete()) return;
             await Task.Delay(2);
         }
         Assert.Fail("Controller did not reach the requested public state: " + controller.Error);
@@ -176,8 +175,7 @@ public sealed class ControllerPublicOutputBoundaryTests
         {
             Controller.Dispose();
             await Controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(3));
-            if (Directory.Exists(root))
-                Directory.Delete(root, true);
+            if (Directory.Exists(root)) Directory.Delete(root, true);
         }
     }
 
@@ -277,11 +275,9 @@ public sealed class ControllerPublicOutputBoundaryTests
         public void Delete(string path) => File.Delete(path);
         private void Check(string destination)
         {
-            if (!destination.EndsWith("reported-evidence.json", StringComparison.Ordinal))
-                return;
+            if (!destination.EndsWith("reported-evidence.json", StringComparison.Ordinal)) return;
             Interlocked.Increment(ref evidenceInstalls);
-            if (FailEvidence)
-                throw new IOException("Evidence installation fixture failure.");
+            if (FailEvidence) throw new IOException("Evidence installation fixture failure.");
         }
     }
 }

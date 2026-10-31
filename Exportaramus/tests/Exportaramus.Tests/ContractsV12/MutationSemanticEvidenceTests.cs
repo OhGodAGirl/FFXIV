@@ -16,9 +16,7 @@ public sealed class MutationSemanticEvidenceTests
     private static void RemovePresence(JsonObject root, string source, uint id)
     {
         var items = root["currentItemPresence"]![source]!["items"]!.AsArray();
-        for (var i = items.Count - 1; i >= 0; i--)
-            if (items[i]!["itemId"]!.GetValue<uint>() == id)
-                items.RemoveAt(i);
+        for (var i = items.Count - 1; i >= 0; i--) if (items[i]!["itemId"]!.GetValue<uint>() == id) items.RemoveAt(i);
     }
 
     [Theory]
@@ -49,14 +47,10 @@ public sealed class MutationSemanticEvidenceTests
         RemovePresence(root, "armoire", 2642);
         Facts(root, "outfits").Add(Presence("armoire", 2642, "Absent"));
         Assert.True(CollectionDataSemanticValidator.ValidateRich(root.ToJsonString()).Success);
-        foreach (var source in CollectionDataSemanticValidator.PresenceKeys)
-            RemovePresence(root, source, 3747);
+        foreach (var source in CollectionDataSemanticValidator.PresenceKeys) RemovePresence(root, source, 3747);
         var facts = Facts(root, "outfits");
-        for (var i = facts.Count - 1; i >= 0; i--)
-            if (facts[i]!["subjectId"]!.GetValue<uint>() == 3747)
-                facts.RemoveAt(i);
-        foreach (var source in CollectionDataSemanticValidator.PresenceKeys)
-            facts.Add(Presence(source, 3747, "Absent"));
+        for (var i = facts.Count - 1; i >= 0; i--) if (facts[i]!["subjectId"]!.GetValue<uint>() == 3747) facts.RemoveAt(i);
+        foreach (var source in CollectionDataSemanticValidator.PresenceKeys) facts.Add(Presence(source, 3747, "Absent"));
         Item(root, "outfits")["owned"] = false;
         Assert.True(CollectionDataSemanticValidator.ValidateRich(root.ToJsonString()).Success);
         Item(root, "outfits")["owned"] = true;

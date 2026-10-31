@@ -91,8 +91,7 @@ public sealed class CapabilityWorkerLifetimeTests
             Complete();
             Controller.Dispose();
             Controller.ShutdownTask.GetAwaiter().GetResult();
-            if (Directory.Exists(root))
-                Directory.Delete(root, true);
+            if (Directory.Exists(root)) Directory.Delete(root, true);
         }
     }
     private sealed class Port : ISnapshotCapturePort

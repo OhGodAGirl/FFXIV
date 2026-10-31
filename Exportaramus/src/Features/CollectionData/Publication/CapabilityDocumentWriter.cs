@@ -50,8 +50,7 @@ public static class CapabilityDocumentWriter
         writer.WriteStartObject("reportedOwnershipEvidence");
         writer.WriteBoolean("available", reportsAvailable);
         writer.WriteStartArray("resultCodes");
-        foreach (var code in CollectionDataSemanticValidator.ReportCodes)
-            writer.WriteStringValue(code);
+        foreach (var code in CollectionDataSemanticValidator.ReportCodes) writer.WriteStringValue(code);
         writer.WriteEndArray();
         writer.WriteEndObject();
         writer.WriteEndObject();

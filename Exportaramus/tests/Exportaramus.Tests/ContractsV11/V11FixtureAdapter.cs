@@ -14,8 +14,7 @@ internal static class V11FixtureAdapter
         var root = JsonNode.Parse(payload)!.AsObject();
         if (name.Contains("version-", StringComparison.Ordinal))
         {
-            if (root["schemaVersion"]?.GetValue<string>() == "1.1")
-                root["schemaVersion"] = "1.0";
+            if (root["schemaVersion"]?.GetValue<string>() == "1.1") root["schemaVersion"] = "1.0";
             return root.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
         }
         root["schemaVersion"] = "1.1";
@@ -46,11 +45,9 @@ internal static class V11FixtureAdapter
         }
         if (root["omittedCollections"] is JsonObject omitted)
             omitted["facewear"] = new JsonObject { ["reasonCode"] = "PatchValidationRequired", ["message"] = "Not observed in this vector." };
-        if (root["unlockKeys"] is JsonArray keys)
-            keys.Add("facewear");
+        if (root["unlockKeys"] is JsonArray keys) keys.Add("facewear");
         if (root["gates"] is JsonObject gates)
-            foreach (var gate in gates.ToArray())
-                gates[gate.Key] = gate.Value!.GetValue<string>().Replace(".CollectionData.", ".CollectionData.V1_1.", StringComparison.Ordinal);
+            foreach (var gate in gates.ToArray()) gates[gate.Key] = gate.Value!.GetValue<string>().Replace(".CollectionData.", ".CollectionData.V1_1.", StringComparison.Ordinal);
         if (root["collectionDataSchema"] is JsonObject schema)
         {
             schema["id"] = "https://exportaramus.local/schemas/1.1/collection-data.schema.json";

@@ -7,8 +7,7 @@ public sealed class CollectionCatalogCache
     public CollectionCatalog? Get(string language, string version)
     {
         var value = current;
-        if (value is null)
-            return null;
+        if (value is null) return null;
         return value.ClientLanguage == language && value.GameDataVersion == version ? value : null;
     }
 

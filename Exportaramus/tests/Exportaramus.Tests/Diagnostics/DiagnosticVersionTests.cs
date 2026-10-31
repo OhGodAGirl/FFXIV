@@ -65,8 +65,7 @@ public sealed class DiagnosticVersionTests
         var root = ReadCurrent();
         var map = root["collectionPipeline"]![field]!.AsObject();
         map["compendium"] = map["expanded"]!.DeepClone();
-        if (replaceCurrentField)
-            map.Remove("expanded");
+        if (replaceCurrentField) map.Remove("expanded");
 
         var error = Assert.Throws<InvalidDataException>(() => DiagnosticReportSerializer.ValidateWireJson(Rehash(root)));
         Assert.Equal("DiagnosticSchemaInvalid", error.Message);

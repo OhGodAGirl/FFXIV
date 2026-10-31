@@ -46,8 +46,7 @@ public sealed class AtomicStorageTests : IDisposable
         await Assert.ThrowsAnyAsync<Exception>(() => storage.CommitAsync(1, "{}", "invalid", null, true, false, now, default));
         Assert.Equal("{\"old\":true}", await storage.ReadAsync(1, false, default));
         Assert.Equal("{\"old\":true}", await File.ReadAllTextAsync(storage.CanonicalPath));
-        using var cancellation = new CancellationTokenSource();
-        cancellation.Cancel();
+        using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => storage.CommitAsync(1, "{}", "{}", null, true, false, now, cancellation.Token));
         Assert.Empty(Directory.GetFiles(root, "*.tmp", SearchOption.AllDirectories));
         Assert.Empty(Directory.GetFiles(root, "*.bak", SearchOption.AllDirectories));
@@ -234,10 +233,8 @@ public sealed class AtomicStorageTests : IDisposable
         {
             BeforeMove = (_, destination) =>
             {
-                if (!destination.EndsWith("current-snapshot.json", StringComparison.Ordinal))
-                    return;
-                foreach (var backup in Directory.GetFiles(root, "*.bak", SearchOption.AllDirectories))
-                    File.Delete(backup);
+                if (!destination.EndsWith("current-snapshot.json", StringComparison.Ordinal)) return;
+                foreach (var backup in Directory.GetFiles(root, "*.bak", SearchOption.AllDirectories)) File.Delete(backup);
                 throw new IOException("Failure with an unavailable prior backup");
             },
         });
@@ -254,8 +251,7 @@ public sealed class AtomicStorageTests : IDisposable
         {
             BeforeMove = (_, destination) =>
             {
-                if (!destination.EndsWith("current-snapshot.json", StringComparison.Ordinal))
-                    return;
+                if (!destination.EndsWith("current-snapshot.json", StringComparison.Ordinal)) return;
                 File.Delete(Path.Combine(root, "snapshots", "characters", "1", "collection-data.json"));
                 throw new IOException();
             },
@@ -369,8 +365,7 @@ public sealed class AtomicStorageTests : IDisposable
         {
             BeforeDelete = path =>
         {
-            if (path.EndsWith(".bak", StringComparison.Ordinal))
-                File.Delete(Path.Combine(root, "state", "write-recovery.json"));
+            if (path.EndsWith(".bak", StringComparison.Ordinal)) File.Delete(Path.Combine(root, "state", "write-recovery.json"));
         }
         };
         var next = new AtomicSnapshotStorage(root, files);

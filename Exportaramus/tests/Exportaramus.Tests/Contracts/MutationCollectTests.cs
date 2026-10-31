@@ -62,10 +62,8 @@ public sealed class MutationCollectTests
             documents.Contract["validatedGameDataVersion"] = version;
             documents.Mapping["validatedGameDataVersion"] = version;
             documents.Derived["validatedGameDataVersion"] = version;
-            if (length == 128)
-                Assert.Equal(version, documents.Load().GameDataVersion);
-            else
-                Assert.False(string.IsNullOrWhiteSpace(Assert.Throws<InvalidDataException>(() => documents.Load()).Message));
+            if (length == 128) Assert.Equal(version, documents.Load().GameDataVersion);
+            else Assert.False(string.IsNullOrWhiteSpace(Assert.Throws<InvalidDataException>(() => documents.Load()).Message));
         }
     }
 
@@ -108,10 +106,8 @@ public sealed class MutationCollectTests
         var documents = new Documents();
         var catalog = documents.Recognized["catalogs"]!.AsArray().Single(c => c!["key"]!.GetValue<string>() == "bardings")!;
         var ids = catalog["ids"]!.AsArray();
-        if (defect == "zero")
-            ids[0] = 0u;
-        else if (defect == "duplicate")
-            ids[1] = ids[0]!.DeepClone();
+        if (defect == "zero") ids[0] = 0u;
+        else if (defect == "duplicate") ids[1] = ids[0]!.DeepClone();
         else
         {
             var first = ids[0]!.GetValue<uint>();
@@ -155,7 +151,6 @@ public sealed class MutationCollectTests
         }, contract);
         Assert.True(output.CanCopy);
         Assert.Contains("outfits", output.OmittedKeys);
-        using var document = JsonDocument.Parse(output.Json!);
-        Assert.False(document.RootElement.TryGetProperty("outfits", out _));
+        using var document = JsonDocument.Parse(output.Json!); Assert.False(document.RootElement.TryGetProperty("outfits", out _));
     }
 }

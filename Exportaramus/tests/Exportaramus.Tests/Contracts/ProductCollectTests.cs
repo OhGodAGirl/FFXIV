@@ -57,8 +57,7 @@ public sealed class ProductCollectTests
         Assert.True(contract.Beasts.SupportsGameVersion(data.Catalog.GameDataVersion));
         using var document = JsonDocument.Parse(result.Json!);
         Assert.Equal(CollectionKeys.Collect, document.RootElement.EnumerateObject().Select(p => p.Name));
-        foreach (var key in CollectionKeys.Collect)
-            Assert.Equal(contract.RecognizedIds[key].Min(), Assert.Single(document.RootElement.GetProperty(key).EnumerateArray()).GetUInt32());
+        foreach (var key in CollectionKeys.Collect) Assert.Equal(contract.RecognizedIds[key].Min(), Assert.Single(document.RootElement.GetProperty(key).EnumerateArray()).GetUInt32());
         Assert.True(Exportaramus.ConsumerKit.V1.CollectionDataSemanticValidator.ValidateFFXIVCollect(result.Json).Success);
     }
 
@@ -76,8 +75,7 @@ public sealed class ProductCollectTests
         Assert.True(before.CanCopy);
         Assert.True(after.CanCopy);
         Assert.NotEqual(before.Json, after.Json);
-        using var document = JsonDocument.Parse(after.Json!);
-        Assert.All(document.RootElement.EnumerateObject(), p => Assert.Equal(0, p.Value.GetArrayLength()));
+        using var document = JsonDocument.Parse(after.Json!); Assert.All(document.RootElement.EnumerateObject(), p => Assert.Equal(0, p.Value.GetArrayLength()));
         Assert.Equal(before.Json, FFXIVCollectImportSerializer.Serialize(data, contract).Json);
     }
 

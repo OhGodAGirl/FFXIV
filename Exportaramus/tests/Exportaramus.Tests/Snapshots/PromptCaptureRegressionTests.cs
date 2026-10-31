@@ -109,10 +109,8 @@ public sealed class PromptCaptureRegressionTests
     {
         await using var run = new Scenario();
         await run.Initialize();
-        if (targeted)
-            run.Controller.HintSource("orchestrions", 123, 20);
-        else
-            run.Controller.RequestFull();
+        if (targeted) run.Controller.HintSource("orchestrions", 123, 20);
+        else run.Controller.RequestFull();
         run.Update(20.25); // Start the native read.
         run.Update(20.25); // Finish the read and start its worker; acceptance requires a later update.
         Assert.True(run.Controller.Busy);
@@ -214,8 +212,7 @@ public sealed class PromptCaptureRegressionTests
         {
             Controller.Dispose();
             await Controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
-            if (Directory.Exists(path))
-                Directory.Delete(path, true);
+            if (Directory.Exists(path)) Directory.Delete(path, true);
         }
     }
 

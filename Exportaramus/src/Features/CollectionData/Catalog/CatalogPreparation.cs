@@ -17,17 +17,14 @@ public sealed class CatalogPreparation(Func<ICatalogProjectionBuilder> createBui
 
     public bool Prepare(string language, string version)
     {
-        if (disposed)
-            return false;
+        if (disposed) return false;
         var cached = Catalog;
-        if (cached is not null && cached.ClientLanguage == language && cached.GameDataVersion == version)
-            return true;
+        if (cached is not null && cached.ClientLanguage == language && cached.GameDataVersion == version) return true;
         Catalog = null;
         var running = finalizer;
         if (running is not null)
         {
-            if (!running.IsCompleted)
-                return false;
+            if (!running.IsCompleted) return false;
             finalizer = null;
             var prepared = running.GetAwaiter().GetResult();
             if (prepared.ClientLanguage == language && prepared.GameDataVersion == version)
@@ -64,9 +61,7 @@ public sealed class CatalogPreparation(Func<ICatalogProjectionBuilder> createBui
 
     public void Dispose()
     {
-        if (disposed)
-            return;
-        disposed = true;
+        if (disposed) return; disposed = true;
         lifetime.Cancel();
         builder?.Dispose();
         builder = null;

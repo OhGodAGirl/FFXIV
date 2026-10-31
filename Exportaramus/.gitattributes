@@ -1,3 +1,6 @@
+# Match the C# formatter on every checkout.
+*.cs text eol=lf
+
 # Preserve embedded contract bytes and schema fingerprints.
 /data/Contracts/** -text whitespace=cr-at-eol
 /data/FFXIVCollect/** -text whitespace=cr-at-eol

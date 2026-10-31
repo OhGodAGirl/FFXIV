@@ -31,8 +31,7 @@ public sealed class InventoryIpcProvider : IDisposable
     }
     public void Update(InventorySnapshot? value)
     {
-        if (disposed || ReferenceEquals(value, current))
-            return;
+        if (disposed || ReferenceEquals(value, current)) return;
         var json = InventoryQuery.Snapshot(value);
         Volatile.Write(ref current, value);
         Volatile.Write(ref prepared, json);
@@ -47,8 +46,7 @@ public sealed class InventoryIpcProvider : IDisposable
     }
     public void Dispose()
     {
-        if (disposed)
-            return;
+        if (disposed) return;
         Update(null);
         disposed = true;
         try

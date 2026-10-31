@@ -40,8 +40,7 @@ internal sealed class FakeTransport : ICollectionDataTransport
     public string ReadCapabilities()
     {
         ReadCount++;
-        if (FailReads)
-            throw new InvalidOperationException("Provider is absent.");
+        if (FailReads) throw new InvalidOperationException("Provider is absent.");
         return Capabilities;
     }
 
@@ -56,15 +55,13 @@ internal sealed class FakeTransport : ICollectionDataTransport
     public string Report(string contentId, uint itemId, string reporter)
     {
         Reports.Add((contentId, itemId, reporter));
-        if (FailReports)
-            throw new InvalidOperationException("Provider stopped.");
+        if (FailReports) throw new InvalidOperationException("Provider stopped.");
         return ReportResult;
     }
 
     public void Dispose()
     {
         DisposeCount++;
-        if (FailDisposal)
-            throw new InvalidOperationException("Subscription cleanup failed.");
+        if (FailDisposal) throw new InvalidOperationException("Subscription cleanup failed.");
     }
 }

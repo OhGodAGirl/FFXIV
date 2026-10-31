@@ -19,8 +19,7 @@ public sealed class RetainerGuideController(IRetainerGuidePort port)
 
     public void Start(ulong character, TimeSpan now)
     {
-        if (Active)
-            return;
+        if (Active) return;
         if (character == 0 || !port.IsSafe(character))
         {
             Stop("Retainer capture is unavailable right now.");
@@ -41,8 +40,7 @@ public sealed class RetainerGuideController(IRetainerGuidePort port)
 
     public void Update(TimeSpan now)
     {
-        if (!Active)
-            return;
+        if (!Active) return;
         if (!port.IsSafe(contentId))
         {
             Stop("Retainer capture stopped because the character or conditions changed.");
@@ -55,8 +53,7 @@ public sealed class RetainerGuideController(IRetainerGuidePort port)
         }
         if (Step == RetainerGuideStep.OpenBell)
         {
-            if (port.ListReady)
-                Move(RetainerGuideStep.ReadRoster, now, "Reading Retainers");
+            if (port.ListReady) Move(RetainerGuideStep.ReadRoster, now, "Reading Retainers");
             else if (!bellRequested)
             {
                 bellRequested = port.OpenBell();
@@ -66,8 +63,7 @@ public sealed class RetainerGuideController(IRetainerGuidePort port)
         }
         else if (Step == RetainerGuideStep.ReadRoster)
         {
-            if (!port.TryReadRoster(out var values))
-                return;
+            if (!port.TryReadRoster(out var values)) return;
             if (values.IsDefault || values.Length > 10 || values.Any(row => row.RetainerId == 0)
                 || values.Select(row => row.RetainerId).Distinct().Count() != values.Length)
             {
@@ -75,64 +71,52 @@ public sealed class RetainerGuideController(IRetainerGuidePort port)
                 return;
             }
             roster = values;
-            if (roster.IsEmpty)
-                Move(RetainerGuideStep.CloseOverview, now, "Closing Retainer windows");
-            else
-                Move(RetainerGuideStep.SelectRetainer, now, Progress("Opening Retainer"));
+            if (roster.IsEmpty) Move(RetainerGuideStep.CloseOverview, now, "Closing Retainer windows");
+            else Move(RetainerGuideStep.SelectRetainer, now, Progress("Opening Retainer"));
             return;
         }
         else if (Step == RetainerGuideStep.SelectRetainer)
         {
-            if (!port.TryReadRoster(out var current))
-                return;
+            if (!port.TryReadRoster(out var current)) return;
             if (!current.SequenceEqual(roster))
             {
                 Stop("The Retainer list changed. Captured inventories are saved.");
                 return;
             }
-            if (port.SelectRetainer(roster[index].RetainerId))
-                Move(RetainerGuideStep.OpenInventory, now, Progress("Opening inventory"));
+            if (port.SelectRetainer(roster[index].RetainerId)) Move(RetainerGuideStep.OpenInventory, now, Progress("Opening inventory"));
             return;
         }
         else if (Step == RetainerGuideStep.OpenInventory)
         {
-            if (port.OpenInventory(roster[index].RetainerId))
-                Move(RetainerGuideStep.CaptureInventory, now, Progress("Capturing inventory"));
+            if (port.OpenInventory(roster[index].RetainerId)) Move(RetainerGuideStep.CaptureInventory, now, Progress("Capturing inventory"));
             return;
         }
         else if (Step == RetainerGuideStep.CaptureInventory)
         {
-            if (port.CaptureInventory(contentId, roster[index].RetainerId))
-                Move(RetainerGuideStep.CloseInventory, now, Progress("Closing inventory"));
+            if (port.CaptureInventory(contentId, roster[index].RetainerId)) Move(RetainerGuideStep.CloseInventory, now, Progress("Closing inventory"));
             return;
         }
         else if (Step == RetainerGuideStep.CloseInventory)
         {
-            if (port.CloseInventory(roster[index].RetainerId))
-                Move(RetainerGuideStep.QuitRetainer, now, Progress("Returning to Retainers"));
+            if (port.CloseInventory(roster[index].RetainerId)) Move(RetainerGuideStep.QuitRetainer, now, Progress("Returning to Retainers"));
             return;
         }
         else if (Step == RetainerGuideStep.QuitRetainer)
         {
-            if (!port.InventoryVisible && port.QuitRetainer(roster[index].RetainerId))
-                Move(RetainerGuideStep.WaitForList, now, Progress("Returning to Retainers"));
+            if (!port.InventoryVisible && port.QuitRetainer(roster[index].RetainerId)) Move(RetainerGuideStep.WaitForList, now, Progress("Returning to Retainers"));
             return;
         }
         else if (Step == RetainerGuideStep.WaitForList)
         {
-            if (!port.ListReady)
-                return;
+            if (!port.ListReady) return;
             index++;
-            if (index == roster.Length)
-                Move(RetainerGuideStep.CloseOverview, now, "Closing Retainer windows");
-            else
-                Move(RetainerGuideStep.SelectRetainer, now, Progress("Opening Retainer"));
+            if (index == roster.Length) Move(RetainerGuideStep.CloseOverview, now, "Closing Retainer windows");
+            else Move(RetainerGuideStep.SelectRetainer, now, Progress("Opening Retainer"));
             return;
         }
         else // Every other active state was handled above; only CloseOverview remains.
         {
-            if (port.CloseOverviewAndInventory())
-                Complete();
+            if (port.CloseOverviewAndInventory()) Complete();
             return;
         }
     }

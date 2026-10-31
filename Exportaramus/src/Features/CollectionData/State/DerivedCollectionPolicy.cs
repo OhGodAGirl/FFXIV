@@ -15,8 +15,7 @@ public static class DerivedCollectionPolicy
             bool? owned = null;
             if (definition.Key == "outfits")
             {
-                if (row.RequiredItemIds.IsDefaultOrEmpty)
-                    return Unavailable(definition, state, ReasonCode.MappingValidationFailed);
+                if (row.RequiredItemIds.IsDefaultOrEmpty) return Unavailable(definition, state, ReasonCode.MappingValidationFailed);
                 var values = row.RequiredItemIds.Select(id => Presence(id, state, facts, inputs)).ToArray();
                 owned = values.All(value => value == true) ? true : values.Any(value => value == false) ? false : null;
             }
@@ -36,13 +35,11 @@ public static class DerivedCollectionPolicy
                     owned = owned == true || completed == true ? true : owned == false && completed == false ? false : null;
                 }
             }
-            if (owned is null)
-                return Unavailable(definition, state, ReasonCode.IncompleteContainerSet);
+            if (owned is null) return Unavailable(definition, state, ReasonCode.IncompleteContainerSet);
             results.Add(new(row.Id, row.Name, owned.Value, new(definition.Key == "outfits" ? "AllRequiredConstituents" : "PermanentUnlockOrCurrentItemPresence", facts.ToImmutable())));
         }
         int inputCount = inputs.Count;
-        if (inputCount == 0)
-            return Unavailable(definition, state, ReasonCode.MappingValidationFailed);
+        if (inputCount == 0) return Unavailable(definition, state, ReasonCode.MappingValidationFailed);
         var stale = inputs.Any(input => input.SourceStatus == SourceStatus.Stale);
         var health = new CollectionSourceStatus(DataType.Derived, stale ? SourceStatus.Stale : SourceStatus.Fresh,
             Completeness.Complete, ProvenanceType.Derived,
@@ -63,8 +60,7 @@ public static class DerivedCollectionPolicy
                 return true;
             }
         }
-        if (CollectionKeys.Presence.Any(key => !state.CurrentItemPresence[key].Health.IsUsable))
-            return null;
+        if (CollectionKeys.Presence.Any(key => !state.CurrentItemPresence[key].Health.IsUsable)) return null;
         foreach (var key in CollectionKeys.Presence)
         {
             var source = state.CurrentItemPresence[key];

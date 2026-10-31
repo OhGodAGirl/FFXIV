@@ -230,15 +230,11 @@ public sealed class ConsumerContractTests
             {
                 var copy = original.DeepClone();
                 var parent = copy;
-                foreach (var segment in path[..^1])
-                    parent = parent is JsonArray ? parent[int.Parse(segment, System.Globalization.CultureInfo.InvariantCulture)]! : parent[segment]!;
+                foreach (var segment in path[..^1]) parent = parent is JsonArray ? parent[int.Parse(segment, System.Globalization.CultureInfo.InvariantCulture)]! : parent[segment]!;
                 var last = path[^1];
                 var existing = parent is JsonArray ? parent[int.Parse(last, System.Globalization.CultureInfo.InvariantCulture)] : parent[last];
                 JsonNode replacement = existing is JsonObject or JsonArray ? JsonValue.Create(false)! : new JsonObject();
-                if (parent is JsonArray array)
-                    array[int.Parse(last, System.Globalization.CultureInfo.InvariantCulture)] = replacement;
-                else
-                    parent[last] = replacement;
+                if (parent is JsonArray array) array[int.Parse(last, System.Globalization.CultureInfo.InvariantCulture)] = replacement; else parent[last] = replacement;
                 Assert.False(validate(copy.ToJsonString()), string.Join('/', path));
             }
         }
@@ -250,16 +246,14 @@ public sealed class ConsumerContractTests
                 {
                     var path = prefix.Append(property.Key).ToArray();
                     yield return path;
-                    foreach (var descendant in Paths(property.Value, path))
-                        yield return descendant;
+                    foreach (var descendant in Paths(property.Value, path)) yield return descendant;
                 }
             else if (node is JsonArray array)
                 for (var i = 0; i < array.Count; i++)
                 {
                     var path = prefix.Append(i.ToString(System.Globalization.CultureInfo.InvariantCulture)).ToArray();
                     yield return path;
-                    foreach (var descendant in Paths(array[i], path))
-                        yield return descendant;
+                    foreach (var descendant in Paths(array[i], path)) yield return descendant;
                 }
         }
     }

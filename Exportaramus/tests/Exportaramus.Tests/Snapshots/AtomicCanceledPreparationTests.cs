@@ -43,8 +43,7 @@ public sealed class AtomicCanceledPreparationTests
         public void Replace(string source, string destination, string? backup) => File.Replace(source, destination, backup);
         public void Delete(string path)
         {
-            if (RecoveryDeletionUnavailable && Path.GetFileName(path) == "write-recovery.json")
-                throw new IOException("Recovery record deletion temporarily unavailable.");
+            if (RecoveryDeletionUnavailable && Path.GetFileName(path) == "write-recovery.json") throw new IOException("Recovery record deletion temporarily unavailable.");
             File.Delete(path);
         }
     }

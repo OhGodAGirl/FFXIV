@@ -35,18 +35,13 @@ public sealed class DiagnosticsWindow : Window
         var state = view();
         Drawing.Frame();
         var width = ImGui.GetContentRegionAvail().X;
-        if (Drawing.Button("Generate Report", "##GenerateReport", new(160, 32), state.CanGenerate, state.ReduceMotion))
-            dispatch(DiagnosticsIntent.GenerateReport);
+        if (Drawing.Button("Generate Report", "##GenerateReport", new(160, 32), state.CanGenerate, state.ReduceMotion)) dispatch(DiagnosticsIntent.GenerateReport);
         ImGui.SameLine();
-        if (Drawing.Button("Copy Report", "##CopyReport", new(145, 32), state.CanCopy, state.ReduceMotion))
-            dispatch(DiagnosticsIntent.CopyReport);
-        if (LayoutPolicy.WideDiagnosticActions(width))
-            ImGui.SameLine();
-        if (Drawing.Button("Reset Measurements", "##ResetMeasurements", new(200, 32), true, state.ReduceMotion))
-            dispatch(DiagnosticsIntent.ResetMeasurements);
+        if (Drawing.Button("Copy Report", "##CopyReport", new(145, 32), state.CanCopy, state.ReduceMotion)) dispatch(DiagnosticsIntent.CopyReport);
+        if (LayoutPolicy.WideDiagnosticActions(width)) ImGui.SameLine();
+        if (Drawing.Button("Reset Measurements", "##ResetMeasurements", new(200, 32), true, state.ReduceMotion)) dispatch(DiagnosticsIntent.ResetMeasurements);
         ImGui.TextUnformatted(state.Status);
-        if (state.Error.Length != 0)
-            ImGui.TextWrapped(state.Error);
+        if (state.Error.Length != 0) ImGui.TextWrapped(state.Error);
         if (state.Report is not { } report)
             return;
         ImGui.TextUnformatted(report.GeneratedText);
@@ -55,10 +50,8 @@ public sealed class DiagnosticsWindow : Window
         foreach (var section in report.Sections)
         {
             bool expanded;
-            using (headingFont.Push())
-                expanded = ImGui.CollapsingHeader(section.Heading, section.InitiallyOpen ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None);
-            if (!expanded)
-                continue;
+            using (headingFont.Push()) expanded = ImGui.CollapsingHeader(section.Heading, section.InitiallyOpen ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None);
+            if (!expanded) continue;
             if (ImGui.BeginTable(section.TableId, 2, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg))
             {
                 ImGui.TableSetupColumn("Field", ImGuiTableColumnFlags.WidthStretch, .46f);

@@ -35,8 +35,7 @@ public sealed unsafe class InventoryCaptureAdapter
 
     public void Update(CollectionCatalog? catalog)
     {
-        if (!framework.IsInFrameworkUpdateThread)
-            return;
+        if (!framework.IsInFrameworkUpdateThread) return;
         var contentId = player.IsLoaded ? player.ContentId : 0;
         if (character != contentId)
         {
@@ -44,8 +43,7 @@ public sealed unsafe class InventoryCaptureAdapter
             nextRead = 0;
             nextLocation = 0;
         }
-        if (contentId == 0 || Environment.TickCount64 < nextRead)
-            return;
+        if (contentId == 0 || Environment.TickCount64 < nextRead) return;
         nextRead = Environment.TickCount64 + 200;
         var location = Locations[nextLocation];
         nextLocation = (nextLocation + 1) % Locations.Length;
@@ -68,26 +66,20 @@ public sealed unsafe class InventoryCaptureAdapter
             if (location.Types.Length != 0)
             {
                 var items = containers.Read(location.Types);
-                if (!IdentityMatches(contentId))
-                    return;
-                if (items is null)
-                    service.MarkUnavailable(contentId, key, location.Name, now, false);
-                else
-                    service.AcceptLocation(contentId, key, location.Name, items, now);
+                if (!IdentityMatches(contentId)) return;
+                if (items is null) service.MarkUnavailable(contentId, key, location.Name, now, false);
+                else service.AcceptLocation(contentId, key, location.Name, items, now);
                 return;
             }
             // The reviewed storage readers expose membership, including unlocked dresser set slots.
             // Zero quantities explicitly mean membership-only, never an invented normal-quality copy.
-            if (catalog is null || catalog.GameDataVersion != version)
-                return;
+            if (catalog is null || catalog.GameDataVersion != version) return;
             var presence = collections.ReadPresence(location.Source, catalog, contentId, ++generation, now);
-            if (!IdentityMatches(contentId))
-                return;
+            if (!IdentityMatches(contentId)) return;
             if (presence.Health.IsUsable)
                 service.AcceptLocation(contentId, key, location.Name,
                     presence.Items.Select(item => new InventoryItemQuantity(item.ItemId, 0, 0)), now);
-            else
-                service.MarkUnavailable(contentId, key, location.Name, now, false);
+            else service.MarkUnavailable(contentId, key, location.Name, now, false);
         }
         catch (Exception)
         {
@@ -98,35 +90,29 @@ public sealed unsafe class InventoryCaptureAdapter
 
     public bool CaptureActiveRetainer(ulong contentId, ulong expectedRetainerId)
     {
-        if (!IdentityMatches(contentId) || expectedRetainerId == 0)
-            return false;
+        if (!IdentityMatches(contentId) || expectedRetainerId == 0) return false;
         var version = data.GameData.Repositories.Values.Single(r => r.ExpansionId == 0).Version;
-        if (!ReaderCompatibility.SourcesFor(version).Contains("retainers"))
-            return false;
+        if (!ReaderCompatibility.SourcesFor(version).Contains("retainers")) return false;
         return ReadRetainer(contentId, DateTimeOffset.UtcNow, expectedRetainerId) == expectedRetainerId;
     }
 
     private ulong ReadRetainer(ulong contentId, DateTimeOffset now, ulong expectedRetainerId = 0)
     {
         var manager = RetainerManager.Instance();
-        if (manager == null || !manager->IsReady)
-            return 0;
+        if (manager == null || !manager->IsReady) return 0;
         var count = manager->GetRetainerCount();
-        if (count > 10)
-            return 0;
+        if (count > 10) return 0;
         var roster = new List<InventoryRetainer>(count);
         var ids = new HashSet<ulong>();
         for (uint i = 0; i < count; i++)
         {
             var row = manager->GetRetainerBySortedIndex(i);
-            if (row == null || !row->Available || row->RetainerId == 0 || !ids.Add(row->RetainerId) || !InventoryPolicy.ValidName(row->NameString))
-                return 0;
+            if (row == null || !row->Available || row->RetainerId == 0 || !ids.Add(row->RetainerId) || !InventoryPolicy.ValidName(row->NameString)) return 0;
             roster.Add(new(row->RetainerId, row->NameString));
         }
         var active = manager->GetActiveRetainer();
         var activeId = active == null ? 0 : active->RetainerId;
-        if (expectedRetainerId != 0 && activeId != expectedRetainerId)
-            return 0;
+        if (expectedRetainerId != 0 && activeId != expectedRetainerId) return 0;
         var addonName = "InventoryRetainer";
         var addon = gui.GetAddonByName<AtkUnitBase>(addonName, 1);
         if (!Ready(addon))
@@ -136,27 +122,22 @@ public sealed unsafe class InventoryCaptureAdapter
         }
         var canRead = ids.Contains(activeId) && Ready(addon);
         List<InventoryItemQuantity>? items = canRead ? containers.Read(RetainerContainers) : null;
-        if (!IdentityMatches(contentId) || manager != RetainerManager.Instance() || !manager->IsReady || count != manager->GetRetainerCount())
-            return 0;
+        if (!IdentityMatches(contentId) || manager != RetainerManager.Instance() || !manager->IsReady || count != manager->GetRetainerCount()) return 0;
         for (uint i = 0; i < count; i++)
         {
             var row = manager->GetRetainerBySortedIndex(i);
-            if (row == null || !row->Available || row->RetainerId != roster[(int)i].RetainerId || row->NameString != roster[(int)i].Name)
-                return 0;
+            if (row == null || !row->Available || row->RetainerId != roster[(int)i].RetainerId || row->NameString != roster[(int)i].Name) return 0;
         }
         service.ObserveRoster(contentId, roster, now);
-        if (!canRead)
-            return 0;
+        if (!canRead) return 0;
         var finalActive = manager->GetActiveRetainer();
         if (finalActive == null || finalActive->RetainerId != activeId
             || addon != gui.GetAddonByName<AtkUnitBase>(addonName, 1) || !Ready(addon))
             return 0;
         var name = roster.Single(row => row.RetainerId == activeId).Name;
         var key = new InventoryLocationKey(InventoryLocationKind.Retainer, activeId);
-        if (items is null)
-            service.MarkUnavailable(contentId, key, name, now, false);
-        else
-            service.AcceptLocation(contentId, key, name, items, now);
+        if (items is null) service.MarkUnavailable(contentId, key, name, now, false);
+        else service.AcceptLocation(contentId, key, name, items, now);
         return items is not null ? activeId : 0;
     }
 

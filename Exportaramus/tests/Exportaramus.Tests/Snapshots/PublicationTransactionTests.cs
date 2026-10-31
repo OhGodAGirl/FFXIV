@@ -78,8 +78,7 @@ public sealed class PublicationTransactionTests : IDisposable
             }
         };
         await Assert.ThrowsAsync<InvalidDataException>(() => publisher.PrepareAndPersistAsync(invalid, "Test", 2, accepted, false, false, default));
-        using var cancel = new CancellationTokenSource();
-        cancel.Cancel();
+        using var cancel = new CancellationTokenSource(); cancel.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => publisher.PrepareAndPersistAsync(data, "Test", 2, accepted, false, false, cancel.Token));
         Assert.Equal(accepted.CompactJsonV12, await storage.ReadAsync(123, false, default));
         Assert.Equal(accepted.RichJson, await File.ReadAllTextAsync(storage.CanonicalPath));

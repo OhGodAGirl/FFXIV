@@ -14,8 +14,7 @@ internal static class V12FixtureAdapter
         var root = JsonNode.Parse(payload)!.AsObject();
         if (name.Contains("version-", StringComparison.Ordinal))
         {
-            if (root["schemaVersion"]?.GetValue<string>() == "1.2")
-                root["schemaVersion"] = "1.0";
+            if (root["schemaVersion"]?.GetValue<string>() == "1.2") root["schemaVersion"] = "1.0";
             return root.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
         }
         root["schemaVersion"] = "1.2";
@@ -46,20 +45,16 @@ internal static class V12FixtureAdapter
         }
         if (root["omittedCollections"] is JsonObject omitted)
             omitted["facewear"] = new JsonObject { ["reasonCode"] = "PatchValidationRequired", ["message"] = "Not observed in this vector." };
-        if (root["sourceCapabilities"] is JsonObject beastCaps)
-            beastCaps["beasts"] = beastCaps["facewear"]!.DeepClone();
-        if (root["sourceHealth"] is JsonObject beastHealth)
-            beastHealth["beasts"] = beastHealth["facewear"]!.DeepClone();
-        if (root["omittedCollections"] is JsonObject beastOmitted)
-            beastOmitted["beasts"] = beastOmitted["facewear"]!.DeepClone();
+        if (root["sourceCapabilities"] is JsonObject beastCaps) beastCaps["beasts"] = beastCaps["facewear"]!.DeepClone();
+        if (root["sourceHealth"] is JsonObject beastHealth) beastHealth["beasts"] = beastHealth["facewear"]!.DeepClone();
+        if (root["omittedCollections"] is JsonObject beastOmitted) beastOmitted["beasts"] = beastOmitted["facewear"]!.DeepClone();
         if (root["unlockKeys"] is JsonArray keys)
         {
             keys.Add("facewear");
             keys.Add("beasts");
         }
         if (root["gates"] is JsonObject gates)
-            foreach (var gate in gates.ToArray())
-                gates[gate.Key] = gate.Value!.GetValue<string>().Replace(".CollectionData.", ".CollectionData.V1_2.", StringComparison.Ordinal);
+            foreach (var gate in gates.ToArray()) gates[gate.Key] = gate.Value!.GetValue<string>().Replace(".CollectionData.", ".CollectionData.V1_2.", StringComparison.Ordinal);
         if (root["collectionDataSchema"] is JsonObject schema)
         {
             schema["id"] = "https://exportaramus.local/schemas/1.2/collection-data.schema.json";

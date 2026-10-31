@@ -22,8 +22,7 @@ internal static class StorageHistoryRenderer
         ImGui.TextColored(VisualTokens.Secondary, state.LatestSnapshotText);
         var buttonWidth = Drawing.ButtonWidth("Sync Now");
         ImGui.SetCursorScreenPos(pos + new Vector2(size.X - buttonWidth - 12 * u, (Stack(size.X, state) ? 86 : 42) * u));
-        if (Drawing.Button("Sync Now", "##SyncNow", new(buttonWidth, 30 * u), state.CanSync && !state.RetainersActive, state.ReduceMotion))
-            dispatch(MainIntent.SyncNow);
+        if (Drawing.Button("Sync Now", "##SyncNow", new(buttonWidth, 30 * u), state.CanSync && !state.RetainersActive, state.ReduceMotion)) dispatch(MainIntent.SyncNow);
         Drawing.Tooltip(TooltipId.SyncNow);
     }
 }

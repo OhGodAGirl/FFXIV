@@ -8,3 +8,5 @@ TestResults/
 *.user
 __pycache__/
 .venv/
+
+.tools/

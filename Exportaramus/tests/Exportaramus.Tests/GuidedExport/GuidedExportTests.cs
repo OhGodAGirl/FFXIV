@@ -385,8 +385,7 @@ public sealed class GuidedExportTests
             {
                 Now = TimeSpan.FromMilliseconds(tick * 150)
             });
-            if (effect.Kind == GuidedEffectKind.Interact)
-                interactions++;
+            if (effect.Kind == GuidedEffectKind.Interact) interactions++;
         }
         Assert.Equal(8, interactions);
         Assert.False(controller.View.Paused);
@@ -565,8 +564,7 @@ public sealed class GuidedExportTests
             });
             Assert.Equal(GuidedState.Failed, controller.State);
         }
-        else
-            Assert.Equal(GuidedState.Cancelled, controller.State);
+        else Assert.Equal(GuidedState.Cancelled, controller.State);
     }
 
     [Fact]

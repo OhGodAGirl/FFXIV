@@ -1,0 +1,58 @@
+name: Exportaramus
+on:
+  push:
+    branches: [main]
+    paths: ['Exportaramus/**', '.github/workflows/exportaramus-ci.yml']
+  pull_request:
+    paths: ['Exportaramus/**', '.github/workflows/exportaramus-ci.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: exportaramus-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: Build and verify
+    runs-on: windows-2025
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: Exportaramus
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      DOTNET_NOLOGO: '1'
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: Exportaramus/global.json
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Prepare dependencies
+        run: |
+          ./tools/Get-BuildDependencies.ps1 -Destination "$env:RUNNER_TEMP/dalamud"
+          "DALAMUD_HOME=$env:DALAMUD_HOME" >> $env:GITHUB_ENV
+          python -m pip install -r tools/contract-python-requirements.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Python dependency installation failed.' }
+      - name: Build, test, and check coverage
+        run: ./tests/run-quality-gates.ps1 -CheckFormatting -OutputDirectory "$env:RUNNER_TEMP/exportaramus-results"
+      - name: Verify package reproduction
+        run: ./tools/Verify-Reproducibility.ps1 -OutputDirectory "$env:RUNNER_TEMP/exportaramus-results"
+
+      - name: Preserve verification results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: exportaramus-verification
+          path: |
+            ${{ runner.temp }}/exportaramus-results
+            Exportaramus/project/bin/Release/Exportaramus/latest.zip
+          if-no-files-found: warn
+          retention-days: 7

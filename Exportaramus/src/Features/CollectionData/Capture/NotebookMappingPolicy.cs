@@ -13,15 +13,12 @@ public static class NotebookMappingPolicy
         var seriesIndex = 0;
         foreach (var series in seriesRows)
         {
-            if (series.RowId == 0)
-                continue;
-            if (seriesIndex >= nativeSeriesCount)
-                throw new SourceReadException(ReasonCode.MappingValidationFailed);
+            if (series.RowId == 0) continue;
+            if (seriesIndex >= nativeSeriesCount) throw new SourceReadException(ReasonCode.MappingValidationFailed);
             for (var slot = 0; slot < series.Contents.Length; slot++)
                 if (series.Contents[slot] == id)
                 {
-                    if (slot >= nativeSlotCount)
-                        throw new SourceReadException(ReasonCode.MappingValidationFailed);
+                    if (slot >= nativeSlotCount) throw new SourceReadException(ReasonCode.MappingValidationFailed);
                     return new(seriesIndex, slot);
                 }
             seriesIndex++;

@@ -45,8 +45,7 @@ public sealed class CollectionReadOperation : IDisposable
 
     public bool Advance(int maximumRows = 128)
     {
-        if (disposed)
-            return true;
+        if (disposed) return true;
         using var timing = new DiagnosticTiming(measurements, metric + "Slice");
         try
         {
@@ -56,14 +55,12 @@ public sealed class CollectionReadOperation : IDisposable
         {
             totalMilliseconds += timing.ElapsedMilliseconds;
             totalBytes += timing.AllocatedBytes;
-            if (disposed)
-                measurements.Record(metric, totalMilliseconds, totalBytes);
+            if (disposed) measurements.Record(metric, totalMilliseconds, totalBytes);
         }
     }
     private bool AdvanceCore(int maximumRows)
     {
-        if (maximumRows is < 1 or > 2048)
-            throw new ArgumentOutOfRangeException(nameof(maximumRows));
+        if (maximumRows is < 1 or > 2048) throw new ArgumentOutOfRangeException(nameof(maximumRows));
         for (int i = 0; i < maximumRows; i++)
         {
             if (!reader.IdentityMatches(contentId))
@@ -101,10 +98,8 @@ public sealed class CollectionReadOperation : IDisposable
         if (full || !sources.IsDefault)
             foreach (var definition in catalog.Collections.Values.OrderBy(c => c.Key, StringComparer.Ordinal))
             {
-                if (definition.OwnershipKind != DataType.PermanentUnlock)
-                    continue;
-                if (!sources.IsDefault && !sources.Contains(definition.Key))
-                    continue;
+                if (definition.OwnershipKind != DataType.PermanentUnlock) continue;
+                if (!sources.IsDefault && !sources.Contains(definition.Key)) continue;
                 double sourceMilliseconds = 0;
                 long sourceBytes = 0;
                 bool available = reader.IsAvailable(definition.Key, catalog.GameDataVersion);
@@ -118,35 +113,27 @@ public sealed class CollectionReadOperation : IDisposable
                         try
                         {
                             bool complete = reader.ReadUnlock(definition.Key, row);
-                            if (complete)
-                                ids.Add(row.Id);
-                            if (definition.Key == "quests")
-                                questRows.Add(reader.ReadQuest(row.Id, complete));
+                            if (complete) ids.Add(row.Id);
+                            if (definition.Key == "quests") questRows.Add(reader.ReadQuest(row.Id, complete));
                         }
                         catch (SourceReadException e) { failure = e.Code; }
                         catch (Exception) { failure = ReasonCode.CaptureFailed; }
                         finally { sourceMilliseconds += queryTiming.ElapsedMilliseconds; sourceBytes += queryTiming.AllocatedBytes; }
                         yield return 0;
-                        if (failure != ReasonCode.None)
-                            break;
+                        if (failure != ReasonCode.None) break;
                     }
-                if (available)
-                    measurements.Record("Source." + definition.Key, sourceMilliseconds, sourceBytes);
+                if (available) measurements.Record("Source." + definition.Key, sourceMilliseconds, sourceBytes);
                 int unlockedCount = ids.Count;
-                if (failure == ReasonCode.None && unlockedCount > 50000)
-                    failure = ReasonCode.OutputSizeLimitExceeded;
+                if (failure == ReasonCode.None && unlockedCount > 50000) failure = ReasonCode.OutputSizeLimitExceeded;
                 unlocks[definition.Key] = new PermanentUnlockState(failure == ReasonCode.None ? ids.ToImmutable() : [],
                     CaptureReadPolicy.Health(DataType.PermanentUnlock, generation, now, failure, available));
-                if (failure == ReasonCode.None)
-                    quests.AddRange(questRows);
-                else if (available)
-                    measurements.RecordFailure(DiagnosticRedactionPolicy.Failure(DateTime.UtcNow, "Capture", definition.Key, failure.ToString(), null));
+                if (failure == ReasonCode.None) quests.AddRange(questRows);
+                else if (available) measurements.RecordFailure(DiagnosticRedactionPolicy.Failure(DateTime.UtcNow, "Capture", definition.Key, failure.ToString(), null));
                 yield return 0;
             }
         foreach (var source in PhysicalSources)
         {
-            if (!sources.IsDefault && !sources.Contains(source))
-                continue;
+            if (!sources.IsDefault && !sources.Contains(source)) continue;
             presence[source] = measurements.Measure("Source." + source, () => reader.ReadPresence(source, catalog, contentId, generation, now));
             yield return 0;
         }

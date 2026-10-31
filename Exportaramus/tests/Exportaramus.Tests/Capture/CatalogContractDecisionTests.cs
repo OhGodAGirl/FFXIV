@@ -85,10 +85,8 @@ public sealed class CatalogContractDecisionTests
 
         try
         {
-            if (faulted)
-                completion.SetException(new IOException("Worker fixture failure."));
-            else
-                completion.SetResult(CollectionCatalogBuilderPolicy.Build(new("English", "build", [], [], [])));
+            if (faulted) completion.SetException(new IOException("Worker fixture failure."));
+            else completion.SetResult(CollectionCatalogBuilderPolicy.Build(new("English", "build", [], [], [])));
             await preparation.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(3));
             Assert.Equal(0, context.PostCount);
             Assert.True(handle.IsClosed);

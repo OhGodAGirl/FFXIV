@@ -15,10 +15,8 @@ public static class RestoredStatePolicy
         {
             if (!trustedSources.Contains(key))
                 return CaptureReadPolicy.Health(prior.DataType, generation, now, ReasonCode.PatchValidationRequired, false);
-            if (!mapped)
-                return CaptureReadPolicy.Health(prior.DataType, generation, now, ReasonCode.MappingValidationFailed, false);
-            if (!prior.IsUsable)
-                return CaptureReadPolicy.Health(prior.DataType, generation, now, ReasonCode.NotLoadedThisSession);
+            if (!mapped) return CaptureReadPolicy.Health(prior.DataType, generation, now, ReasonCode.MappingValidationFailed, false);
+            if (!prior.IsUsable) return CaptureReadPolicy.Health(prior.DataType, generation, now, ReasonCode.NotLoadedThisSession);
             return CollectionStatePolicy.Stale(prior, ReasonCode.RestoredFromDisk, "Restored from disk.", true) with
             {
                 CapabilityState = CapabilityState.Supported,

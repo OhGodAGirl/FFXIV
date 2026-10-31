@@ -39,8 +39,7 @@ public sealed class BeastsReleaseBoundaryTests : IDisposable
                 "duplicate" => new JsonArray(1, 1),
                 _ => new JsonArray(2, 1),
             };
-        else
-            document[property] = value == "oversize" ? new string('x', 129) : value;
+        else document[property] = value == "oversize" ? new string('x', 129) : value;
         Assert.Throws<InvalidDataException>(() => BeastsExportContract.Load(Encoding.UTF8.GetBytes(document.ToJsonString())));
     }
 
@@ -236,10 +235,8 @@ public sealed class BeastsReleaseBoundaryTests : IDisposable
         }, data.State);
         Assert.True(Exportaramus.ConsumerKit.V1.CollectionDataSemanticValidator.ValidateRich(CollectionDataSerializer.Rich(data, "Test", SnapshotFixture.Now)).Success);
         var publisher = new CollectionDataPublisher(new(root), null);
-        if (oversize)
-            Assert.Throws<OutputSizeLimitException>(() => publisher.Prepare(data, "Test", 1, null, false, false, default));
-        else
-            Assert.StartsWith("Rich snapshot 1.2 validation failed:", Assert.Throws<InvalidDataException>(() => publisher.Prepare(data, "Test", 1, null, false, false, default)).Message);
+        if (oversize) Assert.Throws<OutputSizeLimitException>(() => publisher.Prepare(data, "Test", 1, null, false, false, default));
+        else Assert.StartsWith("Rich snapshot 1.2 validation failed:", Assert.Throws<InvalidDataException>(() => publisher.Prepare(data, "Test", 1, null, false, false, default)).Message);
         Assert.False(Directory.Exists(root));
     }
 

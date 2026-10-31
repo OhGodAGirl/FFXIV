@@ -115,9 +115,7 @@ public sealed class RestoredStatePolicyTests
         Assert.Equal(healthy ? now : (DateTimeOffset?)null, result.ReportedEvidence.Health.ObservedAtUtc);
         Assert.Equal(2, result.ReportedEvidence.Health.CaptureGeneration);
         Assert.Equal(healthy ? 1 : 0, result.ReportedEvidence.Items.Length);
-        if (healthy)
-            Assert.Empty(result.ReportedEvidence.Health.Reason);
-        else
-            Assert.False(string.IsNullOrWhiteSpace(result.ReportedEvidence.Health.Reason));
+        if (healthy) Assert.Empty(result.ReportedEvidence.Health.Reason);
+        else Assert.False(string.IsNullOrWhiteSpace(result.ReportedEvidence.Health.Reason));
     }
 }

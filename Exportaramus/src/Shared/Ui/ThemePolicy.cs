@@ -18,8 +18,7 @@ public static class ThemePolicy
         var light = theme is 1 or 4 or 7;
         Vector4 Map(Vector4 original)
         {
-            if (theme == 0)
-                return original;
+            if (theme == 0) return original;
             if (original.X > .6f && original.Y > .6f && original.Z > .5f)
                 return light ? new(.20f, .16f, .20f, original.W) : original;
             if (original.X > original.Z * 1.3f && original.X > .4f)

@@ -25,8 +25,7 @@ public sealed class AdapterMutationDecisionTests
         Assert.Equal(1, reader.UnlockReads);
         bool completed = false;
         var maximumSlices = (count + 1 + CollectionReadOperation.PhysicalSources.Length + 2047) / 2048 + 1;
-        for (var slice = 0; slice < maximumSlices && !completed; slice++)
-            completed = operation.Advance(2048);
+        for (var slice = 0; slice < maximumSlices && !completed; slice++) completed = operation.Advance(2048);
         Assert.True(completed, "Capture must finish within its catalog and physical-source work budget.");
 
         var source = operation.Result!.Unlocks["mounts"];
