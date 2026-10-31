@@ -1,5 +1,5 @@
-name: Exportaramus mutation testing
-run-name: Exportaramus mutation testing (${{ inputs.mode }}) — ${{ github.ref_name }}
+name: Exportaramus Mutation Testing
+run-name: Exportaramus Mutation Testing (${{ inputs.mode == 'full' && 'Full Campaign' || 'Setup Only' }}) — ${{ github.ref_name }}
 on:
   workflow_dispatch:
     inputs:
@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   mutation:
-    name: Mutation testing (${{ inputs.mode }})
+    name: Mutation Testing (${{ inputs.mode == 'full' && 'Full Campaign' || 'Setup Only' }})
     runs-on: windows-2025
     timeout-minutes: 330
     defaults:

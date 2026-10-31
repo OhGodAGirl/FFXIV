@@ -125,7 +125,7 @@ The [mutation policy](tests/mutation-policy.json) requires a score of 100 and co
 
 ### Mutation Testing In GitHub Actions
 
-Open **Actions → Exportaramus mutation testing → Run workflow** in this repository. Choose the branch and a mode:
+Open **Actions → Exportaramus Mutation Testing → Run workflow** in this repository. Choose the branch and a mode:
 
 - **full** (default): run the ordinary offline checks, then all four mutation targets with Stryker 4.16.0 and two workers. The mutation step is limited to five hours; the job has an additional thirty minutes for setup and saving results.
 - **setup-only**: verify dependencies, source scope, Stryker startup, and all three distinct baseline test suites without executing mutants. A successful setup-only run is not a passing mutation campaign.
