@@ -24,11 +24,9 @@ public sealed class SnapshotWithdrawalPolicy
         if (reason is null)
         {
             gapStarted ??= now;
-            if (!zoning || now - gapStarted.Value >= 60)
-                reason = "IdentityUnavailable";
+            if (!zoning || now - gapStarted.Value >= 60) reason = "IdentityUnavailable";
         }
-        if (reason is null)
-            return null;
+        if (reason is null) return null;
         ActiveContentId = reason == "CharacterChanged" ? contentId : 0;
         gapStarted = null;
         return reason;

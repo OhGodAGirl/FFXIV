@@ -63,8 +63,7 @@ public sealed class StorageCancellationBoundaryTests
         }
         public override void Flush(bool flushToDisk)
         {
-            if (isPayload && flushToDisk)
-                owner.PayloadDurabilityRequests++;
+            if (isPayload && flushToDisk) owner.PayloadDurabilityRequests++;
             base.Flush(flushToDisk);
         }
     }

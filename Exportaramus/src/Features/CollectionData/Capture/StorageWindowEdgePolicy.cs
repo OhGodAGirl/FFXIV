@@ -10,8 +10,7 @@ public sealed class StorageWindowEdgePolicy
 
     public bool Observe(bool isReady, ulong contentFingerprint, double now, bool guidedOwnsEdges)
     {
-        if (!IsDue(now))
-            return false;
+        if (!IsDue(now)) return false;
         bool request = isReady && (!ready || fingerprint != contentFingerprint);
         ready = isReady;
         fingerprint = contentFingerprint;

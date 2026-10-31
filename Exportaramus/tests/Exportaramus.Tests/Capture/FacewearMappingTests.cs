@@ -47,8 +47,7 @@ public sealed class FacewearMappingTests
         using var operation = Operation(reader, version);
         var completed = false;
         var maximumSteps = 1 + 1 + CollectionReadOperation.PhysicalSources.Length + 1;
-        for (var step = 0; step < maximumSteps && !completed; step++)
-            completed = operation.Advance(1);
+        for (var step = 0; step < maximumSteps && !completed; step++) completed = operation.Advance(1);
         Assert.True(completed);
         var state = operation.Result!.Unlocks["facewear"];
         Assert.Empty(state.UnlockedIds);

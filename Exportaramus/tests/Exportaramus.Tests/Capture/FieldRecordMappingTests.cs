@@ -14,8 +14,7 @@ public sealed class FieldRecordMappingTests
     {
         var map = FieldRecordMappingPolicy.CreateMap(Rows().Reverse());
         Assert.Equal(50, map.Count);
-        foreach (var (record, item) in Rows())
-            Assert.Equal(item, map[record]);
+        foreach (var (record, item) in Rows()) Assert.Equal(item, map[record]);
     }
 
     [Theory]

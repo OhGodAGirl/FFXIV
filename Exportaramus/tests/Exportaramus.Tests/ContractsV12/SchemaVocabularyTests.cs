@@ -112,8 +112,7 @@ public sealed class SchemaVocabularyTests
         };
         thread.Start();
         Assert.True(thread.Join(TimeSpan.FromSeconds(10)), "Finite reference-chain evaluation did not terminate.");
-        if (failure is not null)
-            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+        if (failure is not null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
     }
 }
 

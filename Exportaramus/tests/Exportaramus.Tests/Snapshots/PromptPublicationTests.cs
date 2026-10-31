@@ -38,8 +38,7 @@ public sealed class PromptPublicationTests
         await using var run = new Harness();
         await run.Initialize();
         Assert.Equal("Accepted", run.Controller.Reports.TryEnqueue("123", 100, "Fixture", 20, SnapshotFixture.Now.AddSeconds(20)));
-        for (var i = 0; i < 1000; i++)
-            run.Controller.HintSource("orchestrions", 123, 20 + i / 10000d);
+        for (var i = 0; i < 1000; i++) run.Controller.HintSource("orchestrions", 123, 20 + i / 10000d);
         run.Update(20.25);
         Assert.Equal(0, run.Controller.Reports.Count);
         var deadline = Stopwatch.StartNew();
@@ -238,8 +237,7 @@ public sealed class PromptPublicationTests
         {
             Controller.Dispose();
             await Controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
-            if (Directory.Exists(path))
-                Directory.Delete(path, true);
+            if (Directory.Exists(path)) Directory.Delete(path, true);
         }
     }
 

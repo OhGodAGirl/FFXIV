@@ -25,8 +25,7 @@ public sealed class StorageReadinessPolicy
                 edge.Reset();
                 continue;
             }
-            if (!edge.IsDue(monotonicNow))
-                continue;
+            if (!edge.IsDue(monotonicNow)) continue;
             try
             {
                 var (ready, fingerprint) = read(key);

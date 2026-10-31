@@ -65,9 +65,7 @@ internal sealed class UiContractProbe : Window
         ImGui.PopStyleVar();
         ImGui.PushStyleVar(variables[5], new Vector2(10));
         ImGui.PopStyleVar();
-        foreach (var color in colors)
-            ImGui.PushStyleColor(color, Vector4.One);
-        ImGui.PopStyleColor(colors.Length);
+        foreach (var color in colors) ImGui.PushStyleColor(color, Vector4.One); ImGui.PopStyleColor(colors.Length);
         _ = ImGui.GetWindowPos();
         _ = ImGui.GetWindowSize();
         _ = ImGui.GetContentRegionAvail();

@@ -112,10 +112,7 @@ public sealed class Plugin : IDalamudPlugin
                 effect =>
                 {
                     guidedCompletion.Begin(effect, controller.Publication.Current?.Revision ?? 0);
-                    if (effect.Kind == GuidedEffectKind.SavePartial)
-                        controller.RequestPresence();
-                    else
-                        controller.RequestFull();
+                    if (effect.Kind == GuidedEffectKind.SavePartial) controller.RequestPresence(); else controller.RequestFull();
                 });
             reportSource = new(measurements);
             diagnostics = new(reportSource.ReadAsync, measurements, text => ImGui.SetClipboardText(text));
@@ -143,18 +140,15 @@ public sealed class Plugin : IDalamudPlugin
     private void OpenMain() => mainWindow.IsOpen = true;
     private void OnCommand(string command, string arguments)
     {
-        if (arguments.Trim().Equals("diagnostics", StringComparison.OrdinalIgnoreCase))
-            diagnosticsWindow.IsOpen = true;
-        else
-            mainWindow.IsOpen = true;
+        if (arguments.Trim().Equals("diagnostics", StringComparison.OrdinalIgnoreCase)) diagnosticsWindow.IsOpen = true;
+        else mainWindow.IsOpen = true;
     }
     private void OnConditionChange(ConditionFlag flag, bool value)
     { /* The next bounded framework observation owns state changes. */
     }
     private void Draw()
     {
-        if (disposed)
-            return;
+        if (disposed) return;
         var before = GC.GetAllocatedBytesForCurrentThread();
         var start = Stopwatch.GetTimestamp();
         try
@@ -165,8 +159,7 @@ public sealed class Plugin : IDalamudPlugin
     }
     private void Dispatch(MainIntent intent)
     {
-        if (disposed)
-            return;
+        if (disposed) return;
         if (intent == MainIntent.CopyJson)
         {
             if (controller.Publication.Current?.Export.Json is { } json)
@@ -177,15 +170,12 @@ public sealed class Plugin : IDalamudPlugin
     }
     private void DispatchDiagnostics(DiagnosticsIntent intent)
     {
-        if (intent == DiagnosticsIntent.CopyReport)
-            diagnostics.Dispatch(intent);
-        else
-            IntentAdmissionPolicy.TryEnqueue(diagnosticIntents, intent, IntentAdmissionPolicy.DiagnosticsCapacity);
+        if (intent == DiagnosticsIntent.CopyReport) diagnostics.Dispatch(intent);
+        else IntentAdmissionPolicy.TryEnqueue(diagnosticIntents, intent, IntentAdmissionPolicy.DiagnosticsCapacity);
     }
     private void Update(IFramework unused)
     {
-        if (disposed)
-            return;
+        if (disposed) return;
         var before = GC.GetAllocatedBytesForCurrentThread();
         var start = Stopwatch.GetTimestamp();
         var now = DateTimeOffset.UtcNow;
@@ -208,19 +198,15 @@ public sealed class Plugin : IDalamudPlugin
             inventoryCapture.Update(capturePort.Catalog);
             retainerGuide.Update();
             var inventoryState = inventory.GetSnapshot();
-            if (retainerChanges.Observe(inventoryState))
-                controller.RequestPresence();
+            if (retainerChanges.Observe(inventoryState)) controller.RequestPresence();
             inventoryIpc.Update(inventoryState);
             var hasIntent = intents.TryDequeue(out var intent);
             if (hasIntent && intent == MainIntent.Retainers)
             {
-                if (retainerGuide.Active)
-                    retainerGuide.Cancel();
-                else if (!guided.OwnsWindowEdges)
-                    retainerGuide.Start();
+                if (retainerGuide.Active) retainerGuide.Cancel();
+                else if (!guided.OwnsWindowEdges) retainerGuide.Start();
             }
-            if (retainerGuide.Active && hasIntent && intent is MainIntent.GuidedCapture or MainIntent.SyncNow)
-                hasIntent = false;
+            if (retainerGuide.Active && hasIntent && intent is MainIntent.GuidedCapture or MainIntent.SyncNow) hasIntent = false;
             var decision = MainIntentPolicy.Decide(hasIntent ? intent : null, guided.OwnsWindowEdges);
             switch (decision.Action)
             {
@@ -242,19 +228,13 @@ public sealed class Plugin : IDalamudPlugin
                     guidedAdapter.Observe(guided.CurrentSource, TimeSpan.FromSeconds(seconds), false),
                     controller.Publication.Current, controller.Error);
                 var effect = guided.Update(guidedFrame, command);
-                if (effect.Kind != GuidedEffectKind.None)
-                    guidedAdapter.Execute(effect, guided, contentId, TimeSpan.FromSeconds(seconds));
-                if (!guided.OwnsWindowEdges)
-                    guidedCompletion.Reset();
+                if (effect.Kind != GuidedEffectKind.None) guidedAdapter.Execute(effect, guided, contentId, TimeSpan.FromSeconds(seconds));
+                if (!guided.OwnsWindowEdges) guidedCompletion.Reset();
             }
-            if (capturePort.ObserveReadySources(contentId, seconds, guided.OwnsWindowEdges))
-                controller.RequestPresence();
-            if (capturePort.ObserveReadyUnlocks(contentId, seconds))
-                controller.HintSource("achievements", contentId, seconds);
-            if (capturePort.ObserveReadyBeasts(contentId, seconds))
-                controller.HintSource("beasts", contentId, seconds);
-            if (diagnosticIntents.TryDequeue(out var diagnosticIntent))
-                diagnostics.Dispatch(diagnosticIntent);
+            if (capturePort.ObserveReadySources(contentId, seconds, guided.OwnsWindowEdges)) controller.RequestPresence();
+            if (capturePort.ObserveReadyUnlocks(contentId, seconds)) controller.HintSource("achievements", contentId, seconds);
+            if (capturePort.ObserveReadyBeasts(contentId, seconds)) controller.HintSource("beasts", contentId, seconds);
+            if (diagnosticIntents.TryDequeue(out var diagnosticIntent)) diagnostics.Dispatch(diagnosticIntent);
             configurationWrites.Update();
             diagnostics.Update();
             diagnostics.SetReduceMotion(configuration.ReduceMotion);
@@ -269,8 +249,7 @@ public sealed class Plugin : IDalamudPlugin
         }
         catch (Exception)
         {
-            if (!updateFailed)
-                log.Warning("Exportaramus encountered a bounded update failure.");
+            if (!updateFailed) log.Warning("Exportaramus encountered a bounded update failure.");
             updateFailed = true;
         }
         finally { measurements.Record("FrameworkUpdate", Stopwatch.GetElapsedTime(start).TotalMilliseconds, GC.GetAllocatedBytesForCurrentThread() - before); }
@@ -308,8 +287,7 @@ public sealed class Plugin : IDalamudPlugin
     }
     private DiagnosticReport? PrepareReport(DateTimeOffset now)
     {
-        if (contractEvidence is null)
-            return null;
+        if (contractEvidence is null) return null;
         var bundle = controller.Publication.Current;
         var input = MainSnapshotPresenter.DiagnosticInput(bundle, PluginIdentity.Version, runtimeMetadata.DotnetRuntimeVersion,
             controller.Session, controller.Busy, configuration.ReduceMotion, controller.Reports.Count,
@@ -334,8 +312,7 @@ public sealed class Plugin : IDalamudPlugin
     }
     public void Dispose()
     {
-        if (disposed)
-            return;
+        if (disposed) return;
         disposed = true;
         LifecycleCleanup.Run(
             () => promptHints?.Dispose(),

@@ -109,19 +109,16 @@ public sealed class PolicyBoundaryTests
         Assert.False(ReportOwnershipEvidencePolicy.TryNormalize(null, 1, "A", out _, out _));
         Assert.False(ReportOwnershipEvidencePolicy.TryNormalize("123", 1, null, out _, out _));
         var limiter = new ReporterRateLimiter();
-        for (var i = 0; i < 1000; i++)
-            Assert.True(limiter.TryAccept(i.ToString(), i * 2d));
+        for (var i = 0; i < 1000; i++) Assert.True(limiter.TryAccept(i.ToString(), i * 2d));
     }
     [Fact]
     public void QueueLimitsAreIndependentOfRetainedCapacityAndRate()
     {
         var queue = new ReportedEvidenceQueue();
         queue.SetScope(123, Enumerable.Range(1, 300).Select(i => (uint)i).ToImmutableHashSet(), []);
-        for (var i = 1; i <= 32; i++)
-            Assert.Equal("Accepted", queue.TryEnqueue("123", (uint)i, "One", i * 3d, SnapshotFixture.Now));
+        for (var i = 1; i <= 32; i++) Assert.Equal("Accepted", queue.TryEnqueue("123", (uint)i, "One", i * 3d, SnapshotFixture.Now));
         Assert.Equal("QueueFull", queue.TryEnqueue("123", 33, "One", 100, SnapshotFixture.Now));
-        for (var i = 33; i <= 256; i++)
-            Assert.Equal("Accepted", queue.TryEnqueue("123", (uint)i, i.ToString(), i * 3d, SnapshotFixture.Now));
+        for (var i = 33; i <= 256; i++) Assert.Equal("Accepted", queue.TryEnqueue("123", (uint)i, i.ToString(), i * 3d, SnapshotFixture.Now));
         Assert.Equal("QueueFull", queue.TryEnqueue("123", 257, "Other", 900, SnapshotFixture.Now));
         queue.SetScope(123, [1], []);
         for (var i = 0; i < 10; i++)

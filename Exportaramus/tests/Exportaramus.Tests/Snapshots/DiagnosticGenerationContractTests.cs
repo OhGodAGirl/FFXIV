@@ -20,8 +20,7 @@ public sealed class DiagnosticGenerationContractTests
             var clock = Stopwatch.StartNew();
             while (!controller.Reports.Available || controller.Busy)
             {
-                if (clock.Elapsed > TimeSpan.FromSeconds(5))
-                    Assert.Fail("Initial restoration did not complete: " + controller.Error);
+                if (clock.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Initial restoration did not complete: " + controller.Error);
                 controller.Update(123, "Fixture", false, false, 0, SnapshotFixture.Now);
                 await Task.Delay(1);
             }
@@ -45,8 +44,7 @@ public sealed class DiagnosticGenerationContractTests
         {
             controller.Dispose();
             await controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
-            if (Directory.Exists(root))
-                Directory.Delete(root, true);
+            if (Directory.Exists(root)) Directory.Delete(root, true);
         }
     }
 

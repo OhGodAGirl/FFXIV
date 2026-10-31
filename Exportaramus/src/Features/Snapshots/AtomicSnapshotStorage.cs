@@ -86,18 +86,15 @@ public sealed class AtomicSnapshotStorage
     {
         RecoverPending();
         var path = evidence ? EvidencePath(contentId) : CharacterPath(contentId);
-        if (!File.Exists(path))
-            return null;
+        if (!File.Exists(path)) return null;
         await using var stream = files.OpenRead(path);
-        if (stream.Length > 4194304)
-            throw new InvalidDataException("Stored snapshot exceeds its byte limit.");
+        if (stream.Length > 4194304) throw new InvalidDataException("Stored snapshot exceeds its byte limit.");
         using var buffer = new MemoryStream();
         var bytes = new byte[8192];
         int read;
         while ((read = await stream.ReadAsync(bytes, cancellationToken).ConfigureAwait(false)) != 0)
         {
-            if (buffer.Length + read > 4194304)
-                throw new InvalidDataException("Stored snapshot exceeds its byte limit.");
+            if (buffer.Length + read > 4194304) throw new InvalidDataException("Stored snapshot exceeds its byte limit.");
             buffer.Write(bytes, 0, read);
         }
         return new UTF8Encoding(false, true).GetString(buffer.ToArray());
@@ -108,18 +105,14 @@ public sealed class AtomicSnapshotStorage
     {
         RecoverPending();
         var writes = new List<(string Path, string Json, int Limit)> { (CharacterPath(contentId), compact, 4194304) };
-        if (reports is not null)
-            writes.Add((EvidencePath(contentId), reports, 4194304));
-        if (rich is not null)
-            writes.Add((CanonicalPath, rich, 16777216));
-        if (richV12 is not null)
-            writes.Add((RichV12Path, richV12, 16777216));
+        if (reports is not null) writes.Add((EvidencePath(contentId), reports, 4194304));
+        if (rich is not null) writes.Add((CanonicalPath, rich, 16777216));
+        if (richV12 is not null) writes.Add((RichV12Path, richV12, 16777216));
         if (rich is not null && changed)
         {
             var name = $"{(manual ? "manual" : "automatic")}-snapshot-{capturedAt.UtcDateTime:yyyyMMdd-HHmmss-fff}.json";
             var path = Path.Combine(root, "snapshots", name);
-            if (File.Exists(path))
-                throw new IOException("History timestamp collision.");
+            if (File.Exists(path)) throw new IOException("History timestamp collision.");
             writes.Add((path, rich, 16777216));
         }
         var prepared = new List<PreparedFile>();
@@ -136,8 +129,7 @@ public sealed class AtomicSnapshotStorage
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var bytes = new UTF8Encoding(false, true).GetBytes(write.Json);
-                if (bytes.Length > write.Limit)
-                    throw new OutputSizeLimitException();
+                if (bytes.Length > write.Limit) throw new OutputSizeLimitException();
                 using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 64 });
                 Directory.CreateDirectory(Path.GetDirectoryName(write.Path)!);
                 var temporary = write.Path + "." + Guid.NewGuid().ToString("N") + ".tmp";
@@ -165,12 +157,9 @@ public sealed class AtomicSnapshotStorage
             foreach (var file in prepared)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (file.Delete)
-                    files.Move(file.Destination, file.Backup);
-                else if (file.Existed)
-                    files.Replace(file.Temporary, file.Destination, file.Backup);
-                else
-                    files.Move(file.Temporary, file.Destination);
+                if (file.Delete) files.Move(file.Destination, file.Backup);
+                else if (file.Existed) files.Replace(file.Temporary, file.Destination, file.Backup);
+                else files.Move(file.Temporary, file.Destination);
                 file.Committed = true;
             }
             cancellationToken.ThrowIfCancellationRequested();
@@ -191,8 +180,7 @@ public sealed class AtomicSnapshotStorage
             }
             try
             {
-                if (journalWritten)
-                    WriteRecovery(prepared, false, true);
+                if (journalWritten) WriteRecovery(prepared, false, true);
                 Cleanup(prepared, journalWritten);
             }
             catch { RecoveryState = "Pending"; recoveryChecked = false; throw; }
@@ -224,8 +212,7 @@ public sealed class AtomicSnapshotStorage
 
     private void RecoverPendingCore()
     {
-        if (recoveryChecked)
-            return;
+        if (recoveryChecked) return;
         if (!File.Exists(RecoveryPath))
         {
             recoveryChecked = true;
@@ -242,8 +229,7 @@ public sealed class AtomicSnapshotStorage
         if (value.GetProperty("format").GetString() != "exportaramus-write-recovery" || value.GetProperty("version").GetInt32() != 1)
             throw new InvalidDataException("Recovery record has an unsupported format.");
         var rows = value.GetProperty("files");
-        if (rows.GetArrayLength() is < 1 or > 64)
-            throw new InvalidDataException("Recovery file count is invalid.");
+        if (rows.GetArrayLength() is < 1 or > 64) throw new InvalidDataException("Recovery file count is invalid.");
         var files = new List<PreparedFile>();
         var destinations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var row in rows.EnumerateArray())
@@ -269,8 +255,7 @@ public sealed class AtomicSnapshotStorage
         {
             // Existence of the uniquely named backup (or consumed new-file temporary) records the atomic operation even if the process stopped before its next instruction.
             if (!value.TryGetProperty("rollbackFailed", out var failed) || !failed.GetBoolean())
-                foreach (var file in files)
-                    file.Committed = File.Exists(file.Backup) || (!file.Existed && !File.Exists(file.Temporary) && File.Exists(file.Destination));
+                foreach (var file in files) file.Committed = File.Exists(file.Backup) || (!file.Existed && !File.Exists(file.Temporary) && File.Exists(file.Destination));
             if (files.Any(file => file.Committed))
             {
                 try
@@ -323,18 +308,14 @@ public sealed class AtomicSnapshotStorage
         }
         // Each path is generated from one fixed destination shape and a 32-digit token; 64 entries remain below the read-side 64 KiB limit.
         int fileCount = files.Count;
-        if (fileCount > 64)
-            throw new InvalidDataException("Recovery record exceeds its limit.");
+        if (fileCount > 64) throw new InvalidDataException("Recovery record exceeds its limit.");
         var temporary = RecoveryPath + ".tmp";
         using (var file = this.files.OpenWrite(temporary, FileMode.Create, 4096, FileOptions.WriteThrough))
         {
             file.Write(stream.ToArray());
             file.Flush(true);
         }
-        if (File.Exists(RecoveryPath))
-            this.files.Replace(temporary, RecoveryPath, null);
-        else
-            this.files.Move(temporary, RecoveryPath);
+        if (File.Exists(RecoveryPath)) this.files.Replace(temporary, RecoveryPath, null); else this.files.Move(temporary, RecoveryPath);
     }
 
     private void Rollback(IEnumerable<PreparedFile> prepared)
@@ -357,8 +338,7 @@ public sealed class AtomicSnapshotStorage
                     file.Committed = false;
                     continue;
                 }
-                if (!File.Exists(file.Backup))
-                    throw new IOException("Previous snapshot backup is unavailable.");
+                if (!File.Exists(file.Backup)) throw new IOException("Previous snapshot backup is unavailable.");
                 // A pruned history destination can reappear only after its prior rollback restore completed.
                 if (file.Delete && File.Exists(file.Destination))
                 {
@@ -367,23 +347,18 @@ public sealed class AtomicSnapshotStorage
                 }
                 // Keep the original backup replayable until durable rollback progress precedes cleanup.
                 var attributes = File.GetAttributes(file.Backup);
-                if (File.Exists(file.Temporary))
-                    PreparePrivateFile(file.Temporary);
+                if (File.Exists(file.Temporary)) PreparePrivateFile(file.Temporary);
                 files.Copy(file.Backup, file.Temporary, true);
                 PreparePrivateFile(file.Temporary);
-                using (var restored = files.OpenWrite(file.Temporary, FileMode.Open, 8192, FileOptions.WriteThrough))
-                    restored.Flush(true);
+                using (var restored = files.OpenWrite(file.Temporary, FileMode.Open, 8192, FileOptions.WriteThrough)) restored.Flush(true);
                 File.SetAttributes(file.Temporary, attributes);
-                if (File.Exists(file.Destination))
-                    files.Replace(file.Temporary, file.Destination, null);
-                else
-                    files.Move(file.Temporary, file.Destination);
+                if (File.Exists(file.Destination)) files.Replace(file.Temporary, file.Destination, null);
+                else files.Move(file.Temporary, file.Destination);
                 file.Committed = false;
             }
             catch (Exception exception) { firstError ??= exception; }
         }
-        if (firstError is not null)
-            ExceptionDispatchInfo.Capture(firstError).Throw();
+        if (firstError is not null) ExceptionDispatchInfo.Capture(firstError).Throw();
     }
 
     private void Cleanup(IEnumerable<PreparedFile> prepared, bool journal)
@@ -401,8 +376,7 @@ public sealed class AtomicSnapshotStorage
                 files.Delete(file.Backup);
             }
         }
-        if (journal && File.Exists(RecoveryPath))
-            files.Delete(RecoveryPath);
+        if (journal && File.Exists(RecoveryPath)) files.Delete(RecoveryPath);
         RecoveryState = "None";
     }
 

@@ -101,8 +101,7 @@ public sealed class ExactJsonNumberTests
             for (var exponent = -6; exponent <= 6; exponent++)
             {
                 var factor = 1m;
-                for (var i = 0; i < Math.Abs(exponent); i++)
-                    factor *= 10;
+                for (var i = 0; i < Math.Abs(exponent); i++) factor *= 10;
                 var number = exponent < 0 ? coefficient / factor : coefficient * factor;
                 var actual = (coefficient * 10).ToString(System.Globalization.CultureInfo.InvariantCulture) + "e" + (exponent - 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
                 var expected = number.ToString(System.Globalization.CultureInfo.InvariantCulture);

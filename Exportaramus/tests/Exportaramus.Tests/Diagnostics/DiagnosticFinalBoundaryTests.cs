@@ -33,8 +33,7 @@ public sealed class DiagnosticFinalBoundaryTests
     {
         var wire = Wire(root =>
         {
-            if (kind == "dynamicProperty")
-                root["runtime"]!["dependencies"]!["contentId"] = "redacted";
+            if (kind == "dynamicProperty") root["runtime"]!["dependencies"]!["contentId"] = "redacted";
             else
                 root["recentFailures"] = JsonSerializer.SerializeToNode(new[]
             {

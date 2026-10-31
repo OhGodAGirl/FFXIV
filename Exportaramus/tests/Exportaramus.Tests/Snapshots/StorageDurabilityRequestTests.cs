@@ -95,8 +95,7 @@ public sealed class StorageDurabilityRequestTests
         private void VerifyInstall(string source)
         {
             var writer = Writers.LastOrDefault(writer => writer.Path == source);
-            if (writer is null)
-                return;
+            if (writer is null) return;
             Assert.True(writer.WroteBytes);
             Assert.True(writer.FlushedToDisk);
             Assert.True(writer.CapturedHandle.IsClosed);
@@ -168,12 +167,10 @@ public sealed class StorageDurabilityRequestTests
             if (flushToDisk)
             {
                 Assert.True(WroteBytes);
-                if (failFlush)
-                    throw new IOException("Durability request fixture failure.");
+                if (failFlush) throw new IOException("Durability request fixture failure.");
             }
             base.Flush(flushToDisk);
-            if (flushToDisk)
-                FlushedToDisk = true;
+            if (flushToDisk) FlushedToDisk = true;
         }
     }
 }

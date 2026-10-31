@@ -7,8 +7,7 @@ public static class DiagnosticSamplingPolicy
 {
     public static DiagnosticUi? PrepareUi(DiagnosticUiObservation? observation)
     {
-        if (!observation.HasValue)
-            return null;
+        if (!observation.HasValue) return null;
         var value = observation.Value;
         if (!InRange(value.X, -100000, 100000) || !InRange(value.Y, -100000, 100000) ||
             !InRange(value.Width, double.Epsilon, 100000) || !InRange(value.Height, double.Epsilon, 100000) ||
@@ -38,17 +37,14 @@ public static class DiagnosticSamplingPolicy
     public static string ClientVersion(ReadOnlySpan<byte> buffer)
     {
         var end = buffer.IndexOf((byte)0);
-        if (end != 20)
-            return "Unavailable";
+        if (end != 20) return "Unavailable";
         for (var index = 0; index < end; index++)
         {
             if (index == 4 || index == 7 || index == 10 || index == 15)
             {
-                if (buffer[index] != '.')
-                    return "Unavailable";
+                if (buffer[index] != '.') return "Unavailable";
             }
-            else if (buffer[index] is < (byte)'0' or > (byte)'9')
-                return "Unavailable";
+            else if (buffer[index] is < (byte)'0' or > (byte)'9') return "Unavailable";
         }
         return Encoding.ASCII.GetString(buffer[..end]);
     }

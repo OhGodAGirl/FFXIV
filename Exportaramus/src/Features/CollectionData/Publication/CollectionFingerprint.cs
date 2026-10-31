@@ -15,9 +15,7 @@ public static class CollectionFingerprint
                 writer.WriteString("completeness", health.Completeness.ToString());
             }
             writer.WriteStartArray("ids");
-            if (data.State.Unlocks.TryGetValue(key, out var unlock))
-                foreach (var id in unlock.UnlockedIds)
-                    writer.WriteNumberValue(id);
+            if (data.State.Unlocks.TryGetValue(key, out var unlock)) foreach (var id in unlock.UnlockedIds) writer.WriteNumberValue(id);
             if (data.Collections.TryGetValue(key, out var collection))
                 foreach (var item in collection.Items)
                 {
@@ -31,8 +29,7 @@ public static class CollectionFingerprint
                         writer.WriteStartObject();
                         writer.WriteString("dataType", fact.DataType.ToString());
                         writer.WriteString("sourceKey", fact.SourceKey);
-                        if (includeHealth)
-                            writer.WriteString("sourceStatus", fact.SourceStatus.ToString());
+                        if (includeHealth) writer.WriteString("sourceStatus", fact.SourceStatus.ToString());
                         writer.WriteString("state", fact.State);
                         writer.WriteNumber("subjectId", fact.SubjectId);
                         writer.WriteEndObject();

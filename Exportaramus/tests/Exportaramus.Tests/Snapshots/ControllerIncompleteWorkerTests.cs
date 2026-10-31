@@ -44,8 +44,7 @@ public sealed class ControllerIncompleteWorkerTests
             files.Release.TrySetResult();
             try
             {
-                if (update is not null)
-                    await update.WaitAsync(TimeSpan.FromSeconds(5));
+                if (update is not null) await update.WaitAsync(TimeSpan.FromSeconds(5));
             }
             finally
             {

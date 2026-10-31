@@ -47,8 +47,7 @@ public sealed class PublicationContextIndependenceTests
         {
             context.Drain();
             await operation.WaitAsync(TimeSpan.FromSeconds(10));
-            if (Directory.Exists(root))
-                Directory.Delete(root, true);
+            if (Directory.Exists(root)) Directory.Delete(root, true);
         }
     }
 

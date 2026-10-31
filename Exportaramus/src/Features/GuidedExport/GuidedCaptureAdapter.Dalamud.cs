@@ -69,8 +69,7 @@ public sealed unsafe class GuidedCaptureAdapter
     public bool Execute(GuidedEffect effect, GuidedExportController controller, ulong expectedContentId, TimeSpan now)
     {
         var executed = TryExecute(effect, controller, expectedContentId, now);
-        if (!executed)
-            controller.RejectEffect(effect, now);
+        if (!executed) controller.RejectEffect(effect, now);
         return executed;
     }
     private bool TryExecute(GuidedEffect effect, GuidedExportController controller, ulong expectedContentId, TimeSpan now)
@@ -84,8 +83,7 @@ public sealed unsafe class GuidedCaptureAdapter
             return true;
         }
         var frame = Observe(effect.Source, now, false);
-        if (!frame.RuntimeValidated || !frame.SafeConditions)
-            return false;
+        if (!frame.RuntimeValidated || !frame.SafeConditions) return false;
         if (effect.Kind == GuidedEffectKind.SelectArmoireMenu)
         {
             if (!menuPending || menuGeneration != effect.Generation || effect.Source != GuidedSource.Armoire ||
@@ -93,52 +91,42 @@ public sealed unsafe class GuidedCaptureAdapter
                 !frame.Furnishings.Any(obj => obj.Identity == menuTarget && FurnishingPolicy.IsEligible(obj, GuidedSource.Armoire)))
                 return false;
             var menu = gui.GetAddonByName<AtkUnitBase>("SelectString", 1);
-            if (menu == null || (ulong)menu != effect.AddonIdentity || !menu->IsReady || !menu->IsVisible)
-                return false;
+            if (menu == null || (ulong)menu != effect.AddonIdentity || !menu->IsReady || !menu->IsVisible) return false;
             menuPending = false;
             return menu->FireCallbackInt(0);
         }
         if (effect.Kind is GuidedEffectKind.Capture or GuidedEffectKind.CloseAddon)
         {
-            if (!frame.AddonReady || !frame.ManagerReady || frame.AddonIdentity != effect.AddonIdentity)
-                return false;
+            if (!frame.AddonReady || !frame.ManagerReady || frame.AddonIdentity != effect.AddonIdentity) return false;
             if (effect.Kind == GuidedEffectKind.Capture)
             {
                 capture(effect);
                 return true;
             }
             var exact = GetAddon(effect.Source);
-            if (exact == null || (ulong)exact != effect.AddonIdentity || !exact->IsReady || !exact->IsVisible)
-                return false;
+            if (exact == null || (ulong)exact != effect.AddonIdentity || !exact->IsReady || !exact->IsVisible) return false;
             if (effect.Source == GuidedSource.Dresser)
             {
                 var agent = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismPrismBox.Instance();
-                if (agent == null || !agent->IsAgentActive())
-                    return false;
+                if (agent == null || !agent->IsAgentActive()) return false;
                 agent->Hide();
             }
-            else
-                _ = exact->Close(true);
+            else _ = exact->Close(true);
             return true;
         }
         var furnishing = objects.FirstOrDefault(obj => obj.GameObjectId == effect.TargetIdentity);
-        if (furnishing is null || !furnishing.IsValid())
-            return false;
-        if (!frame.Furnishings.Any(obj => obj.Identity == effect.TargetIdentity && (effect.Kind == GuidedEffectKind.SelectTarget ? FurnishingPolicy.IsDiscoverable(obj, effect.Source) : FurnishingPolicy.IsEligible(obj, effect.Source))))
-            return false;
+        if (furnishing is null || !furnishing.IsValid()) return false;
+        if (!frame.Furnishings.Any(obj => obj.Identity == effect.TargetIdentity && (effect.Kind == GuidedEffectKind.SelectTarget ? FurnishingPolicy.IsDiscoverable(obj, effect.Source) : FurnishingPolicy.IsEligible(obj, effect.Source)))) return false;
         if (effect.Kind == GuidedEffectKind.SelectTarget)
         {
             target.Target = furnishing;
             return true;
         }
-        if (target.Target?.GameObjectId != effect.TargetIdentity || frame.ExpectedAddonPresent)
-            return false;
+        if (target.Target?.GameObjectId != effect.TargetIdentity || frame.ExpectedAddonPresent) return false;
         var system = TargetSystem.Instance();
-        if (system == null)
-            return false;
+        if (system == null) return false;
         var existingMenu = gui.GetAddonByName<AtkUnitBase>("SelectString", 1);
-        if (existingMenu != null && existingMenu->IsVisible)
-            return false;
+        if (existingMenu != null && existingMenu->IsVisible) return false;
         menuPending = effect.Source == GuidedSource.Armoire;
         menuTarget = effect.TargetIdentity;
         menuGeneration = effect.Generation;

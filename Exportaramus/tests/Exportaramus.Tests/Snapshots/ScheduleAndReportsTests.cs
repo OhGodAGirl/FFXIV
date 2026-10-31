@@ -104,11 +104,9 @@ public sealed class ScheduleAndReportsTests
     public void TokenBucketsEnforceBurstAndRefill()
     {
         var limiter = new ReporterRateLimiter();
-        for (var i = 0; i < 10; i++)
-            Assert.True(limiter.TryAccept("A", 0));
+        for (var i = 0; i < 10; i++) Assert.True(limiter.TryAccept("A", 0));
         Assert.False(limiter.TryAccept("A", 0));
-        for (var i = 0; i < 10; i++)
-            Assert.True(limiter.TryAccept("B", 0));
+        for (var i = 0; i < 10; i++) Assert.True(limiter.TryAccept("B", 0));
         Assert.False(limiter.TryAccept("C", 0));
         Assert.True(limiter.TryAccept("A", 2));
         limiter.Reset();

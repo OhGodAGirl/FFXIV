@@ -32,8 +32,7 @@ public sealed class AtomicRecoveryProgressReplayTests : IDisposable
                 if (phase == 2 && evidence)
                 {
                     completedFileRetries++;
-                    if (unauthorized)
-                        throw new UnauthorizedAccessException("The already restored evidence file is unavailable again.");
+                    if (unauthorized) throw new UnauthorizedAccessException("The already restored evidence file is unavailable again.");
                     throw new IOException("The already restored evidence file is unavailable again.");
                 }
             }

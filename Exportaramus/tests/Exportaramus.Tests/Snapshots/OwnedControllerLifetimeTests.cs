@@ -73,8 +73,7 @@ public sealed class OwnedControllerLifetimeTests
         public override void Post(SendOrPostCallback callback, object? state) => callbacks.Enqueue((callback, state));
         public void Drain()
         {
-            for (var i = 0; i < 16 && callbacks.TryDequeue(out var call); i++)
-                call.Callback(call.State);
+            for (var i = 0; i < 16 && callbacks.TryDequeue(out var call); i++) call.Callback(call.State);
         }
     }
 

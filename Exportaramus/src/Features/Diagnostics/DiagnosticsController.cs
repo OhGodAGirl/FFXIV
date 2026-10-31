@@ -21,13 +21,11 @@ public sealed class DiagnosticsController : IAsyncDisposable
     }
     public void Dispatch(DiagnosticsIntent intent)
     {
-        if (disposed)
-            return;
+        if (disposed) return;
         switch (intent)
         {
             case DiagnosticsIntent.GenerateReport:
-                if (worker is not null)
-                    return;
+                if (worker is not null) return;
                 cancellation = new();
                 workerGeneration = ++generation;
                 var token = cancellation.Token;
@@ -73,8 +71,7 @@ public sealed class DiagnosticsController : IAsyncDisposable
     }
     public void Update()
     {
-        if (worker is null || !worker.IsCompleted)
-            return;
+        if (worker is null || !worker.IsCompleted) return;
         var completedWorker = worker;
         var completedCancellation = cancellation!;
         worker = null;
@@ -106,8 +103,7 @@ public sealed class DiagnosticsController : IAsyncDisposable
     }
     public async ValueTask DisposeAsync()
     {
-        if (disposed)
-            return;
+        if (disposed) return;
         disposed = true;
         generation++;
         cancellation?.Cancel();

@@ -13,8 +13,7 @@ public static class DiagnosticReportSerializer
     public static PreparedDiagnosticReport Prepare(DiagnosticReport report)
     {
         // Only the current diagnostic report format is supported.
-        if (report.SchemaVersion != "1.1")
-            throw new InvalidDataException("DiagnosticSchemaInvalid");
+        if (report.SchemaVersion != "1.1") throw new InvalidDataException("DiagnosticSchemaInvalid");
         ValidateTypedStrings(report);
         if (report.ReportStatus == "Ready" && !report.IncompleteSections.IsEmpty || report.ReportStatus == "Partial" && report.IncompleteSections.IsEmpty)
             throw new InvalidDataException("DiagnosticSectionStatusInvalid");
@@ -30,8 +29,7 @@ public static class DiagnosticReportSerializer
         element = JsonSerializer.SerializeToElement(report, DiagnosticJsonContext.Default.DiagnosticReport);
         ValidateSchema(element);
         var bytes = Canonical(element, false);
-        if (bytes.Length > MaximumUtf8Bytes)
-            throw new InvalidDataException("DiagnosticOutputSizeLimitExceeded");
+        if (bytes.Length > MaximumUtf8Bytes) throw new InvalidDataException("DiagnosticOutputSizeLimitExceeded");
         return new(report, Encoding.UTF8.GetString(bytes), bytes.Length, Display(element));
     }
 
@@ -49,8 +47,7 @@ public static class DiagnosticReportSerializer
             throw new InvalidDataException("DiagnosticSectionStatusInvalid");
         var actual = document.RootElement.GetProperty("fingerprintSha256").GetString();
         var expected = JsonOutput.Fingerprint(writer => Write(writer, document.RootElement, true));
-        if (actual != expected)
-            throw new InvalidDataException("DiagnosticFingerprintMismatch");
+        if (actual != expected) throw new InvalidDataException("DiagnosticFingerprintMismatch");
     }
     private static void ValidateSchema(JsonElement root)
     {
@@ -65,8 +62,7 @@ public static class DiagnosticReportSerializer
                 writer.WriteStartObject();
                 foreach (var property in value.EnumerateObject().OrderBy(p => p.Name, StringComparer.Ordinal))
                 {
-                    if (omitRoot && property.Name is "generatedAtUtc" or "fingerprintSha256")
-                        continue;
+                    if (omitRoot && property.Name is "generatedAtUtc" or "fingerprintSha256") continue;
                     writer.WritePropertyName(property.Name);
                     Write(writer, property.Value, false);
                 }
@@ -88,13 +84,11 @@ public static class DiagnosticReportSerializer
         if (value.ValueKind == JsonValueKind.Object)
             foreach (var property in value.EnumerateObject())
             {
-                if (ProhibitedNames.Contains(property.Name, StringComparer.OrdinalIgnoreCase))
-                    throw new InvalidDataException("DiagnosticProhibitedField");
+                if (ProhibitedNames.Contains(property.Name, StringComparer.OrdinalIgnoreCase)) throw new InvalidDataException("DiagnosticProhibitedField");
                 ValidateTree(property.Value);
             }
         else if (value.ValueKind == JsonValueKind.Array)
-            foreach (var item in value.EnumerateArray())
-                ValidateTree(item);
+            foreach (var item in value.EnumerateArray()) ValidateTree(item);
         else if (value.ValueKind == JsonValueKind.String && !DiagnosticRedactionPolicy.IsSafe(value.GetString()!))
             throw new InvalidDataException("DiagnosticProhibitedText");
     }
@@ -153,16 +147,13 @@ public static class DiagnosticReportSerializer
     {
         if (value.ValueKind == JsonValueKind.Object)
             foreach (var property in value.EnumerateObject().OrderBy(x => x.Name, StringComparer.Ordinal))
-                foreach (var row in Flatten(property.Value, path + "." + property.Name))
-                    yield return row;
+                foreach (var row in Flatten(property.Value, path + "." + property.Name)) yield return row;
         else if (value.ValueKind == JsonValueKind.Array)
         {
             var index = 0;
             foreach (var item in value.EnumerateArray())
-                foreach (var row in Flatten(item, path + "[" + index++ + "]"))
-                    yield return row;
+                foreach (var row in Flatten(item, path + "[" + index++ + "]")) yield return row;
         }
-        else
-            yield return new(path, value.ValueKind == JsonValueKind.String ? value.GetString()! : value.ToString());
+        else yield return new(path, value.ValueKind == JsonValueKind.String ? value.GetString()! : value.ToString());
     }
 }

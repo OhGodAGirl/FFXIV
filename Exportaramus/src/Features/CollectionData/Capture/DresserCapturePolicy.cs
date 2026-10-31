@@ -11,21 +11,18 @@ public static class DresserCapturePolicy
         var id = DresserSetExpansionPolicy.NormalizeStoredId(raw);
         if (index is < 0 or >= 800 || raw == 0 || id == 0 || !knownItems.Contains(id))
             throw new SourceReadException(ReasonCode.MappingValidationFailed);
-        if (slots.IsDefault && unlocked.IsDefault)
-            return new(index, raw, id, null, [new(0, id)]);
+        if (slots.IsDefault && unlocked.IsDefault) return new(index, raw, id, null, [new(0, id)]);
         if (slots.IsDefault || unlocked.IsDefault || slots.Length != 11 || unlocked.Length != 11)
             throw new SourceReadException(ReasonCode.MappingValidationFailed);
         var components = ImmutableArray.CreateBuilder<DresserEntryComponent>();
         for (var slot = 0; slot < slots.Length; slot++)
         {
-            if (!unlocked[slot] || slots[slot] == 0)
-                continue;
+            if (!unlocked[slot] || slots[slot] == 0) continue;
             if (!knownItems.Contains(slots[slot]))
                 throw new SourceReadException(ReasonCode.MappingValidationFailed);
             components.Add(new(slot, slots[slot]));
         }
-        if (components.Count == 0)
-            throw new SourceReadException(ReasonCode.MappingValidationFailed);
+        if (components.Count == 0) throw new SourceReadException(ReasonCode.MappingValidationFailed);
         return new(index, raw, id, id, components.ToImmutable());
     }
 

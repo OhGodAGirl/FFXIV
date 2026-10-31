@@ -19,17 +19,14 @@ public sealed class HistoryPreparationAllocationTests(ITestOutputHelper output)
                 await File.WriteAllTextAsync(Path.Combine(folder, $"manual-snapshot-20260905-000000-{index:000}.json"), "{}");
             var files = new MeasuringFiles();
             var storage = new AtomicSnapshotStorage(root, files);
-            for (var warmup = 0; warmup < 3; warmup++)
-                await Measure(storage, files);
+            for (var warmup = 0; warmup < 3; warmup++) await Measure(storage, files);
             var baseline = long.MaxValue;
-            for (var sample = 0; sample < 3; sample++)
-                baseline = Math.Min(baseline, await Measure(storage, files));
+            for (var sample = 0; sample < 3; sample++) baseline = Math.Min(baseline, await Measure(storage, files));
 
             for (var index = 0; index < 2048; index++)
                 await File.WriteAllTextAsync(Path.Combine(folder, $"unrelated-{index:0000}.dat"), "keep");
             var populated = long.MaxValue;
-            for (var sample = 0; sample < 3; sample++)
-                populated = Math.Min(populated, await Measure(storage, files));
+            for (var sample = 0; sample < 3; sample++) populated = Math.Min(populated, await Measure(storage, files));
 
             output.WriteLine($"History preparation allocated {baseline} bytes with 25 valid histories; {populated} bytes with the same 25 plus 2,048 unrelated files.");
             // Fixed I/O setup has generous headroom; materializing thousands of unrelated full paths does not.

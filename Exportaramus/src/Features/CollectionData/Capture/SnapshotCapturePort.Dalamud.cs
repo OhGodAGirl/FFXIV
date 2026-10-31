@@ -46,8 +46,7 @@ public sealed class SnapshotCapturePort : ISnapshotCapturePort
         ObjectDisposedException.ThrowIf(disposed, this);
         operation?.Dispose();
         reader.BeginCapture();
-        if (inventorySnapshot is not null)
-            reader.SetRetainerInventory(inventorySnapshot());
+        if (inventorySnapshot is not null) reader.SetRetainerInventory(inventorySnapshot());
         operation = new(reader, Catalog ?? throw new InvalidOperationException("Catalog is not ready."), full, contentId, generation, now, measurements);
     }
 
@@ -57,8 +56,7 @@ public sealed class SnapshotCapturePort : ISnapshotCapturePort
         ObjectDisposedException.ThrowIf(disposed, this);
         operation?.Dispose();
         reader.BeginCapture();
-        if (inventorySnapshot is not null)
-            reader.SetRetainerInventory(inventorySnapshot());
+        if (inventorySnapshot is not null) reader.SetRetainerInventory(inventorySnapshot());
         operation = new(reader, Catalog ?? throw new InvalidOperationException("Catalog is not ready."), false, contentId, generation, now, measurements, sources);
     }
     public RawCaptureBatch? TakeResult()
@@ -81,9 +79,7 @@ public sealed class SnapshotCapturePort : ISnapshotCapturePort
     }
     public void Dispose()
     {
-        if (disposed)
-            return;
-        disposed = true;
+        if (disposed) return; disposed = true;
         ResetSession();
         preparation.Dispose();
     }

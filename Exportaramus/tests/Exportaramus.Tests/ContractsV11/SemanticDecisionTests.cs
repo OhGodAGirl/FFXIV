@@ -16,8 +16,7 @@ public sealed class SemanticDecisionTests
     private static JsonObject NegativeDerived()
     {
         var root = Rich();
-        foreach (var source in root["currentItemPresence"]!.AsObject())
-            source.Value!["items"] = new JsonArray();
+        foreach (var source in root["currentItemPresence"]!.AsObject()) source.Value!["items"] = new JsonArray();
         foreach (var key in new[] { "armoires", "glamour_dresser" })
         {
             Item(root, key)["owned"] = false;
@@ -204,8 +203,7 @@ public sealed class SemanticDecisionTests
         var root = NegativeDerived();
         Item(root, "relics")["id"] = 2327;
         Facts(root, "relics").RemoveAt(7);
-        foreach (var fact in Facts(root, "relics"))
-            fact!["subjectId"] = 2327;
+        foreach (var fact in Facts(root, "relics")) fact!["subjectId"] = 2327;
         Assert.True(CollectionDataSemanticValidator.ValidateRich(root.ToJsonString()).Success);
         Facts(root, "relics").Add(Absent("achievements", 129));
         Assert.False(CollectionDataSemanticValidator.ValidateRich(root.ToJsonString()).Success);

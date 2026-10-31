@@ -66,8 +66,7 @@ public sealed class InventoryFileCacheExecutionBoundaryTests : IDisposable
             .ToArray();
         var call = Assert.Single(calls);
         var argument = call.index - 1;
-        while (argument >= 0 && instructions[argument].Code == OpCodes.Nop)
-            argument--;
+        while (argument >= 0 && instructions[argument].Code == OpCodes.Nop) argument--;
 
         Assert.True(argument >= 0, "FileStream.Flush(bool) must receive an explicit true argument.");
         Assert.Equal(OpCodes.Ldc_I4_1, instructions[argument].Code);
@@ -137,7 +136,6 @@ public sealed class InventoryFileCacheExecutionBoundaryTests : IDisposable
         var target = Path.GetFullPath(directory);
         if (!target.StartsWith(root, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The test directory escaped its dedicated scratch root.");
-        if (Directory.Exists(target))
-            Directory.Delete(target, recursive: true);
+        if (Directory.Exists(target)) Directory.Delete(target, recursive: true);
     }
 }

@@ -56,8 +56,7 @@ public sealed class FingerprintCanonicalVectorTests
     {
         var sources = CollectionFingerprint.Sources(SnapshotFixture.Create());
         var sorted = new SortedDictionary<string, string>(StringComparer.Ordinal);
-        foreach (var pair in sources)
-            sorted.Add(pair.Key, pair.Value);
+        foreach (var pair in sources) sorted.Add(pair.Key, pair.Value);
         var expected = Hash(JsonSerializer.Serialize(sorted));
         Assert.Equal(expected, CollectionFingerprint.Combined(sources));
         Assert.Equal(expected, CollectionFingerprint.Combined(sources.Reverse().ToImmutableDictionary()));

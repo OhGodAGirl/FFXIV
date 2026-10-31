@@ -10,8 +10,7 @@ internal static class DiagnosticWorkerTest
         var started = Stopwatch.GetTimestamp();
         for (var attempt = 0; attempt < 1024; attempt++)
         {
-            if (controller.OwnedTask.State is not ("Waiting" or "Running"))
-                break;
+            if (controller.OwnedTask.State is not ("Waiting" or "Running")) break;
             Assert.True(Stopwatch.GetElapsedTime(started) < TimeSpan.FromSeconds(3), "The owned diagnostic worker must complete within the fixture deadline.");
             await Task.Delay(1);
         }

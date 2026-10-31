@@ -19,8 +19,7 @@ public sealed class DiagnosticAsyncAllocationBoundaryTests
         DiagnosticReportSerializer.Prepare(report);
         var allocator = new Thread(() =>
         {
-            if (!requested.WaitOne(TimeSpan.FromSeconds(3)))
-                return;
+            if (!requested.WaitOne(TimeSpan.FromSeconds(3))) return;
             allocationThread = Environment.CurrentManagedThreadId;
             var before = GC.GetAllocatedBytesForCurrentThread();
             var payload = new byte[payloadBytes];
@@ -33,8 +32,7 @@ public sealed class DiagnosticAsyncAllocationBoundaryTests
         {
             sourceThread = Environment.CurrentManagedThreadId;
             requested.Set();
-            if (!allocated.WaitOne(TimeSpan.FromSeconds(3)))
-                throw new TimeoutException("The fixture allocator did not complete.");
+            if (!allocated.WaitOne(TimeSpan.FromSeconds(3))) throw new TimeoutException("The fixture allocator did not complete.");
             // A completed source task keeps both timing endpoints on this actual Task.Run worker.
             // Its thread-local counter cannot include the dedicated allocator's bytes.
             return Task.FromResult(report);

@@ -90,8 +90,7 @@ public sealed unsafe class CollectionReader : ICollectionReader
     public QuestState ReadQuest(uint id, bool completed)
     {
         var manager = QuestManager.Instance();
-        if (manager == null)
-            throw new SourceReadException(ReasonCode.CaptureFailed);
+        if (manager == null) throw new SourceReadException(ReasonCode.CaptureFailed);
         var accepted = manager->IsQuestAccepted(id);
         return NotebookMappingPolicy.Quest(id, completed, accepted, accepted ? QuestManager.GetQuestSequence(id) : null);
     }
@@ -148,8 +147,7 @@ public sealed unsafe class CollectionReader : ICollectionReader
         foreach (var type in types)
         {
             var manager = InventoryManager.Instance();
-            if (manager == null)
-                throw new SourceReadException(ReasonCode.IncompleteContainerSet);
+            if (manager == null) throw new SourceReadException(ReasonCode.IncompleteContainerSet);
             var container = manager->GetInventoryContainer(type);
             if (container == null || !container->IsLoaded || container->Size < 0 || container->Size > 1000)
                 throw new SourceReadException(ReasonCode.IncompleteContainerSet);
@@ -157,11 +155,9 @@ public sealed unsafe class CollectionReader : ICollectionReader
             for (var slotIndex = 0; slotIndex < size; slotIndex++)
             {
                 var slot = container->GetInventorySlot(slotIndex);
-                if (slot == null)
-                    throw new SourceReadException(ReasonCode.IncompleteContainerSet);
+                if (slot == null) throw new SourceReadException(ReasonCode.IncompleteContainerSet);
                 var id = slot->GetBaseItemId();
-                if (id != 0)
-                    items.Add(new PresenceItem(id, instances || type == InventoryType.RetainerEquippedItems ? 1 : slot->GetQuantity()));
+                if (id != 0) items.Add(new PresenceItem(id, instances || type == InventoryType.RetainerEquippedItems ? 1 : slot->GetQuantity()));
             }
             if (!container->IsLoaded || container->Size != size || manager != InventoryManager.Instance())
                 throw new SourceReadException(ReasonCode.IncompleteContainerSet);
@@ -172,17 +168,14 @@ public sealed unsafe class CollectionReader : ICollectionReader
     private CurrentItemPresenceState ReadRetainers(ulong contentId, long generation, DateTimeOffset now)
     {
         var manager = RetainerManager.Instance();
-        if (manager == null || !manager->IsReady)
-            throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
+        if (manager == null || !manager->IsReady) throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
         var count = manager->GetRetainerCount();
-        if (count > 10)
-            throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
+        if (count > 10) throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
         var expected = ImmutableArray.CreateBuilder<ulong>(count);
         for (uint i = 0; i < count; i++)
         {
             var row = manager->GetRetainerBySortedIndex(i);
-            if (row == null || !row->Available || row->RetainerId == 0)
-                throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
+            if (row == null || !row->Available || row->RetainerId == 0) throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
             expected.Add(row->RetainerId);
         }
         var active = manager->GetActiveRetainer();
@@ -206,8 +199,7 @@ public sealed unsafe class CollectionReader : ICollectionReader
         for (uint i = 0; i < count; i++)
         {
             var row = manager->GetRetainerBySortedIndex(i);
-            if (row == null || !row->Available || row->RetainerId != expected[(int)i])
-                throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
+            if (row == null || !row->Available || row->RetainerId != expected[(int)i]) throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
         }
         if (activeId != 0 && (manager->GetActiveRetainer() == null || manager->GetActiveRetainer()->RetainerId != activeId))
             throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
@@ -217,19 +209,15 @@ public sealed unsafe class CollectionReader : ICollectionReader
     private CurrentItemPresenceState ReadArmoire(CollectionCatalog catalog, long generation, DateTimeOffset now)
     {
         var initial = UIState.Instance();
-        if (initial == null || !initial->Cabinet.IsCabinetLoaded())
-            throw new SourceReadException(ReasonCode.WindowNotReady);
+        if (initial == null || !initial->Cabinet.IsCabinetLoaded()) throw new SourceReadException(ReasonCode.WindowNotReady);
         var items = new List<PresenceItem>();
         foreach (var row in catalog.Collections["armoires"].Items)
         {
             var ui = UIState.Instance();
-            if (ui == null || ui != initial || !ui->Cabinet.IsCabinetLoaded())
-                throw new SourceReadException(ReasonCode.WindowNotReady);
-            if (ui->Cabinet.IsItemInCabinet(row.SourceRowId))
-                items.Add(new PresenceItem(row.ItemId!.Value, null));
+            if (ui == null || ui != initial || !ui->Cabinet.IsCabinetLoaded()) throw new SourceReadException(ReasonCode.WindowNotReady);
+            if (ui->Cabinet.IsItemInCabinet(row.SourceRowId)) items.Add(new PresenceItem(row.ItemId!.Value, null));
         }
-        if (initial != UIState.Instance() || !initial->Cabinet.IsCabinetLoaded())
-            throw new SourceReadException(ReasonCode.WindowNotReady);
+        if (initial != UIState.Instance() || !initial->Cabinet.IsCabinetLoaded()) throw new SourceReadException(ReasonCode.WindowNotReady);
         return CaptureReadPolicy.Presence(items, false, true, generation, now);
     }
 
@@ -240,13 +228,11 @@ public sealed unsafe class CollectionReader : ICollectionReader
         if (addon == null || !addon->IsReady || !addon->IsVisible || manager == null || !manager->PrismBoxLoaded)
             throw new SourceReadException(ReasonCode.WindowNotReady);
         var entries = new List<DresserEntry>();
-        if (manager->PrismBoxItemIds.Length != 800)
-            throw new SourceReadException(ReasonCode.MappingValidationFailed);
+        if (manager->PrismBoxItemIds.Length != 800) throw new SourceReadException(ReasonCode.MappingValidationFailed);
         for (var i = 0; i < 800; i++)
         {
             var raw = manager->PrismBoxItemIds[i];
-            if (raw == 0)
-                continue;
+            if (raw == 0) continue;
             var id = DresserSetExpansionPolicy.NormalizeStoredId(raw);
             if (data.GetExcelSheet<MirageStoreSetItem>().HasRow(id))
             {
@@ -254,14 +240,11 @@ public sealed unsafe class CollectionReader : ICollectionReader
                 uint[] slots = [set.MainHand.RowId, set.OffHand.RowId, set.Head.RowId, set.Body.RowId, set.Hands.RowId,
                     set.Legs.RowId, set.Feet.RowId, set.Earrings.RowId, set.Necklace.RowId, set.Bracelets.RowId, set.Ring.RowId];
                 var unlockedSlots = ImmutableArray.CreateBuilder<bool>(11);
-                for (var slot = 0; slot < slots.Length; slot++)
-                    unlockedSlots.Add(manager->IsSetSlotUnlocked((uint)i, slot));
+                for (var slot = 0; slot < slots.Length; slot++) unlockedSlots.Add(manager->IsSetSlotUnlocked((uint)i, slot));
                 entries.Add(DresserCapturePolicy.Entry(i, raw, catalog.KnownItemIds, [.. slots], unlockedSlots.ToImmutable()));
             }
-            else if (catalog.KnownItemIds.Contains(id))
-                entries.Add(DresserCapturePolicy.Entry(i, raw, catalog.KnownItemIds));
-            else
-                throw new SourceReadException(ReasonCode.MappingValidationFailed);
+            else if (catalog.KnownItemIds.Contains(id)) entries.Add(DresserCapturePolicy.Entry(i, raw, catalog.KnownItemIds));
+            else throw new SourceReadException(ReasonCode.MappingValidationFailed);
         }
         if (manager != MirageManager.Instance() || !manager->PrismBoxLoaded || addon != gui.GetAddonByName<AtkUnitBase>("MiragePrismPrismBox", 1) || !addon->IsReady || !addon->IsVisible)
             throw new SourceReadException(ReasonCode.WindowNotReady);
@@ -280,8 +263,7 @@ public sealed unsafe class CollectionReader : ICollectionReader
         if (!fieldRecordItems.TryGetValue(id, out var itemId))
             throw new SourceReadException(ReasonCode.MappingValidationFailed);
         var nativeRow = ExdModule.GetItemRowById(itemId);
-        if (nativeRow == null)
-            throw new SourceReadException(ReasonCode.NotLoadedThisSession);
+        if (nativeRow == null) throw new SourceReadException(ReasonCode.NotLoadedThisSession);
         // The game may request its server-owned cache on the first query. Pending is never unowned.
         var result = initial->IsItemActionUnlocked(nativeRow);
         if (initial != UIState.Instance() || state != PlayerState.Instance() || !state->IsLoaded)
@@ -292,8 +274,7 @@ public sealed unsafe class CollectionReader : ICollectionReader
     private bool ReadFacewear(uint id)
     {
         var initial = PlayerState.Instance();
-        if (initial == null || !initial->IsLoaded)
-            throw new SourceReadException(ReasonCode.NotLoadedThisSession);
+        if (initial == null || !initial->IsLoaded) throw new SourceReadException(ReasonCode.NotLoadedThisSession);
         bool owned = FacewearMappingPolicy.Read(id,
             data.GetExcelSheet<Glasses>().Select(r => new FacewearRow(r.RowId, r.Style.RowId)),
             ReadGlasses);
@@ -305,19 +286,16 @@ public sealed unsafe class CollectionReader : ICollectionReader
     private static bool ReadGlasses(ushort id)
     {
         var state = PlayerState.Instance();
-        if (state == null || !state->IsLoaded)
-            throw new SourceReadException(ReasonCode.NotLoadedThisSession);
+        if (state == null || !state->IsLoaded) throw new SourceReadException(ReasonCode.NotLoadedThisSession);
         return state->IsGlassesUnlocked(id);
     }
 
     private bool ReadSurvey(uint id)
     {
         var module = UIModule.Instance();
-        if (module == null || module->GetVVDNotebookModule() == null)
-            throw new SourceReadException(ReasonCode.WindowNotReady);
+        if (module == null || module->GetVVDNotebookModule() == null) throw new SourceReadException(ReasonCode.WindowNotReady);
         var notebook = module->GetVVDNotebookModule();
-        if (notebook->CharacterContentId != player.ContentId)
-            throw new SourceReadException(ReasonCode.WindowNotReady);
+        if (notebook->CharacterContentId != player.ContentId) throw new SourceReadException(ReasonCode.WindowNotReady);
         var index = NotebookMappingPolicy.Resolve(id,
             data.GetExcelSheet<VVDNotebookSeries>().Select(row => new NotebookSeries(row.RowId,
                 row.Contents.Select(content => content.RowId).ToImmutableArray())),

@@ -36,19 +36,16 @@ public sealed class PromptCaptureHints : IDisposable
     public void Drain(Action<string> hint)
     {
         int mask = Interlocked.Exchange(ref pending, 0);
-        if (Volatile.Read(ref disposed) != 0)
-            return;
+        if (Volatile.Read(ref disposed) != 0) return;
         for (int i = 0; i < Sources.Length; i++)
-            if ((mask & (1 << i)) != 0)
-                hint(Sources[i]);
+            if ((mask & (1 << i)) != 0) hint(Sources[i]);
     }
 
     public void Reset() => Interlocked.Exchange(ref pending, 0);
 
     public void Dispose()
     {
-        if (Interlocked.Exchange(ref disposed, 1) != 0)
-            return;
+        if (Interlocked.Exchange(ref disposed, 1) != 0) return;
         try
         {
             unlocks.Unlock -= OnUnlock;
@@ -58,8 +55,7 @@ public sealed class PromptCaptureHints : IDisposable
 
     private void Queue(int mask)
     {
-        if (Volatile.Read(ref disposed) == 0)
-            Interlocked.Or(ref pending, mask);
+        if (Volatile.Read(ref disposed) == 0) Interlocked.Or(ref pending, mask);
     }
 
     private void OnUnlock(RowRef row)
@@ -71,10 +67,8 @@ public sealed class PromptCaptureHints : IDisposable
             row.Is<Aetheryte>() ? 10 : row.Is<ChocoboTaxiStand>() || row.Is<ChocoboTaxi>() ? 11 :
             row.Is<Leve>() ? 12 : row.Is<CharaMakeCustomize>() ? 13 :
             row.Is<Quest>() ? 16 : row.Is<Achievement>() ? 17 : row.Is<Glasses>() || row.Is<GlassesStyle>() ? 18 : -1;
-        if (index >= 0)
-            Queue(1 << index);
-        else if (row.Is<Item>() || row.Is<McGuffin>())
-            Queue(UnlockMask);
+        if (index >= 0) Queue(1 << index);
+        else if (row.Is<Item>() || row.Is<McGuffin>()) Queue(UnlockMask);
     }
 
     private void OnInventory(IReadOnlyCollection<InventoryEventArgs> changes)
@@ -105,8 +99,7 @@ public sealed class PromptCaptureHints : IDisposable
                     GameInventoryType.RetainerCrystals or GameInventoryType.RetainerGil or GameInventoryType.RetainerMarket => 23,
                 _ => -1,
             };
-            if (index >= 0)
-                mask |= 1 << index;
+            if (index >= 0) mask |= 1 << index;
         }
         Queue(mask);
     }

@@ -36,8 +36,7 @@ public sealed class RetainerGuideControllerTests
         var port = new Port { CleanupReady = false };
         var controller = new RetainerGuideController(port);
         controller.Start(1, TimeSpan.Zero);
-        for (var tick = 0; tick < 20; tick++)
-            controller.Update(TimeSpan.Zero);
+        for (var tick = 0; tick < 20; tick++) controller.Update(TimeSpan.Zero);
         Assert.Equal(RetainerGuideStep.CloseOverview, controller.Step);
         Assert.True(controller.Active);
         Assert.DoesNotContain("cleanup", port.Actions);
@@ -52,8 +51,7 @@ public sealed class RetainerGuideControllerTests
         var port = new Port();
         var controller = new RetainerGuideController(port);
         controller.Start(1, TimeSpan.Zero);
-        for (var tick = 0; tick < 20; tick++)
-            controller.Update(TimeSpan.FromMilliseconds(tick));
+        for (var tick = 0; tick < 20; tick++) controller.Update(TimeSpan.FromMilliseconds(tick));
         Assert.Equal(RetainerGuideStep.Complete, controller.Step);
         Assert.False(controller.Active);
         Assert.Equal("Retainer capture complete (2/2).", controller.Message);
@@ -97,14 +95,10 @@ public sealed class RetainerGuideControllerTests
         var port = new Port();
         var controller = new RetainerGuideController(port);
         controller.Start(1, TimeSpan.Zero);
-        for (var tick = 0; tick < 4; tick++)
-            controller.Update(TimeSpan.FromMilliseconds(tick));
+        for (var tick = 0; tick < 4; tick++) controller.Update(TimeSpan.FromMilliseconds(tick));
         Assert.Equal(RetainerGuideStep.CaptureInventory, controller.Step);
         var count = port.Actions.Count;
-        if (cancel)
-            controller.Cancel();
-        else
-            port.Safe = false;
+        if (cancel) controller.Cancel(); else port.Safe = false;
         controller.Update(TimeSpan.FromSeconds(1));
         Assert.Equal(RetainerGuideStep.Stopped, controller.Step);
         Assert.Equal(count, port.Actions.Count);
@@ -116,8 +110,7 @@ public sealed class RetainerGuideControllerTests
         var port = new Port { Capturable = false };
         var controller = new RetainerGuideController(port);
         controller.Start(1, TimeSpan.Zero);
-        for (var tick = 0; tick < 5; tick++)
-            controller.Update(TimeSpan.Zero);
+        for (var tick = 0; tick < 5; tick++) controller.Update(TimeSpan.Zero);
         Assert.Equal(RetainerGuideStep.CaptureInventory, controller.Step);
         Assert.DoesNotContain(port.Actions, item => item.StartsWith("close:"));
         controller.Update(TimeSpan.FromSeconds(15));
@@ -190,8 +183,7 @@ public sealed class RetainerGuideControllerTests
         var port = new Port { MenuReady = false };
         var controller = new RetainerGuideController(port);
         controller.Start(1, TimeSpan.Zero);
-        for (var i = 0; i < 4; i++)
-            controller.Update(TimeSpan.Zero);
+        for (var i = 0; i < 4; i++) controller.Update(TimeSpan.Zero);
         Assert.Equal(RetainerGuideStep.OpenInventory, controller.Step);
         Assert.Equal(new[] { "select:11" }, port.Actions);
         port.MenuReady = true;

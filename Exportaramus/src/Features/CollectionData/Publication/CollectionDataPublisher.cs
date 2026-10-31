@@ -20,18 +20,14 @@ public sealed class CollectionDataPublisher(AtomicSnapshotStorage storage, FFXIV
         cancellationToken.ThrowIfCancellationRequested();
         var compact = diagnostics.Measure("CompactSerializer", () => CollectionDataSerializer.Compact(data, revision));
         var compactResult = CollectionDataSemanticValidator.ValidateSnapshot(compact, data.State.ContentId.ToString(CultureInfo.InvariantCulture));
-        if (compactResult.Code == CollectionDataValidationCode.PayloadTooLarge)
-            throw new OutputSizeLimitException();
-        if (!compactResult.Success)
-            throw new InvalidDataException("Compact snapshot validation failed: " + compactResult.Code);
+        if (compactResult.Code == CollectionDataValidationCode.PayloadTooLarge) throw new OutputSizeLimitException();
+        if (!compactResult.Success) throw new InvalidDataException("Compact snapshot validation failed: " + compactResult.Code);
         var rich = data.State.CaptureType == CaptureType.Full ? diagnostics.Measure("RichSerializer", () => CollectionDataSerializer.Rich(data, displayName, data.State.CapturedAtUtc)) : null;
         if (rich is not null)
         {
             var richResult = CollectionDataSemanticValidator.ValidateRich(rich);
-            if (richResult.Code == CollectionDataValidationCode.PayloadTooLarge)
-                throw new OutputSizeLimitException();
-            if (!richResult.Success)
-                throw new InvalidDataException("Rich snapshot validation failed.");
+            if (richResult.Code == CollectionDataValidationCode.PayloadTooLarge) throw new OutputSizeLimitException();
+            if (!richResult.Success) throw new InvalidDataException("Rich snapshot validation failed.");
         }
         var fingerprints = diagnostics.Measure("Fingerprints", () => CollectionFingerprint.Sources(data));
         var fingerprint = CollectionFingerprint.Combined(fingerprints);
@@ -46,23 +42,17 @@ public sealed class CollectionDataPublisher(AtomicSnapshotStorage storage, FFXIV
         }) : null;
         var prepared = diagnostics.Measure("SnapshotPreparation", () => SnapshotBundlePreparation.Prepare(new(data, revision, compact, rich, fingerprint, fingerprints, export, 0, null), previous, reportsAvailable));
         var v11 = Exportaramus.ConsumerKit.V1_1.CollectionDataSemanticValidator.ValidateSnapshot(prepared.CompactJsonV11, data.State.ContentId.ToString(CultureInfo.InvariantCulture));
-        if (v11.Code == Exportaramus.ConsumerKit.V1_1.CollectionDataValidationCode.PayloadTooLarge)
-            throw new OutputSizeLimitException();
-        if (!v11.Success)
-            throw new InvalidDataException("CollectionData 1.1 validation failed: " + v11.Code);
+        if (v11.Code == Exportaramus.ConsumerKit.V1_1.CollectionDataValidationCode.PayloadTooLarge) throw new OutputSizeLimitException();
+        if (!v11.Success) throw new InvalidDataException("CollectionData 1.1 validation failed: " + v11.Code);
         var v12 = Exportaramus.ConsumerKit.V1_2.CollectionDataSemanticValidator.ValidateSnapshot(prepared.CompactJsonV12, data.State.ContentId.ToString(CultureInfo.InvariantCulture));
-        if (v12.Code == Exportaramus.ConsumerKit.V1_2.CollectionDataValidationCode.PayloadTooLarge)
-            throw new OutputSizeLimitException();
-        if (!v12.Success)
-            throw new InvalidDataException("CollectionData 1.2 validation failed: " + v12.Code);
+        if (v12.Code == Exportaramus.ConsumerKit.V1_2.CollectionDataValidationCode.PayloadTooLarge) throw new OutputSizeLimitException();
+        if (!v12.Success) throw new InvalidDataException("CollectionData 1.2 validation failed: " + v12.Code);
         if (data.State.CaptureType == CaptureType.Full)
         {
             var richV12 = CollectionDataSerializer.RichV12(data, displayName, data.State.CapturedAtUtc);
             var richResult = Exportaramus.ConsumerKit.V1_2.CollectionDataSemanticValidator.ValidateRich(richV12);
-            if (richResult.Code == Exportaramus.ConsumerKit.V1_2.CollectionDataValidationCode.PayloadTooLarge)
-                throw new OutputSizeLimitException();
-            if (!richResult.Success)
-                throw new InvalidDataException("Rich snapshot 1.2 validation failed: " + richResult.Code);
+            if (richResult.Code == Exportaramus.ConsumerKit.V1_2.CollectionDataValidationCode.PayloadTooLarge) throw new OutputSizeLimitException();
+            if (!richResult.Success) throw new InvalidDataException("Rich snapshot 1.2 validation failed: " + richResult.Code);
             prepared = prepared with
             {
                 RichJsonV12 = richV12

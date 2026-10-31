@@ -37,8 +37,7 @@ public sealed class DiagnosticControllerLifetimeTests
         {
             release.TrySetResult(Report);
             context.Drain();
-            if (disposing is not null)
-                await disposing.WaitAsync(TimeSpan.FromSeconds(3));
+            if (disposing is not null) await disposing.WaitAsync(TimeSpan.FromSeconds(3));
             await controller.DisposeAsync();
         }
     }
@@ -129,8 +128,7 @@ public sealed class DiagnosticControllerLifetimeTests
         finally
         {
             release.TrySetResult();
-            if (disposing is not null)
-                await disposing.WaitAsync(TimeSpan.FromSeconds(3));
+            if (disposing is not null) await disposing.WaitAsync(TimeSpan.FromSeconds(3));
             await controller.DisposeAsync();
         }
     }

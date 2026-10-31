@@ -97,8 +97,7 @@ public sealed class CollectionDataV11Tests
         var result = V11.ValidateSnapshot(CollectionDataSerializer.CompactV11(data, 1), "123");
         Assert.True(result.Success, result.Code.ToString());
         Assert.Equal(included, result.Value!.Unlocks.ContainsKey("facewear"));
-        if (included)
-            Assert.Empty(result.Value.Unlocks["facewear"].UnlockedIds);
+        if (included) Assert.Empty(result.Value.Unlocks["facewear"].UnlockedIds);
     }
     [Fact]
     public void RestorationPreservesCanonicalEvidenceAsStaleAndLegacyHasUnknownCompositionAndFacewear()

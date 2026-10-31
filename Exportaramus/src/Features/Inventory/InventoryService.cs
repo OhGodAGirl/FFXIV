@@ -36,8 +36,7 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
     {
         lock (sync)
         {
-            if (disposed || (snapshot?.ContentId ?? 0) == contentId)
-                return;
+            if (disposed || (snapshot?.ContentId ?? 0) == contentId) return;
             generation++;
             Volatile.Write(ref snapshot, contentId == 0 ? null : InventoryPolicy.Empty(contentId, ++revision));
             restorePending = contentId != 0 && cache is not null;
@@ -48,11 +47,9 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
     {
         lock (sync)
         {
-            if (!IsCurrent(contentId))
-                return false;
+            if (!IsCurrent(contentId)) return false;
             var rosterObservedAt = observedAt ?? clock.GetUtcNow();
-            if (rosterObservedAt == default || snapshot!.RetainerRosterObservedAtUtc > rosterObservedAt)
-                return false;
+            if (rosterObservedAt == default || snapshot!.RetainerRosterObservedAtUtc > rosterObservedAt) return false;
             var retainers = new Dictionary<ulong, InventoryRetainer>();
             foreach (var retainer in roster)
             {
@@ -71,8 +68,7 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
                 });
             }
             var ordered = InventoryPolicy.Order(locations);
-            if (snapshot.RetainerRosterKnown && snapshot.Locations.SequenceEqual(ordered))
-                return false;
+            if (snapshot.RetainerRosterKnown && snapshot.Locations.SequenceEqual(ordered)) return false;
             Publish(snapshot with
             {
                 RetainerRosterKnown = true,
@@ -87,12 +83,10 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
     {
         lock (sync)
         {
-            if (!CanAccept(contentId, key, name) || observedAt == default)
-                return false;
+            if (!CanAccept(contentId, key, name) || observedAt == default) return false;
             // CanAccept guarantees a standard location or a member of the current Retainer roster.
             var old = snapshot!.Locations.First(location => location.Key == key);
-            if (old.ObservedAtUtc > observedAt || old.AttemptedAtUtc > observedAt)
-                return false;
+            if (old.ObservedAtUtc > observedAt || old.AttemptedAtUtc > observedAt) return false;
             var quantified = key.Kind is not (InventoryLocationKind.Armoire or InventoryLocationKind.GlamourDresser);
             if (!InventoryPolicy.TryNormalize(items, out var normalized, quantified))
                 return MarkUnavailable(contentId, key, name, observedAt, true);
@@ -108,15 +102,12 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
     {
         lock (sync)
         {
-            if (!CanAccept(contentId, key, name) || attemptedAt == default)
-                return false;
+            if (!CanAccept(contentId, key, name) || attemptedAt == default) return false;
             // CanAccept guarantees this location exists in the current snapshot.
             var old = snapshot!.Locations.First(location => location.Key == key);
-            if (old.AttemptedAtUtc > attemptedAt)
-                return false;
+            if (old.AttemptedAtUtc > attemptedAt) return false;
             var state = readFailed ? InventoryObservationState.ReadFailed : old.HasObservation ? InventoryObservationState.Retained : InventoryObservationState.Unknown;
-            if (old.State == state && old.Name == name)
-                return false;
+            if (old.State == state && old.Name == name) return false;
             Replace(old with
             {
                 Name = name,
@@ -192,21 +183,17 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
             Revision = ++revision
         };
         Volatile.Write(ref snapshot, value);
-        if (cache is null)
-            return;
+        if (cache is null) return;
         // Bounded per-character coalescing retains final writes across ordinary character switches.
-        if (pendingWrites.ContainsKey(value.ContentId) || pendingWrites.Count < 16)
-            pendingWrites[value.ContentId] = value;
-        else
-            lastCacheFailure = "InventoryCacheQueueFull";
+        if (pendingWrites.ContainsKey(value.ContentId) || pendingWrites.Count < 16) pendingWrites[value.ContentId] = value;
+        else lastCacheFailure = "InventoryCacheQueueFull";
     }
 
     public ValueTask DisposeAsync()
     {
         lock (sync)
         {
-            if (disposal is not null)
-                return new(disposal);
+            if (disposal is not null) return new(disposal);
             disposed = true;
             generation++;
             Volatile.Write(ref snapshot, null);

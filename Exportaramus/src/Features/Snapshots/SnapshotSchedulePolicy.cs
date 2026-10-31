@@ -41,17 +41,13 @@ public sealed class SnapshotSchedulePolicy
             failures = 0;
             retryDue = double.PositiveInfinity;
         }
-        if (request > Pending)
-            Pending = request;
+        if (request > Pending) Pending = request;
     }
     public void Tick(double now)
     {
-        if (now >= fullDue)
-            Request(CaptureRequest.AutomaticFull);
-        else if (now >= presenceDue)
-            Request(CaptureRequest.AutomaticLightweight);
-        if (now >= retryDue)
-            Request(retryRequest);
+        if (now >= fullDue) Request(CaptureRequest.AutomaticFull);
+        else if (now >= presenceDue) Request(CaptureRequest.AutomaticLightweight);
+        if (now >= retryDue) Request(retryRequest);
     }
     public CaptureRequest Take()
     {
@@ -62,16 +58,14 @@ public sealed class SnapshotSchedulePolicy
     public void Accepted(bool full, double now)
     {
         presenceDue = now + PresenceInterval;
-        if (full)
-            fullDue = now + FullInterval;
+        if (full) fullDue = now + FullInterval;
         failures = 0;
         retryDue = double.PositiveInfinity;
         retryRequest = CaptureRequest.None;
     }
     public void Failed(CaptureRequest request, double now, bool cancelled)
     {
-        if (request is CaptureRequest.None or CaptureRequest.ManualFull || cancelled)
-            return;
+        if (request is CaptureRequest.None or CaptureRequest.ManualFull || cancelled) return;
         var delay = failures++ switch
         {
             0 => 30,
@@ -81,9 +75,7 @@ public sealed class SnapshotSchedulePolicy
         retryRequest = request;
         retryDue = now + delay;
         // Move an already elapsed due time to its next normal cadence so it cannot bypass backoff.
-        if (request == CaptureRequest.AutomaticFull && fullDue <= now)
-            fullDue = now + FullInterval;
-        if (presenceDue <= now)
-            presenceDue = now + PresenceInterval;
+        if (request == CaptureRequest.AutomaticFull && fullDue <= now) fullDue = now + FullInterval;
+        if (presenceDue <= now) presenceDue = now + PresenceInterval;
     }
 }

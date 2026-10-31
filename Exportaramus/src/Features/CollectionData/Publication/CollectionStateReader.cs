@@ -35,8 +35,7 @@ public static class CollectionStateReader
         var unknown = CollectionStateFactory.Empty(contentId, session, now).Unlocks["facewear"].Health;
         CollectionSourceStatus Health(string key)
         {
-            if (!snapshot.SourceHealth.TryGetValue(key, out var value))
-                return unknown;
+            if (!snapshot.SourceHealth.TryGetValue(key, out var value)) return unknown;
             var observed = value.ObservedAtUtc is { } at ? DateTimeOffset.Parse(at, CultureInfo.InvariantCulture) : (DateTimeOffset?)null;
             return new(Enum.Parse<DataType>(value.DataType), Enum.Parse<SourceStatus>(value.SourceStatus),
                 Enum.Parse<Completeness>(value.Completeness), Enum.Parse<ProvenanceType>(value.ProvenanceType),
@@ -70,18 +69,14 @@ public static class CollectionStateReader
 
     public static ImmutableArray<ReportedEvidence> ReadReports(string? json, ulong contentId)
     {
-        if (json is null)
-            return [];
-        if (System.Text.Encoding.UTF8.GetByteCount(json) > 4194304)
-            throw new InvalidDataException("Stored evidence exceeds its size limit.");
+        if (json is null) return [];
+        if (System.Text.Encoding.UTF8.GetByteCount(json) > 4194304) throw new InvalidDataException("Stored evidence exceeds its size limit.");
         using var document = JsonDocument.Parse(json, new JsonDocumentOptions { MaxDepth = 64 });
         var root = document.RootElement;
         RejectDuplicateProperties(root);
-        if (root.GetProperty("contentId").GetString() != contentId.ToString(CultureInfo.InvariantCulture))
-            throw new InvalidDataException("Stored evidence has the wrong scope.");
+        if (root.GetProperty("contentId").GetString() != contentId.ToString(CultureInfo.InvariantCulture)) throw new InvalidDataException("Stored evidence has the wrong scope.");
         var items = root.GetProperty("items");
-        if (items.GetArrayLength() > 10000)
-            throw new InvalidDataException("Stored evidence exceeds its record limit.");
+        if (items.GetArrayLength() > 10000) throw new InvalidDataException("Stored evidence exceeds its record limit.");
         var output = ImmutableArray.CreateBuilder<ReportedEvidence>();
         var keys = new HashSet<(uint, string)>();
         foreach (var item in items.EnumerateArray())
@@ -103,7 +98,6 @@ public static class CollectionStateReader
     {
         var names = new HashSet<string>(StringComparer.Ordinal);
         foreach (var property in value.EnumerateObject())
-            if (!names.Add(property.Name))
-                throw new InvalidDataException("Stored evidence contains duplicate properties.");
+            if (!names.Add(property.Name)) throw new InvalidDataException("Stored evidence contains duplicate properties.");
     }
 }

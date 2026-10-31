@@ -72,10 +72,8 @@ internal static class LocalGameDataVerification
         {
             var id = row.GetProperty("id").GetUInt32();
             var achievement = row.GetProperty("achievementId");
-            if (achievement.ValueKind != JsonValueKind.Null)
-                linked++;
-            if (!local["relics"].Contains(id) || (achievement.ValueKind != JsonValueKind.Null && !achievementIds.Contains(achievement.GetUInt32())))
-                relicFailures.Add(id);
+            if (achievement.ValueKind != JsonValueKind.Null) linked++;
+            if (!local["relics"].Contains(id) || (achievement.ValueKind != JsonValueKind.Null && !achievementIds.Contains(achievement.GetUInt32()))) relicFailures.Add(id);
         }
         var series = game.GetExcelSheet<VVDNotebookSeries>()!.Where(r => r.RowId != 0).Select(r => new { id = r.RowId, contents = r.Contents.Select(v => v.RowId).Where(v => v != 0).ToArray() }).ToArray();
         var baseline = (version is "2026.10.06.0000.0000" or "2026.10.16.0000.0000") && cabinets.Length == 3844 && fields.Length == 50

@@ -24,10 +24,8 @@ public sealed class OutputSizeTests : IDisposable
         var storage = new AtomicSnapshotStorage(root);
         var compact = CollectionDataSerializer.Compact(data, 1);
         var rich = CollectionDataSerializer.Rich(data, "Test", data.State.CapturedAtUtc);
-        if (richBoundary)
-            rich += new string(' ', 16777216 - Encoding.UTF8.GetByteCount(rich));
-        else
-            compact += new string(' ', 4194304 - Encoding.UTF8.GetByteCount(compact));
+        if (richBoundary) rich += new string(' ', 16777216 - Encoding.UTF8.GetByteCount(rich));
+        else compact += new string(' ', 4194304 - Encoding.UTF8.GetByteCount(compact));
         Assert.True(CollectionDataSemanticValidator.ValidateSnapshot(compact, "123").Success);
         Assert.True(CollectionDataSemanticValidator.ValidateRich(rich).Success);
         var result = await storage.CommitAsync(123, compact, rich, null, true, true, data.State.CapturedAtUtc, default);
@@ -41,8 +39,7 @@ public sealed class OutputSizeTests : IDisposable
             richBoundary ? compact : compact + " ", richBoundary ? rich + " " : rich,
             null, true, true, data.State.CapturedAtUtc.AddSeconds(1), default));
         Assert.Equal(files.Keys.Order(), Directory.GetFiles(root, "*.json", SearchOption.AllDirectories).Order());
-        foreach (var file in files)
-            Assert.Equal(file.Value, await File.ReadAllBytesAsync(file.Key));
+        foreach (var file in files) Assert.Equal(file.Value, await File.ReadAllBytesAsync(file.Key));
     }
 
     [Theory]
@@ -69,14 +66,12 @@ public sealed class OutputSizeTests : IDisposable
             Assert.True(CollectionDataSemanticValidator.ValidateSnapshot(compact, "123").Success);
             Assert.True(Encoding.UTF8.GetByteCount(CollectionDataSerializer.Rich(candidate, "Test", candidate.State.CapturedAtUtc)) > 16777216);
         }
-        else
-            Assert.True(Encoding.UTF8.GetByteCount(compact) > 4194304);
+        else Assert.True(Encoding.UTF8.GetByteCount(compact) > 4194304);
         var exception = await Assert.ThrowsAsync<OutputSizeLimitException>(() =>
             publisher.PrepareAndPersistAsync(candidate, "Test", 2, accepted, true, false, default));
         Assert.Equal("OutputSizeLimitExceeded", exception.Message);
         Assert.Equal(files.Keys.Order(), Directory.GetFiles(root, "*.json", SearchOption.AllDirectories).Order());
-        foreach (var file in files)
-            Assert.Equal(file.Value, await File.ReadAllBytesAsync(file.Key));
+        foreach (var file in files) Assert.Equal(file.Value, await File.ReadAllBytesAsync(file.Key));
         Assert.Equal(1, accepted.Revision);
         Assert.Equal(1, accepted.HistoryCount);
         Assert.True(accepted.Export.CanCopy);
@@ -109,8 +104,7 @@ public sealed class OutputSizeTests : IDisposable
         Assert.Single(notices);
         Assert.Equal(accepted.CompactJson, controller.Publication.GetSnapshot());
         Assert.Equal(files.Keys.Order(), Directory.GetFiles(root, "*.json", SearchOption.AllDirectories).Order());
-        foreach (var file in files)
-            Assert.Equal(file.Value, await File.ReadAllBytesAsync(file.Key));
+        foreach (var file in files) Assert.Equal(file.Value, await File.ReadAllBytesAsync(file.Key));
         controller.Dispose();
         await controller.ShutdownTask;
     }
@@ -164,8 +158,7 @@ public sealed class OutputSizeTests : IDisposable
         while (DateTime.UtcNow < deadline)
         {
             controller.Update(123, "Test", false, false, monotonic, SnapshotFixture.Now.AddSeconds(monotonic));
-            if (ready())
-                return;
+            if (ready()) return;
             await Task.Delay(2);
         }
         Assert.Fail("Controller did not reach expected state: " + controller.Error);

@@ -10,8 +10,7 @@ public static class TargetedCaptureChangePolicy
         foreach (var key in raw.Unlocks.Keys)
         {
             var value = next.Unlocks[key];
-            if (!prior.Unlocks.TryGetValue(key, out var old) || !SameHealth(old.Health, value.Health) || !old.UnlockedIds.SequenceEqual(value.UnlockedIds))
-                return true;
+            if (!prior.Unlocks.TryGetValue(key, out var old) || !SameHealth(old.Health, value.Health) || !old.UnlockedIds.SequenceEqual(value.UnlockedIds)) return true;
         }
         foreach (var key in raw.CurrentItemPresence.Keys)
         {
@@ -29,10 +28,8 @@ public static class TargetedCaptureChangePolicy
 
     private static bool SameEntries(ImmutableArray<DresserEntry>? left, ImmutableArray<DresserEntry>? right)
     {
-        if (left is null || right is null)
-            return left is null && right is null;
-        if (left.Value.Length != right.Value.Length)
-            return false;
+        if (left is null || right is null) return left is null && right is null;
+        if (left.Value.Length != right.Value.Length) return false;
         for (var i = 0; i < left.Value.Length; i++)
         {
             var a = left.Value[i];

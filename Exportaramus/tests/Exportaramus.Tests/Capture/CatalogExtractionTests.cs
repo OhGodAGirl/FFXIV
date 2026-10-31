@@ -123,8 +123,7 @@ public sealed class CatalogExtractionTests
         Assert.False(builder.Advance(2));
         Assert.Equal(2, visited);
         var completed = false;
-        for (var slice = 0; slice < 5 && !completed; slice++)
-            completed = builder.Advance();
+        for (var slice = 0; slice < 5 && !completed; slice++) completed = builder.Advance();
         Assert.True(completed, "The remaining 1,000 rows must complete within five 256-row slices when no elapsed-time limit is reached.");
         Assert.Equal(1000, visited);
         Assert.Equal(99u, Assert.Single(builder.Projection!.KnownItemIds));

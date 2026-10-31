@@ -23,18 +23,15 @@ public sealed class AtomicBestEffortRecoveryTests : IDisposable
             {
                 if (unavailable && IsHistory(path))
                 {
-                    if (unauthorized)
-                        throw new UnauthorizedAccessException("history undo unavailable");
+                    if (unauthorized) throw new UnauthorizedAccessException("history undo unavailable");
                     throw new IOException("history undo unavailable");
                 }
             },
         };
         var storage = new AtomicSnapshotStorage(root, operations);
         var commit = storage.CommitAsync(1, "{\"new\":true}", "{\"newRich\":true}", null, true, false, SnapshotFixture.Now.AddSeconds(1), cancellation.Token);
-        if (unauthorized)
-            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => commit);
-        else
-            await Assert.ThrowsAsync<IOException>(() => commit);
+        if (unauthorized) await Assert.ThrowsAsync<UnauthorizedAccessException>(() => commit);
+        else await Assert.ThrowsAsync<IOException>(() => commit);
         Assert.Equal("{\"oldRich\":true}", await File.ReadAllTextAsync(storage.CanonicalPath));
         Assert.Equal("{\"old\":true}", await File.ReadAllTextAsync(storage.CharacterPath(1)));
         Assert.Equal("Failed", storage.Diagnostic.RecoveryState);
@@ -68,37 +65,30 @@ public sealed class AtomicBestEffortRecoveryTests : IDisposable
                 var evidence = Path.GetFullPath(destination).StartsWith(original.EvidencePath(1) + ".", StringComparison.Ordinal);
                 if ((phase < 2 && compact) || (phase == 0 && evidence))
                 {
-                    if (unauthorized)
-                        throw new UnauthorizedAccessException("rollback copy unavailable");
+                    if (unauthorized) throw new UnauthorizedAccessException("rollback copy unavailable");
                     throw new IOException("rollback copy unavailable");
                 }
             },
             Opening = (path, _) =>
             {
-                if (phase == 1 && progressWriteFails && Path.GetFullPath(path) == Path.GetFullPath(Journal + ".tmp"))
-                    throw new IOException("progress journal unavailable");
+                if (phase == 1 && progressWriteFails && Path.GetFullPath(path) == Path.GetFullPath(Journal + ".tmp")) throw new IOException("progress journal unavailable");
             },
         };
         var storage = new AtomicSnapshotStorage(root, operations);
         var first = storage.CommitAsync(1, "{\"new\":true}", "{\"newRich\":true}", "{\"newReport\":true}", true, false, SnapshotFixture.Now.AddSeconds(1), default);
-        if (unauthorized)
-            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => first);
-        else
-            await Assert.ThrowsAsync<IOException>(() => first);
+        if (unauthorized) await Assert.ThrowsAsync<UnauthorizedAccessException>(() => first);
+        else await Assert.ThrowsAsync<IOException>(() => first);
         Assert.Equal("{\"oldRich\":true}", await File.ReadAllTextAsync(storage.CanonicalPath));
         var priorJournal = await File.ReadAllBytesAsync(Journal);
         phase = 1;
         var second = storage.ReadAsync(1, false, default);
-        if (unauthorized && !progressWriteFails)
-            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => second);
-        else
-            await Assert.ThrowsAsync<IOException>(() => second);
+        if (unauthorized && !progressWriteFails) await Assert.ThrowsAsync<UnauthorizedAccessException>(() => second);
+        else await Assert.ThrowsAsync<IOException>(() => second);
         Assert.Equal("{\"oldReport\":true}", await File.ReadAllTextAsync(storage.EvidencePath(1)));
         Assert.Equal("Failed", storage.Diagnostic.RecoveryState);
         var evidenceBackup = Assert.Single(Directory.GetFiles(Path.GetDirectoryName(storage.EvidencePath(1))!, "reported-evidence.json.*.tmp.bak"));
         Assert.Equal("{\"oldReport\":true}", await File.ReadAllTextAsync(evidenceBackup));
-        if (progressWriteFails)
-            Assert.Equal(priorJournal, await File.ReadAllBytesAsync(Journal));
+        if (progressWriteFails) Assert.Equal(priorJournal, await File.ReadAllBytesAsync(Journal));
         else
         {
             using var journal = JsonDocument.Parse(await File.ReadAllTextAsync(Journal));
@@ -164,8 +154,7 @@ public sealed class AtomicBestEffortRecoveryTests : IDisposable
         Assert.Equal("{\"old\":true}", await File.ReadAllTextAsync(storage.CharacterPath(1)));
         Assert.True(File.Exists(Journal));
         Assert.Equal(progressWriteFails ? 0 : 2, backupDeletes);
-        if (progressWriteFails)
-            Assert.Equal(2, Directory.GetFiles(root, "*.bak", SearchOption.AllDirectories).Length);
+        if (progressWriteFails) Assert.Equal(2, Directory.GetFiles(root, "*.bak", SearchOption.AllDirectories).Length);
         else
         {
             using var journal = JsonDocument.Parse(await File.ReadAllTextAsync(Journal));
@@ -309,8 +298,7 @@ public sealed class AtomicBestEffortRecoveryTests : IDisposable
         public FileStream OpenWrite(string path, FileMode mode, int bufferSize, FileOptions options)
         {
             Opening?.Invoke(path, mode);
-            if (mode != FileMode.Open)
-                return new(path, mode, FileAccess.Write, FileShare.None, bufferSize, options);
+            if (mode != FileMode.Open) return new(path, mode, FileAccess.Write, FileShare.None, bufferSize, options);
             var stream = new RestoreStream(path, options, RestoreFlushFails?.Invoke() ?? false);
             RestoreStreams.Add(stream);
             return stream;
@@ -341,8 +329,7 @@ public sealed class AtomicBestEffortRecoveryTests : IDisposable
         private void VerifyRestore(string source)
         {
             var stream = RestoreStreams.LastOrDefault(value => value.Path == source);
-            if (stream is null)
-                return;
+            if (stream is null) return;
             Assert.True(stream.HandleClosed);
             Assert.True(stream.FlushedToDisk);
             stream.Installed = true;
@@ -378,8 +365,7 @@ public sealed class AtomicBestEffortRecoveryTests : IDisposable
         }
         public override void Flush(bool flushToDisk)
         {
-            if (fail)
-                throw new IOException("restoration flush unavailable");
+            if (fail) throw new IOException("restoration flush unavailable");
             base.Flush(flushToDisk);
             FlushedToDisk = flushToDisk;
         }

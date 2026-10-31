@@ -53,8 +53,7 @@ public sealed class MutationConfigurationLifecycleTests
         using var cancellation = new CancellationTokenSource();
         try
         {
-            if (canonicalExists)
-                await ConfigurationFile.WriteAsync(path, previous);
+            if (canonicalExists) await ConfigurationFile.WriteAsync(path, previous);
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => ConfigurationFile.WriteAsync(path, candidate,
                 async (temporary, json, encoding, token) =>
                 {

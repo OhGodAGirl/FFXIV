@@ -16,7 +16,7 @@ dotnet_separate_import_directive_groups = false
 csharp_prefer_braces = true:suggestion
 csharp_new_line_before_open_brace = all
 csharp_preserve_single_line_blocks = false
-csharp_preserve_single_line_statements = false
+csharp_preserve_single_line_statements = true
 
 # Preserve the exact bytes of the versioned Consumer Kit source.
 [reference/ConsumerKit/1.1/*.cs]

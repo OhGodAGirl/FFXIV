@@ -21,21 +21,17 @@ public sealed class StoragePhaseDecisionTests : IDisposable
         {
             Installed = destination =>
             {
-                if (boundaryReached)
-                    return;
+                if (boundaryReached) return;
                 if (afterInstallation)
                 {
-                    if (!Path.GetFileName(destination).StartsWith("automatic-snapshot-", StringComparison.Ordinal))
-                        return;
+                    if (!Path.GetFileName(destination).StartsWith("automatic-snapshot-", StringComparison.Ordinal)) return;
                 }
                 else
                 {
-                    if (Path.GetFileName(destination) != "write-recovery.json")
-                        return;
+                    if (Path.GetFileName(destination) != "write-recovery.json") return;
                     using var journal = JsonDocument.Parse(File.ReadAllText(destination));
                     var rows = journal.RootElement.GetProperty("files");
-                    if (rows.GetArrayLength() != 3 || !rows.EnumerateArray().All(row => File.Exists(Path.Combine(root, row.GetProperty("temporary").GetString()!))))
-                        return;
+                    if (rows.GetArrayLength() != 3 || !rows.EnumerateArray().All(row => File.Exists(Path.Combine(root, row.GetProperty("temporary").GetString()!)))) return;
                 }
                 boundaryReached = true;
                 cancellation.Cancel();

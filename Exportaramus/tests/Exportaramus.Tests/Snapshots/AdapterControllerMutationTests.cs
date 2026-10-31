@@ -76,8 +76,7 @@ public sealed class AdapterControllerMutationTests
         var timer = Stopwatch.StartNew();
         while (!completed())
         {
-            if (timer.Elapsed > TimeSpan.FromSeconds(5))
-                Assert.Fail("Controller did not complete: " + controller.Error);
+            if (timer.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Controller did not complete: " + controller.Error);
             controller.Update(123, "Fixture", false, false, monotonic, SnapshotFixture.Now.AddSeconds(monotonic));
             await Task.Delay(1);
         }

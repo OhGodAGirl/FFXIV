@@ -18,14 +18,12 @@ public sealed class GuidedCaptureCompletionTracker
     public void Reset() => requestedRevision = -1;
     public GuidedFrame Apply(GuidedFrame frame, AcceptedSnapshotBundle? accepted, string? error)
     {
-        if (requestedRevision < 0)
-            return frame;
+        if (requestedRevision < 0) return frame;
         var result = error is not null ? GuidedResult.Failed : accepted is not null && accepted.Revision > requestedRevision ? GuidedResult.Succeeded : GuidedResult.Pending;
         if (kind == GuidedEffectKind.Capture && result == GuidedResult.Succeeded)
         {
             var key = source == GuidedSource.Dresser ? "glamourDresser" : "armoire";
-            if (accepted!.Data.SourceHealth[key].SourceStatus != SourceStatus.Fresh)
-                result = GuidedResult.Failed;
+            if (accepted!.Data.SourceHealth[key].SourceStatus != SourceStatus.Fresh) result = GuidedResult.Failed;
         }
         return kind == GuidedEffectKind.Capture ? frame with
         {

@@ -121,8 +121,7 @@ public sealed class CaptureTests
         using var operation = new CollectionReadOperation(fake, Catalog(), true, 1, 1, Now);
         Assert.False(operation.Advance(1));
         bool completed = false;
-        for (var step = 0; step < 2 + 1 + CollectionReadOperation.PhysicalSources.Length + 1 && !completed; step++)
-            completed = operation.Advance(1);
+        for (var step = 0; step < 2 + 1 + CollectionReadOperation.PhysicalSources.Length + 1 && !completed; step++) completed = operation.Advance(1);
         Assert.True(completed, "Two unlock rows, one collection result, seven physical sources and completion must finish.");
         Assert.Equal(new uint[] { 1 }, operation.Result!.Unlocks["mounts"].UnlockedIds);
         Assert.Equal(7, operation.Result.CurrentItemPresence.Count);
@@ -159,9 +158,7 @@ public sealed class CaptureTests
         Assert.Null(operation.Result);
         Assert.Throws<ArgumentOutOfRangeException>(() => new CollectionReadOperation(new FakeReader(), Catalog(), true, 1, 1, Now).Advance(0));
         Assert.Throws<ArgumentOutOfRangeException>(() => new CollectionReadOperation(new FakeReader(), Catalog(), true, 1, 1, Now).Advance(2049));
-        using var disposed = new CollectionReadOperation(fake, Catalog(), true, 1, 1, Now);
-        disposed.Dispose();
-        Assert.True(disposed.Advance());
+        using var disposed = new CollectionReadOperation(fake, Catalog(), true, 1, 1, Now); disposed.Dispose(); Assert.True(disposed.Advance());
         var finalReader = new FakeReader { IdentityCallsBeforeLoss = 8 };
         using var finalIdentity = new CollectionReadOperation(finalReader, Catalog(), false, 1, 1, Now);
         Assert.True(finalIdentity.Advance());
@@ -226,8 +223,7 @@ public sealed class CaptureTests
         using var operation = new CollectionReadOperation(new FakeReader { AllUnlocked = true }, catalog, true, 1, 1, Now);
         bool completed = false;
         var maximumSlices = (50001 + 1 + CollectionReadOperation.PhysicalSources.Length + 2047) / 2048 + 1;
-        for (var slice = 0; slice < maximumSlices && !completed; slice++)
-            completed = operation.Advance(2048);
+        for (var slice = 0; slice < maximumSlices && !completed; slice++) completed = operation.Advance(2048);
         Assert.True(completed, "Capture must finish within the known catalog work budget.");
         Assert.Empty(operation.Result!.Unlocks["mounts"].UnlockedIds);
         Assert.Equal(ReasonCode.OutputSizeLimitExceeded, operation.Result.Unlocks["mounts"].Health.ReasonCode);

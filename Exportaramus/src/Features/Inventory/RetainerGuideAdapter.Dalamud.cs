@@ -76,8 +76,7 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
     public string Message => controller.Message + (selectionStatus.Length > 0 ? " — " + selectionStatus : "");
     public void Start()
     {
-        if (!framework.IsInFrameworkUpdateThread)
-            return;
+        if (!framework.IsInFrameworkUpdateThread) return;
         capturedAddon = 0;
         capturedAddonName = string.Empty;
         inventoryCloseRequested = false;
@@ -97,8 +96,7 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
     }
     private void TraceTalkInput(AddonEvent kind, AddonArgs args)
     {
-        if (!Active || selectedRetainer == 0 || tracedEvents >= 16 || args is not AddonReceiveEventArgs input)
-            return;
+        if (!Active || selectedRetainer == 0 || tracedEvents >= 16 || args is not AddonReceiveEventArgs input) return;
         tracedEvents++;
         log.Warning("Retainer Talk input: step={Step}, type={Type}, parameter={Parameter}, attempts={Attempts}",
             controller.Step, input.AtkEventType, input.EventParam, dialogueAttempts);
@@ -111,8 +109,7 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
     }
     public void Update()
     {
-        if (!framework.IsInFrameworkUpdateThread || !Active || Environment.TickCount64 < nextUpdate)
-            return;
+        if (!framework.IsInFrameworkUpdateThread || !Active || Environment.TickCount64 < nextUpdate) return;
         nextUpdate = Environment.TickCount64 + 100;
         try
         {
@@ -135,22 +132,16 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
 
     public bool OpenBell()
     {
-        if (Visible(gui.GetAddonByName<AtkUnitBase>("SelectString", 1)) || InventoryVisible)
-            return false;
+        if (Visible(gui.GetAddonByName<AtkUnitBase>("SelectString", 1)) || InventoryVisible) return false;
         var origin = objects.LocalPlayer?.Position;
-        if (origin is null)
-            return false;
+        if (origin is null) return false;
         var bell = objects.Take(1024).Where(obj => obj.IsValid() && obj.IsTargetable && obj.ObjectKind == ObjectKind.EventObj && bellIds.Contains(obj.BaseId))
             .OrderBy(obj => Vector3.DistanceSquared(origin.Value, obj.Position)).ThenBy(obj => obj.GameObjectId).FirstOrDefault();
-        if (bell is null)
-            return false;
-        if (target.Target?.GameObjectId != bell.GameObjectId)
-            target.Target = bell;
-        if (Vector3.Distance(origin.Value, bell.Position) > 2.5f)
-            return false;
+        if (bell is null) return false;
+        if (target.Target?.GameObjectId != bell.GameObjectId) target.Target = bell;
+        if (Vector3.Distance(origin.Value, bell.Position) > 2.5f) return false;
         var system = TargetSystem.Instance();
-        if (system == null || target.Target?.GameObjectId != bell.GameObjectId || !bell.IsValid() || !bell.IsTargetable)
-            return false;
+        if (system == null || target.Target?.GameObjectId != bell.GameObjectId || !bell.IsValid() || !bell.IsTargetable) return false;
         _ = system->InteractWithObject((FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject*)bell.Address, true);
         return true;
     }
@@ -158,24 +149,19 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
     public bool TryReadRoster(out ImmutableArray<InventoryRetainer> roster)
     {
         roster = [];
-        if (!ListReady)
-            return false;
+        if (!ListReady) return false;
         var manager = RetainerManager.Instance();
-        if (manager == null || !manager->IsReady)
-            return false;
+        if (manager == null || !manager->IsReady) return false;
         var count = manager->GetRetainerCount();
-        if (count > 10)
-            return false;
+        if (count > 10) return false;
         var values = ImmutableArray.CreateBuilder<InventoryRetainer>(count);
         for (uint i = 0; i < count; i++)
         {
             var row = manager->GetRetainerBySortedIndex(i);
-            if (row == null || !row->Available || row->RetainerId == 0 || !InventoryPolicy.ValidName(row->NameString))
-                return false;
+            if (row == null || !row->Available || row->RetainerId == 0 || !InventoryPolicy.ValidName(row->NameString)) return false;
             values.Add(new(row->RetainerId, row->NameString));
         }
-        if (!manager->IsReady || manager != RetainerManager.Instance() || count != manager->GetRetainerCount())
-            return false;
+        if (!manager->IsReady || manager != RetainerManager.Instance() || count != manager->GetRetainerCount()) return false;
         roster = values.ToImmutable();
         return roster.Select(row => row.RetainerId).Distinct().Count() == roster.Length;
     }
@@ -185,19 +171,14 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
         selectionStatus = "Waiting for the Retainer list to be ready.";
         var addon = gui.GetAddonByName<AtkUnitBase>("RetainerList", 1);
         var agent = AgentRetainerList.Instance();
-        if (!Ready(addon) || agent == null || !agent->IsAgentActive() || !TryReadRoster(out var roster))
-            return false;
+        if (!Ready(addon) || agent == null || !agent->IsAgentActive() || !TryReadRoster(out var roster)) return false;
         var index = -1;
-        for (var i = 0; i < roster.Length; i++)
-            if (roster[i].RetainerId == retainerId)
-                index = i;
-        if (index < 0 || roster.Count(row => row.Name == roster[index].Name) != 1)
-            return false;
+        for (var i = 0; i < roster.Length; i++) if (roster[i].RetainerId == retainerId) index = i;
+        if (index < 0 || roster.Count(row => row.Name == roster[index].Name) != 1) return false;
         // Resolve the displayed row independently of undocumented agent count/order fields.
         var list = FindRetainerList(addon, roster[index].Name, out var displayedIndex);
         selectionStatus = "Waiting for an enabled Retainer row with the expected name.";
-        if (list == null || list->GetItemDisabledState(displayedIndex) || !Ready(addon))
-            return false;
+        if (list == null || list->GetItemDisabledState(displayedIndex) || !Ready(addon)) return false;
         list->DispatchItemEvent(displayedIndex, AtkEventType.ListItemClick);
         selectedRetainer = retainerId;
         selectedName = roster[index].Name;
@@ -208,8 +189,7 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
     public bool OpenInventory(ulong retainerId) => ActiveRetainer(retainerId) && SelectMenu(inventoryPrefix, true);
     public bool CaptureInventory(ulong contentId, ulong retainerId)
     {
-        if (!capture.CaptureActiveRetainer(contentId, retainerId))
-            return false;
+        if (!capture.CaptureActiveRetainer(contentId, retainerId)) return false;
         capturedAddonName = "InventoryRetainer";
         var addon = gui.GetAddonByName<AtkUnitBase>(capturedAddonName, 1);
         if (!Ready(addon))
@@ -217,29 +197,24 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
             capturedAddonName = "InventoryRetainerLarge";
             addon = gui.GetAddonByName<AtkUnitBase>(capturedAddonName, 1);
         }
-        if (!Ready(addon))
-            return false;
+        if (!Ready(addon)) return false;
         capturedAddon = (nint)addon;
         inventoryCloseRequested = false;
         return true;
     }
     public bool CloseInventory(ulong retainerId)
     {
-        if (capturedAddon == 0)
-            return false;
+        if (capturedAddon == 0) return false;
         var addon = gui.GetAddonByName<AtkUnitBase>(capturedAddonName, 1);
         if (inventoryCloseRequested)
         {
-            if (InventoryVisible || !RetainerContextCleared())
-                return false;
+            if (InventoryVisible || !RetainerContextCleared()) return false;
             capturedAddon = 0;
             inventoryCloseRequested = false;
             return true;
         }
-        if (!ActiveRetainer(retainerId))
-            return false;
-        if ((nint)addon != capturedAddon || !Ready(addon))
-            return false;
+        if (!ActiveRetainer(retainerId)) return false;
+        if ((nint)addon != capturedAddon || !Ready(addon)) return false;
         var retainer = AgentRetainer.Instance();
         var module = RaptureAtkModule.Instance();
         uint callbackId = addon->ParentId != 0 ? addon->ParentId : addon->Id;
@@ -269,15 +244,12 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
     public bool CloseOverviewAndInventory()
     {
         // Only reached after the last retainer has returned to the overview.
-        if (!RetainerContextCleared())
-            return false;
+        if (!RetainerContextCleared()) return false;
         foreach (var name in new[] { "Inventory", "InventoryLarge", "InventoryExpansion", "RetainerList" })
         {
             var addon = gui.GetAddonByName<AtkUnitBase>(name, 1);
-            if (!Visible(addon))
-                continue;
-            if (Ready(addon))
-                _ = addon->Close(true);
+            if (!Visible(addon)) continue;
+            if (Ready(addon)) _ = addon->Close(true);
             return false;
         }
         return true;
@@ -286,19 +258,16 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
     private bool SelectMenu(string label, bool prefix)
     {
         var addon = gui.GetAddonByName<AddonSelectString>("SelectString", 1);
-        if (!Ready((AtkUnitBase*)addon) || addon->PopupMenu.EntryCount is < 1 or > 64 || addon->PopupMenu.EntryNames == null)
-            return false;
+        if (!Ready((AtkUnitBase*)addon) || addon->PopupMenu.EntryCount is < 1 or > 64 || addon->PopupMenu.EntryNames == null) return false;
         var list = addon->PopupMenu.List;
-        if (list == null || list->ListLength != addon->PopupMenu.EntryCount || !list->IsItemInteractionEnabled)
-            return false;
+        if (list == null || list->ListLength != addon->PopupMenu.EntryCount || !list->IsItemInteractionEnabled) return false;
         var entries = new string[addon->PopupMenu.EntryCount];
         for (var i = 0; i < addon->PopupMenu.EntryCount; i++)
         {
             entries[i] = ReadText(addon->PopupMenu.EntryNames[i]);
         }
         var index = RetainerMenuPolicy.FindUniqueIndex(entries, label, prefix);
-        if (index < 0 || list->GetItemDisabledState(index))
-            return false;
+        if (index < 0 || list->GetItemDisabledState(index)) return false;
         list->DispatchItemEvent(index, AtkEventType.ListItemClick);
         return true;
     }
@@ -306,44 +275,34 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
     private static AtkComponentList* FindRetainerList(AtkUnitBase* addon, string name, out int displayedIndex)
     {
         displayedIndex = -1;
-        if (addon->UldManager.NodeList == null || addon->UldManager.NodeListCount > 2048)
-            return null;
+        if (addon->UldManager.NodeList == null || addon->UldManager.NodeListCount > 2048) return null;
         AtkComponentList* result = null;
         for (var i = 0; i < addon->UldManager.NodeListCount; i++)
         {
             var node = addon->UldManager.NodeList[i];
-            if (node == null)
-                continue;
+            if (node == null) continue;
             var componentNode = node->GetAsAtkComponentNode();
-            if (componentNode == null || componentNode->Component == null)
-                continue;
+            if (componentNode == null || componentNode->Component == null) continue;
             // TreeList inherits AtkComponentList at offset zero in the installed client structs.
             // RetainerList can use this derived control rather than an exact List component.
             var componentType = componentNode->Component->GetComponentType();
-            if (componentType is not (ComponentType.List or ComponentType.TreeList))
-                continue;
+            if (componentType is not (ComponentType.List or ComponentType.TreeList)) continue;
             var list = (AtkComponentList*)componentNode->Component;
-            if (list->ListLength is < 1 or > 32 || !list->IsItemInteractionEnabled)
-                continue;
+            if (list->ListLength is < 1 or > 32 || !list->IsItemInteractionEnabled) continue;
             for (var rowIndex = 0; rowIndex < list->ListLength; rowIndex++)
             {
                 var renderer = list->GetItemRenderer(rowIndex);
-                if (renderer == null || renderer->UldManager.NodeList == null || renderer->UldManager.NodeListCount > 128)
-                    continue;
+                if (renderer == null || renderer->UldManager.NodeList == null || renderer->UldManager.NodeListCount > 128) continue;
                 var named = false;
                 for (var j = 0; j < renderer->UldManager.NodeListCount; j++)
                 {
                     var child = renderer->UldManager.NodeList[j];
-                    if (child == null)
-                        continue;
+                    if (child == null) continue;
                     var text = child->GetAsAtkTextNode();
-                    if (text != null && ReadText(text->NodeText.StringPtr) == name)
-                        named = true;
+                    if (text != null && ReadText(text->NodeText.StringPtr) == name) named = true;
                 }
-                if (!named)
-                    continue;
-                if (result != null)
-                    return null;
+                if (!named) continue;
+                if (result != null) return null;
                 result = list;
                 displayedIndex = rowIndex;
             }
@@ -353,8 +312,7 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
 
     private void AdvanceRetainerDialogue()
     {
-        if (selectedRetainer == 0 || Environment.TickCount64 < nextDialogue)
-            return;
+        if (selectedRetainer == 0 || Environment.TickCount64 < nextDialogue) return;
         var talk = gui.GetAddonByName<AtkUnitBase>("Talk", 1);
         if (!Ready(talk))
         {
@@ -370,11 +328,9 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
         for (var i = 0; i < talk->UldManager.NodeListCount; i++)
         {
             var node = talk->UldManager.NodeList[i];
-            if (node == null)
-                continue;
+            if (node == null) continue;
             var text = node->GetAsAtkTextNode();
-            if (text != null && ReadText(text->NodeText.StringPtr) == selectedName)
-                named = true;
+            if (text != null && ReadText(text->NodeText.StringPtr) == selectedName) named = true;
         }
         if (!named)
         {
@@ -414,11 +370,9 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
     private static bool Visible(AtkUnitBase* addon) => addon != null && addon->IsVisible;
     private static string ReadText(byte* bytes)
     {
-        if (bytes == null)
-            return string.Empty;
+        if (bytes == null) return string.Empty;
         for (var length = 0; length < 1024; length++)
-            if (bytes[length] == 0)
-                return SeString.Parse(new ReadOnlySpan<byte>(bytes, length)).TextValue;
+            if (bytes[length] == 0) return SeString.Parse(new ReadOnlySpan<byte>(bytes, length)).TextValue;
         return string.Empty;
     }
 }

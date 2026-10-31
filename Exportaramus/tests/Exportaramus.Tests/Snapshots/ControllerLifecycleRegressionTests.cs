@@ -42,8 +42,7 @@ public sealed class ControllerLifecycleRegressionTests
         finally
         {
             await FinishWithoutReplacingBodyFailure(controller);
-            if (Directory.Exists(directory))
-                Directory.Delete(directory, true);
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
         }
     }
 
@@ -78,8 +77,7 @@ public sealed class ControllerLifecycleRegressionTests
         {
             files.Release.TrySetResult();
             await FinishWithoutReplacingBodyFailure(controller);
-            if (Directory.Exists(directory))
-                Directory.Delete(directory, true);
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
         }
     }
 

@@ -24,12 +24,10 @@ public static class CollectionDataSerializer
         writer.WriteStartObject("unlocks");
         foreach (var pair in data.State.Unlocks.OrderBy(pair => pair.Key, StringComparer.Ordinal))
         {
-            if (!pair.Value.Health.IsUsable)
-                continue;
+            if (!pair.Value.Health.IsUsable) continue;
             writer.WriteStartObject(pair.Key);
             writer.WriteStartArray("unlockedIds");
-            foreach (var id in pair.Value.UnlockedIds)
-                writer.WriteNumberValue(id);
+            foreach (var id in pair.Value.UnlockedIds) writer.WriteNumberValue(id);
             writer.WriteEndArray();
             writer.WriteEndObject();
         }
@@ -96,16 +94,14 @@ public static class CollectionDataSerializer
                 writer.WriteEndObject();
                 var status = item.Status;
                 var sequence = item.Sequence;
-                if (status.HasValue)
-                    writer.WriteString("status", status.Value.ToString());
+                if (status.HasValue) writer.WriteString("status", status.Value.ToString());
                 if (sequence.HasValue)
                 {
                     writer.WriteStartObject("progress");
                     writer.WriteNumber("sequence", sequence.Value);
                     writer.WriteEndObject();
                 }
-                if (pair.Key == "achievements")
-                    writer.WriteNull("rewardCollected");
+                if (pair.Key == "achievements") writer.WriteNull("rewardCollected");
                 writer.WriteEndObject();
             }
             writer.WriteEndArray();
@@ -118,8 +114,7 @@ public static class CollectionDataSerializer
         var unlockKeys = extended ? CollectionKeys.Unlocks : Exportaramus.ConsumerKit.V1.CollectionDataSemanticValidator.UnlockKeys;
         foreach (var key in unlockKeys.Concat(CollectionKeys.RichOnly).Order(StringComparer.Ordinal))
         {
-            if (data.Collections.ContainsKey(key))
-                continue;
+            if (data.Collections.ContainsKey(key)) continue;
             writer.WriteStartObject(key);
             writer.WriteString("reasonCode", data.SourceHealth[key].ReasonCode.ToString());
             writer.WriteString("message", string.IsNullOrEmpty(data.SourceHealth[key].Reason) ? "Collection data is unavailable." : data.SourceHealth[key].Reason);
@@ -189,8 +184,7 @@ public static class CollectionDataSerializer
         writer.WriteStartObject("currentItemPresence");
         foreach (var pair in data.State.CurrentItemPresence.OrderBy(pair => pair.Key, StringComparer.Ordinal))
         {
-            if (!pair.Value.Health.IsUsable)
-                continue;
+            if (!pair.Value.Health.IsUsable) continue;
             writer.WriteStartObject(pair.Key);
             writer.WriteStartArray("items");
             foreach (var item in pair.Value.Items)

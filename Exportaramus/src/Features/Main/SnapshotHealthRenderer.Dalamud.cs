@@ -45,8 +45,7 @@ internal static class SnapshotHealthRenderer
         var stack = Stack(size.X, state);
         var buttonWidth = Drawing.ButtonWidth("Copy JSON", true);
         ImGui.SetCursorScreenPos(pos + new Vector2(size.X - buttonWidth - 12 * u, (stack ? 66 : 34) * u));
-        if (Drawing.Button("Copy JSON", "##CopyJson", new(buttonWidth, 30 * u), state.CanCopy, state.ReduceMotion, "Copy"))
-            dispatch(MainIntent.CopyJson);
+        if (Drawing.Button("Copy JSON", "##CopyJson", new(buttonWidth, 30 * u), state.CanCopy, state.ReduceMotion, "Copy")) dispatch(MainIntent.CopyJson);
         Drawing.Tooltip(TooltipId.CopyJson);
     }
 }

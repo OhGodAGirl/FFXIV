@@ -22,8 +22,7 @@ public sealed class DiagnosticsTests
     public void MaintainedDiagnosticFixturesPassSchemaRedactionAndFingerprintValidation()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (!File.Exists(Path.Combine(directory.FullName, "project", "Exportaramus.csproj")))
-            directory = directory.Parent!;
+        while (!File.Exists(Path.Combine(directory.FullName, "project", "Exportaramus.csproj"))) directory = directory.Parent!;
         var fixtures = Path.Combine(directory.FullName, "tests", "fixtures", "Diagnostics", "1.1", "fixtures");
         foreach (var file in Directory.EnumerateFiles(Path.Combine(fixtures, "valid"), "*.json"))
             DiagnosticReportSerializer.ValidateWireJson(File.ReadAllText(file));
@@ -42,8 +41,7 @@ public sealed class DiagnosticsTests
         Assert.Equal(Report.Build, snapshot.Build);
         Assert.True(snapshot.GeneratedAtUtc > Report.GeneratedAtUtc);
         Assert.Single(snapshot.Performance);
-        using var cancellation = new CancellationTokenSource();
-        cancellation.Cancel();
+        using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
         await Assert.ThrowsAsync<OperationCanceledException>(() => source.ReadAsync(cancellation.Token));
     }
     [Fact]
@@ -186,15 +184,13 @@ public sealed class DiagnosticsTests
     public void FixedFailureCapacityAndTimingSampleCapacityEvictOldestOnly()
     {
         var measurements = new DiagnosticMeasurements();
-        for (var i = 0; i < 300; i++)
-            measurements.Record("Draw", i, i * 2);
+        for (var i = 0; i < 300; i++) measurements.Record("Draw", i, i * 2);
         var timing = measurements.Snapshot()["Draw"];
         Assert.Equal(256, timing.SampleCount);
         Assert.Equal(299, timing.DurationMilliseconds.Maximum);
         Assert.Equal(598, timing.AllocatedBytes.Maximum);
         Assert.Equal(171, timing.DurationMilliseconds.P50);
-        for (var i = 0; i < 25; i++)
-            measurements.RecordFailure(DiagnosticRedactionPolicy.Failure(Report.GeneratedAtUtc.AddSeconds(i), "Storage", "Write", "WriteFailed", null));
+        for (var i = 0; i < 25; i++) measurements.RecordFailure(DiagnosticRedactionPolicy.Failure(Report.GeneratedAtUtc.AddSeconds(i), "Storage", "Write", "WriteFailed", null));
         Assert.Equal(20, measurements.Failures.Length);
         Assert.Equal(Report.GeneratedAtUtc.AddSeconds(5), measurements.Failures[0].OccurredAtUtc);
         measurements.CountReport(true, false);
@@ -227,8 +223,7 @@ public sealed class DiagnosticsTests
         }
         measurements.Record("invalid/name", 1, 1);
         Assert.Empty(measurements.Snapshot());
-        for (var i = 0; i < 65; i++)
-            measurements.Record("Metric" + i, 0, 3600000);
+        for (var i = 0; i < 65; i++) measurements.Record("Metric" + i, 0, 3600000);
         Assert.Equal(64, measurements.Snapshot().Count);
         Assert.Equal(new DiagnosticPercentiles(0, 0, 0), DiagnosticMeasurements.Percentiles([]));
         Assert.Equal(new DiagnosticPercentiles(1, 2, 2), DiagnosticMeasurements.Percentiles([2, 1]));

@@ -46,8 +46,7 @@ public sealed class DiagnosticMeasurementBoundaryTests
         measurements.Record("Capture", duration, bytes);
 
         Assert.Equal(unrepresentable, measurements.HasUnrepresentableSamples);
-        if (unrepresentable)
-            Assert.Empty(measurements.Snapshot());
+        if (unrepresentable) Assert.Empty(measurements.Snapshot());
         else
         {
             var metric = Assert.Single(measurements.Snapshot()).Value;

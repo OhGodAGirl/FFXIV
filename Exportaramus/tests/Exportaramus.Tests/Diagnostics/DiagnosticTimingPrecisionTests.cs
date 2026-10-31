@@ -19,8 +19,7 @@ public sealed class DiagnosticTimingPrecisionTests(ITestOutputHelper output)
         {
             while (requested.WaitOne())
             {
-                if (Volatile.Read(ref stopping))
-                    return;
+                if (Volatile.Read(ref stopping)) return;
                 payload = new byte[payloadSize];
                 completed.Set();
             }
@@ -57,8 +56,7 @@ public sealed class DiagnosticTimingPrecisionTests(ITestOutputHelper output)
     public void PreciseBackgroundCounterPairFitsWithinTheReportConstructionBudget()
     {
         var measurements = new DiagnosticMeasurements();
-        for (var i = 0; i < 10; i++)
-            _ = new DiagnosticTiming(measurements, "AsyncCapture", true).AllocatedBytes;
+        for (var i = 0; i < 10; i++) _ = new DiagnosticTiming(measurements, "AsyncCapture", true).AllocatedBytes;
         var durations = new double[100];
 
         for (var i = 0; i < durations.Length; i++)

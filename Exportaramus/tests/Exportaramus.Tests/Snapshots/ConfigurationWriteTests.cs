@@ -28,8 +28,7 @@ public sealed class ConfigurationWriteTests
             var next = ConfigurationFile.Serialize(false, "Exportaramus.Bootstrap.Configuration, Exportaramus");
             await ConfigurationFile.WriteAsync(path, next);
             Assert.Equal(next, await File.ReadAllTextAsync(path));
-            using var cancelled = new CancellationTokenSource();
-            cancelled.Cancel();
+            using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => ConfigurationFile.WriteAsync(path, first, cancelled.Token));
             Assert.Equal(next, await File.ReadAllTextAsync(path));
             Assert.Empty(Directory.GetFiles(folder, "*.tmp"));
@@ -70,8 +69,7 @@ public sealed class ConfigurationWriteTests
         finally
         {
             active.TrySetResult();
-            if (update is not null)
-                await update.WaitAsync(TimeSpan.FromSeconds(2));
+            if (update is not null) await update.WaitAsync(TimeSpan.FromSeconds(2));
             await coordinator.DisposeAsync();
         }
     }

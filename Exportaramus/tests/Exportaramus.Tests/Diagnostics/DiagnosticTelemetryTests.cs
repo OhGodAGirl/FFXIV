@@ -44,8 +44,7 @@ public sealed class DiagnosticTelemetryTests
         Assert.Equal("IOException", failure.ExceptionType);
         Assert.DoesNotContain("private", failure.Message);
         Assert.Equal(measurements.Snapshot()["Writer"].DurationMilliseconds.Maximum, measurements.LatestMilliseconds["Writer"]);
-        using (new DiagnosticTiming(measurements, "AsyncUpperBound", true))
-            _ = new byte[64];
+        using (new DiagnosticTiming(measurements, "AsyncUpperBound", true)) _ = new byte[64];
         Assert.Contains("AsyncUpperBound", measurements.LatestMilliseconds.Keys);
         measurements.Record("TooLarge", 1, 3600001);
         Assert.True(measurements.HasUnrepresentableSamples);
@@ -221,8 +220,7 @@ public sealed class DiagnosticTelemetryTests
         // The fixture has one catalog row per collection and seven physical sources.
         // 128 steps allow every row/source transition even with a one-row slice.
         var completed = false;
-        for (var step = 0; step < 128 && !completed; step++)
-            completed = capture.Advance(rowBudget);
+        for (var step = 0; step < 128 && !completed; step++) completed = capture.Advance(rowBudget);
         Assert.True(completed, "Fixture capture must finish within 128 bounded steps.");
     }
     private sealed class Reader : ICollectionReader

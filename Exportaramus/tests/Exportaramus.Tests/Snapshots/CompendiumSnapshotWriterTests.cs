@@ -42,13 +42,11 @@ public sealed class CompendiumSnapshotWriterTests
                 Assert.Equal(now, result.LatestHistoryUtc);
                 Assert.Equal(System.Text.Encoding.UTF8.GetByteCount(expanded), result.HistoryBytes);
             }
-            else
-                Assert.Null(result.LatestHistoryUtc);
+            else Assert.Null(result.LatestHistoryUtc);
         }
         finally
         {
-            if (Directory.Exists(root))
-                Directory.Delete(root, true);
+            if (Directory.Exists(root)) Directory.Delete(root, true);
         }
     }
 
@@ -76,8 +74,7 @@ public sealed class CompendiumSnapshotWriterTests
         }
         finally
         {
-            if (Directory.Exists(root))
-                Directory.Delete(root, true);
+            if (Directory.Exists(root)) Directory.Delete(root, true);
         }
     }
 }

@@ -53,8 +53,7 @@ public sealed class CollectionDataIpcClient : IAsyncDisposable
 
     public void Changed(string payload)
     {
-        if (!Bounded(payload))
-            return;
+        if (!Bounded(payload)) return;
         lock (sync)
         {
             if (!disposed)
@@ -63,17 +62,13 @@ public sealed class CollectionDataIpcClient : IAsyncDisposable
     }
     public void Withdrawn(string payload)
     {
-        if (!Bounded(payload))
-            return;
+        if (!Bounded(payload)) return;
         lock (sync)
         {
-            if (disposed)
-                return;
+            if (disposed) return;
             var queuedWithdrawals = withdrawals.Count;
-            if (queuedWithdrawals == 16)
-                withdrawalOverflow = true;
-            else
-                withdrawals.Enqueue(payload);
+            if (queuedWithdrawals == 16) withdrawalOverflow = true;
+            else withdrawals.Enqueue(payload);
         }
     }
 
@@ -81,8 +76,7 @@ public sealed class CollectionDataIpcClient : IAsyncDisposable
     {
         lock (sync)
         {
-            if (disposed)
-                return Task.CompletedTask;
+            if (disposed) return Task.CompletedTask;
             if (expectedContentId != activeContentId)
             {
                 expectedContentId = activeContentId;
@@ -94,8 +88,7 @@ public sealed class CollectionDataIpcClient : IAsyncDisposable
             if (work is { IsCompleted: false })
                 return work;
             ProcessWithdrawal();
-            if (!pending && now < nextDiscovery)
-                return Task.CompletedTask;
+            if (!pending && now < nextDiscovery) return Task.CompletedTask;
             pending = false;
             nextDiscovery = now.AddSeconds(5);
             var scope = generation;
@@ -109,10 +102,8 @@ public sealed class CollectionDataIpcClient : IAsyncDisposable
     {
         lock (sync)
         {
-            if (disposed)
-                return "ProviderStopping";
-            if (transport is null || contentId != expectedContentId || view.Availability != CollectionDataAvailability.Ready)
-                return "Unavailable";
+            if (disposed) return "ProviderStopping";
+            if (transport is null || contentId != expectedContentId || view.Availability != CollectionDataAvailability.Ready) return "Unavailable";
             try
             {
                 var result = transport.Report(contentId, itemId, reporter);
@@ -129,8 +120,7 @@ public sealed class CollectionDataIpcClient : IAsyncDisposable
             ICollectionDataTransport binding;
             lock (sync)
             {
-                if (disposed || scope != generation)
-                    return;
+                if (disposed || scope != generation) return;
                 transport ??= factory(Changed, Withdrawn);
                 binding = transport;
                 view = view with
@@ -165,11 +155,9 @@ public sealed class CollectionDataIpcClient : IAsyncDisposable
             var hash = Convert.ToHexStringLower(SHA256.HashData(new UTF8Encoding(false, true).GetBytes(payload)));
             lock (sync)
             {
-                if (disposed || scope != generation)
-                    return;
+                if (disposed || scope != generation) return;
                 ProcessWithdrawal(value.ProviderSessionId, value.ContentId);
-                if (scope != generation)
-                    return;
+                if (scope != generation) return;
                 if (acceptedSession == value.ProviderSessionId && acceptedContentId == value.ContentId)
                 {
                     if (value.Revision < acceptedRevision)
@@ -223,8 +211,7 @@ public sealed class CollectionDataIpcClient : IAsyncDisposable
     {
         lock (sync)
         {
-            if (disposed || scope != generation)
-                return;
+            if (disposed || scope != generation) return;
             view = CollectionDataClientView.Empty(code is CollectionDataValidationCode.NoPayload or CollectionDataValidationCode.ProviderUnavailable ? CollectionDataAvailability.Unavailable : CollectionDataAvailability.Rejected, code);
             if (code == CollectionDataValidationCode.ProviderUnavailable)
             {
@@ -261,8 +248,7 @@ public sealed class CollectionDataIpcClient : IAsyncDisposable
         ICollectionDataTransport? binding;
         lock (sync)
         {
-            if (disposed)
-                return;
+            if (disposed) return;
             disposed = true;
             generation++;
             pending = false;

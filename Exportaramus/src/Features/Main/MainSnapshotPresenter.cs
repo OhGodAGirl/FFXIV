@@ -12,20 +12,15 @@ public static class MainSnapshotPresenter
     private static bool IsComplete(AcceptedSnapshotBundle bundle)
     {
         // Capture success and reader coverage are separate. Omitted/closed windows do not undo a successful read.
-        if (bundle.Data.State.CaptureType == CaptureType.Restored || bundle.Data.Collections.Count == 0)
-            return false;
+        if (bundle.Data.State.CaptureType == CaptureType.Restored || bundle.Data.Collections.Count == 0) return false;
         foreach (var definition in MainPresenter.Collections)
         {
-            if (!bundle.Data.SourceHealth.TryGetValue(definition.Key, out var health))
-                continue;
+            if (!bundle.Data.SourceHealth.TryGetValue(definition.Key, out var health)) continue;
             if (health.ReasonCode is ReasonCode.CaptureFailed or ReasonCode.MappingValidationFailed or ReasonCode.QuantityOverflow or ReasonCode.OutputSizeLimitExceeded)
                 return false;
-            if (health.CapabilityState == CapabilityState.UnavailablePendingValidation || !health.IsUsable)
-                continue;
-            if (!bundle.Data.Collections.ContainsKey(definition.Key) || health.CapabilityState == CapabilityState.Degraded)
-                return false;
-            if (health.SourceStatus == SourceStatus.Stale && !RetainedClosedWindow(health))
-                return false;
+            if (health.CapabilityState == CapabilityState.UnavailablePendingValidation || !health.IsUsable) continue;
+            if (!bundle.Data.Collections.ContainsKey(definition.Key) || health.CapabilityState == CapabilityState.Degraded) return false;
+            if (health.SourceStatus == SourceStatus.Stale && !RetainedClosedWindow(health)) return false;
         }
         return true;
     }

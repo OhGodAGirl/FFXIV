@@ -150,8 +150,7 @@ public sealed class CollectionDataMutationRegressionTests
         {
             var completed = false;
             var maximumSteps = 2 + 2 + CollectionReadOperation.PhysicalSources.Length + 1;
-            for (var step = 0; step < maximumSteps && !completed; step++)
-                completed = operation.Advance(1);
+            for (var step = 0; step < maximumSteps && !completed; step++) completed = operation.Advance(1);
             Assert.True(completed);
             Assert.Equal(new[] { "facewear", "mounts" }, reader.Queries);
         }

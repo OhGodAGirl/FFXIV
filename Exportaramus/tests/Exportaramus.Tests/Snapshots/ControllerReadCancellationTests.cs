@@ -54,8 +54,7 @@ public sealed class ControllerReadCancellationTests
         {
             controller.Dispose();
             await controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
-            if (Directory.Exists(root))
-                Directory.Delete(root, true);
+            if (Directory.Exists(root)) Directory.Delete(root, true);
         }
     }
 
@@ -66,8 +65,7 @@ public sealed class ControllerReadCancellationTests
         var clock = Stopwatch.StartNew();
         while (!done())
         {
-            if (clock.Elapsed > TimeSpan.FromSeconds(5))
-                Assert.Fail("Controller did not reach the expected public state: " + controller.Error);
+            if (clock.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Controller did not reach the expected public state: " + controller.Error);
             Update(controller, now);
             await Task.Delay(1);
         }

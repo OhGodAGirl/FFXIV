@@ -14,8 +14,7 @@ public sealed class ConsumerKitV12Tests
         get
         {
             var directory = new DirectoryInfo(AppContext.BaseDirectory);
-            while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "project", "Exportaramus.csproj")))
-                directory = directory.Parent;
+            while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "project", "Exportaramus.csproj"))) directory = directory.Parent;
             return Path.Combine(directory?.FullName ?? throw new InvalidOperationException(), "tests", "fixtures", "Contracts", "1.2");
         }
     }

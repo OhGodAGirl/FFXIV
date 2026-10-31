@@ -117,10 +117,7 @@ public sealed class CatalogPreparationTests
         preparation.Dispose();
         Assert.True(token.IsCancellationRequested);
         Assert.False(preparation.ShutdownTask.IsCompleted);
-        if (canceled)
-            completion.SetCanceled();
-        else
-            completion.SetException(new IOException());
+        if (canceled) completion.SetCanceled(); else completion.SetException(new IOException());
         await preparation.ShutdownTask;
     }
 

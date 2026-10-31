@@ -15,8 +15,7 @@ internal sealed class DeferredWorker
     public void CompleteNext()
     {
         var job = jobs.Dequeue();
-        if (job.Token.IsCancellationRequested)
-            job.Completion.SetCanceled(job.Token);
+        if (job.Token.IsCancellationRequested) job.Completion.SetCanceled(job.Token);
         else
         {
             try

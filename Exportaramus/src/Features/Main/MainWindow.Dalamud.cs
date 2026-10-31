@@ -95,21 +95,17 @@ public sealed class MainWindow : Window
             Drawing.Heading("GUIDED CAPTURE", headingFont);
             Drawing.Wrapped(top + Drawing.Offset(12, 36), width - 24 * unit, state.Guided.Prompt, VisualTokens.Primary);
             ImGui.SetCursorScreenPos(top + new Vector2(12 * unit, height - 42 * unit));
-            if (!promptWasOpen)
-                ImGui.SetKeyboardFocusHere();
-            if (Drawing.Button("Continue", "##GuidedContinue", new(120 * unit, 32 * unit), true, state.ReduceMotion))
-                dispatch(MainIntent.ContinueGuided);
+            if (!promptWasOpen) ImGui.SetKeyboardFocusHere();
+            if (Drawing.Button("Continue", "##GuidedContinue", new(120 * unit, 32 * unit), true, state.ReduceMotion)) dispatch(MainIntent.ContinueGuided);
             Drawing.Tooltip(TooltipId.Continue);
             if (state.Guided.CanSavePartial)
             {
                 ImGui.SameLine();
-                if (Drawing.Button("Save Partial", "##GuidedSavePartial", new(120 * unit, 32 * unit), true, state.ReduceMotion))
-                    dispatch(MainIntent.SavePartial);
+                if (Drawing.Button("Save Partial", "##GuidedSavePartial", new(120 * unit, 32 * unit), true, state.ReduceMotion)) dispatch(MainIntent.SavePartial);
                 Drawing.Tooltip(TooltipId.SavePartial);
             }
             ImGui.SameLine();
-            if (Drawing.Button("Cancel", "##GuidedCancel", new(100 * unit, 32 * unit), true, state.ReduceMotion, cancel: true))
-                dispatch(MainIntent.CancelGuided);
+            if (Drawing.Button("Cancel", "##GuidedCancel", new(100 * unit, 32 * unit), true, state.ReduceMotion, cancel: true)) dispatch(MainIntent.CancelGuided);
             Drawing.Tooltip(TooltipId.Cancel);
             top.Y += height + 8 * unit;
         }
@@ -119,8 +115,7 @@ public sealed class MainWindow : Window
             Drawing.Wrapped(top, width, state.RetainersMessage, VisualTokens.Primary);
             top.Y += Drawing.WrappedHeight(state.RetainersMessage, width) + 12 * unit;
         }
-        if (state.HasSnapshot)
-            SnapshotSummaryRenderer.Draw(top, width, layout.CollectionColumns, state, headingFont);
+        if (state.HasSnapshot) SnapshotSummaryRenderer.Draw(top, width, layout.CollectionColumns, state, headingFont);
         else
         {
             ImGui.SetCursorScreenPos(top);

@@ -48,8 +48,7 @@ public sealed class AtomicStorageContractBoundaryTests(ITestOutputHelper output)
         await Assert.ThrowsAsync<EncoderFallbackException>(() => storage.CommitAsync(1, inputs[0], inputs[1], inputs[2], true, true, Now.AddSeconds(1), default));
 
         Assert.Equal(before.Keys.Order(StringComparer.Ordinal), Directory.GetFiles(root, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal));
-        foreach (var file in before)
-            Assert.Equal(file.Value, await File.ReadAllBytesAsync(file.Key));
+        foreach (var file in before) Assert.Equal(file.Value, await File.ReadAllBytesAsync(file.Key));
         Assert.Equal("Failed", storage.Diagnostic.LastWrite.Status);
         Assert.Equal("None", storage.RecoveryState);
     }
@@ -108,8 +107,7 @@ public sealed class AtomicStorageContractBoundaryTests(ITestOutputHelper output)
         });
         owner.Start();
         Assert.True(owner.Join(TimeSpan.FromSeconds(12)), "The bounded storage owner did not stop.");
-        if (failure is not null)
-            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+        if (failure is not null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
         Assert.Equal(writing ? "{\"revision\":2}" : "{}", File.ReadAllText(storage.CharacterPath(1)));
         output.WriteLine($"Known retained allocation on another thread: {payloadBytes}; actual {(writing ? "FileWrite" : "FileRead")} sample: {allocated} bytes.");
         GC.KeepAlive(payload);

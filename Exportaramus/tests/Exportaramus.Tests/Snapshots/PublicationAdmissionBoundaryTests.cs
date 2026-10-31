@@ -39,8 +39,7 @@ public sealed class PublicationAdmissionBoundaryTests : IDisposable
 
         Assert.True(operation.IsFaulted);
         Assert.Equal(prior.Keys.Order(), Directory.GetFiles(root, "*", SearchOption.AllDirectories).Order());
-        foreach (var file in prior)
-            Assert.Equal(file.Value, await File.ReadAllBytesAsync(file.Key));
+        foreach (var file in prior) Assert.Equal(file.Value, await File.ReadAllBytesAsync(file.Key));
         Assert.Equal(accepted.CompactJsonV12, await storage.ReadAsync(123, false, default));
     }
 

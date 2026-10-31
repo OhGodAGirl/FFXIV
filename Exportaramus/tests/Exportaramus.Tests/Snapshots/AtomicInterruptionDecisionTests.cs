@@ -26,19 +26,15 @@ public sealed class AtomicInterruptionDecisionTests : IDisposable
             },
             Deleting = path =>
             {
-                if (!fail || !path.EndsWith(".tmp", StringComparison.Ordinal))
-                    return;
-                if (unauthorized)
-                    throw new UnauthorizedAccessException("Controlled temporary cleanup failure.");
+                if (!fail || !path.EndsWith(".tmp", StringComparison.Ordinal)) return;
+                if (unauthorized) throw new UnauthorizedAccessException("Controlled temporary cleanup failure.");
                 throw new IOException("Controlled temporary cleanup failure.");
             }
         };
         var storage = new AtomicSnapshotStorage(root, operations);
         var rejected = storage.CommitAsync(1, "{\"new\":true}", "{\"newRich\":true}", null, false, false, SnapshotFixture.Now, default);
-        if (unauthorized)
-            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => rejected);
-        else
-            await Assert.ThrowsAsync<IOException>(() => rejected);
+        if (unauthorized) await Assert.ThrowsAsync<UnauthorizedAccessException>(() => rejected);
+        else await Assert.ThrowsAsync<IOException>(() => rejected);
         Assert.Equal("Pending", storage.RecoveryState);
         Assert.NotEmpty(Directory.GetFiles(root, "*.tmp", SearchOption.AllDirectories));
         Assert.True(File.Exists(Path.Combine(root, "state", "write-recovery.json")));
@@ -67,8 +63,7 @@ public sealed class AtomicInterruptionDecisionTests : IDisposable
         var openings = 0;
         void Capture()
         {
-            if (captured)
-                return;
+            if (captured) return;
             captured = true;
             foreach (var source in Directory.GetFiles(root, "*", SearchOption.AllDirectories))
             {
@@ -81,11 +76,9 @@ public sealed class AtomicInterruptionDecisionTests : IDisposable
         {
             Opening = (_, mode) =>
             {
-                if (mode != FileMode.CreateNew)
-                    return;
+                if (mode != FileMode.CreateNew) return;
                 openings++;
-                if ((phase == "BeforeFirstPayload" && openings == 1) || (phase == "BeforeSecondPayload" && openings == 2))
-                    Capture();
+                if ((phase == "BeforeFirstPayload" && openings == 1) || (phase == "BeforeSecondPayload" && openings == 2)) Capture();
             },
             Installed = destination => { if (phase == "AfterFirstInstall" && destination == original.CharacterPath(1)) Capture(); }
         };
@@ -116,10 +109,8 @@ public sealed class AtomicInterruptionDecisionTests : IDisposable
         {
             Deleting = path =>
             {
-                if (!fail || !path.EndsWith(".bak", StringComparison.Ordinal))
-                    return;
-                if (unauthorized)
-                    throw new UnauthorizedAccessException("Controlled backup cleanup failure.");
+                if (!fail || !path.EndsWith(".bak", StringComparison.Ordinal)) return;
+                if (unauthorized) throw new UnauthorizedAccessException("Controlled backup cleanup failure.");
                 throw new IOException("Controlled backup cleanup failure.");
             }
         };

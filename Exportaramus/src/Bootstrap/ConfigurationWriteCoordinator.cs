@@ -22,15 +22,13 @@ public sealed class ConfigurationWriteCoordinator(Func<bool, Task> write) : IAsy
             completed.GetAwaiter().GetResult();
         }
         var value = pending.GetValueOrDefault();
-        if (!pending.HasValue)
-            return;
+        if (!pending.HasValue) return;
         pending = null;
         worker = write(value);
     }
     public async ValueTask DisposeAsync()
     {
-        if (disposed)
-            return;
+        if (disposed) return;
         disposed = true;
         try
         {
