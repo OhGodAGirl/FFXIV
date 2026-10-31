@@ -1,0 +1,79 @@
+name: Exportaramus mutation testing
+run-name: Exportaramus mutation testing (${{ inputs.mode }}) — ${{ github.ref_name }}
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Full campaign or setup verification without mutants
+        type: choice
+        required: true
+        default: full
+        options: [full, setup-only]
+permissions:
+  contents: read
+concurrency:
+  group: exportaramus-mutation-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  mutation:
+    name: Mutation testing (${{ inputs.mode }})
+    runs-on: windows-2025
+    timeout-minutes: 330
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: Exportaramus
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      DOTNET_NOLOGO: '1'
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      MUTATION_MODE: ${{ inputs.mode }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: Exportaramus/global.json
+          dotnet-version: '8.0.x'
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Prepare dependencies and pinned mutation runner
+        run: |
+          ./tools/Get-BuildDependencies.ps1 -Destination "$env:RUNNER_TEMP/dalamud"
+          "DALAMUD_HOME=$env:DALAMUD_HOME" >> $env:GITHUB_ENV
+          python -m pip install -r tools/contract-python-requirements.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Python dependency installation failed.' }
+          dotnet tool install dotnet-stryker --version 4.16.0 --tool-path "$env:RUNNER_TEMP/stryker"
+          if ($LASTEXITCODE -ne 0) { throw 'Stryker installation failed.' }
+          $runners = @(Get-ChildItem "$env:RUNNER_TEMP/stryker" -Recurse -Force -Filter Stryker.CLI.dll)
+          if ($runners.Count -ne 1) { throw 'Expected one pinned Stryker runner.' }
+          "STRYKER_RUNNER=$($runners[0].FullName)" >> $env:GITHUB_ENV
+      - name: Verify the ordinary baseline
+        timeout-minutes: 20
+        run: ./tests/run-quality-gates.ps1 -CheckFormatting -OutputDirectory "$env:RUNNER_TEMP/exportaramus-mutation/baseline"
+      - name: Run mutation tooling regression tests
+        run: |
+          foreach ($test in @('test-mutation-orchestration.py','test-individual-mutation.py','test-multi-stage-review.py','test-repair-bridge.py','test-qualification-workflows.py','test-mutation-runner.py')) {
+            python "tools/$test"
+            if ($LASTEXITCODE -ne 0) { throw "$test failed." }
+          }
+      - name: Run the selected mutation mode
+        timeout-minutes: 300
+        run: |
+          ./tests/test-mutation.ps1 -Runner $env:STRYKER_RUNNER -Concurrency 2 -RunDirectory "$env:RUNNER_TEMP/exportaramus-mutation/campaign" -SetupOnly:($env:MUTATION_MODE -eq 'setup-only')
+      - name: Preserve mutation reports and logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: exportaramus-mutation-${{ inputs.mode }}
+          path: |
+            ${{ runner.temp }}/exportaramus-mutation/**/*.json
+            ${{ runner.temp }}/exportaramus-mutation/**/*.html
+            ${{ runner.temp }}/exportaramus-mutation/**/*.log
+            ${{ runner.temp }}/exportaramus-mutation/**/*.trx
+            ${{ runner.temp }}/exportaramus-mutation/**/coverage.cobertura.xml
+          if-no-files-found: warn
+          retention-days: 7

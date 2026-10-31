@@ -121,7 +121,29 @@ The scripts resolve `dotnet` and `python` from PATH by default. Pass `-Dotnet` a
 
 The portable checks cover locked restore, compilation, package inspection, provider and ConsumerKit behavior, strict coverage, canonical schemas and fixtures, checksums, and the source scope. The full API reference remains in the Backend Specification. Mutation qualification and supervised in-game acceptance are separate from these offline checks; a passing portable run does not establish either.
 
-The [mutation policy](tests/mutation-policy.json) records the pinned tool version, required score, and instrumentation evidence. The supplied Stryker configuration targets the provider's Testable project; separately referenced contract projects, the consumer client, and the example reader need their own instrumentation before claiming complete mutation qualification. [Performance budgets](tests/performance-budget.json) distinguish offline measurements from performance that requires a supervised game session.
+The [mutation policy](tests/mutation-policy.json) requires a score of 100 and complete instrumentation evidence. The mutation runner covers the provider, separately referenced 1.1 contracts, the canonical 1.2 ConsumerKit, and the example inventory reader. [Performance budgets](tests/performance-budget.json) distinguish offline measurements from performance that requires a supervised game session.
+
+### Mutation Testing In GitHub Actions
+
+Open **Actions → Exportaramus mutation testing → Run workflow** in this repository. Choose the branch and a mode:
+
+- **full** (default): run the ordinary offline checks, then all four mutation targets with Stryker 4.16.0 and two workers. The mutation step is limited to five hours; the job has an additional thirty minutes for setup and saving results.
+- **setup-only**: verify dependencies, source scope, Stryker startup, and all three distinct baseline test suites without executing mutants. A successful setup-only run is not a passing mutation campaign.
+
+Runs are manual; pushes and pull requests continue to use the ordinary verification workflow. One mutation run per branch executes at a time. Reports, logs, source hashes, and baseline results are uploaded as an artifact for seven days, including when the campaign fails. A timeout, incomplete instrumentation, or unresolved mutation result fails the campaign; the workflow does not waive survivors or change the required score. Timed-out runs may have only partial reports. Download evidence needed for a review before the artifact expires.
+
+The workflow installs the SDK from `global.json`, .NET 8 for Stryker, the pinned Python dependencies, and the checksum-verified Dalamud build dependencies. It does not publish or install a plugin.
+
+To run locally after completing the verification setup above:
+
+```powershell
+dotnet tool install dotnet-stryker --version 4.16.0 --tool-path .tools/stryker
+$runner = @(Get-ChildItem .tools/stryker -Recurse -Force -Filter Stryker.CLI.dll)
+if ($runner.Count -ne 1) { throw 'Expected one pinned Stryker runner.' }
+./tests/test-mutation.ps1 -Runner $runner[0].FullName -Python .venv/Scripts/python.exe
+```
+
+Install .NET 8 alongside the project SDK if required by Stryker. Add `-SetupOnly` to verify the setup without running mutants. Results default to an ignored, unique directory under `development/mutation`; pass `-RunDirectory` to choose another new directory.
 
 To check package reproduction with the same source, SDK, configuration, and dependency bytes:
 
