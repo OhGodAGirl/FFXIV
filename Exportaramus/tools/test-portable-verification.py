@@ -71,11 +71,11 @@ $a = New-VerificationRun -ProjectRoot $PSScriptRoot -Name sample
 $b = New-VerificationRun -ProjectRoot $PSScriptRoot -Name sample
 @{tool=$tool;first=$a;second=$b} | ConvertTo-Json'''))
         # Assert.
-        self.assertEqual(Path(result['tool']), tool)
+        self.assertEqual(Path(result['tool']).resolve(), tool.resolve())
         self.assertNotEqual(result['first'], result['second'])
         for key in ['first', 'second']:
             self.assertTrue(Path(result[key]).is_dir())
-            self.assertTrue(Path(result[key]).is_relative_to(self.root / 'development/verification'))
+            self.assertTrue(Path(result[key]).resolve().is_relative_to((self.root / 'development/verification').resolve()))
 
     def test_skips_and_zero_test_runs_cannot_pass(self):
         # Arrange, Act, Assert.

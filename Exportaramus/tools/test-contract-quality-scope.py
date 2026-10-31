@@ -22,7 +22,7 @@ class QualityScopeTests(unittest.TestCase):
     def test_transitive_contract_references_are_included_once_even_with_a_cycle(self):
         # Arrange: provider -> contracts -> shared -> contracts.
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
+            root = Path(temporary).resolve()
             for name, dependency in [('provider', 'contracts'), ('contracts', 'shared'), ('shared', 'contracts')]:
                 (root / f'{name}.cs').write_text(f'public class {name} {{ }}', encoding='utf-8')
                 (root / f'{name}.csproj').write_text(
@@ -38,7 +38,7 @@ class QualityScopeTests(unittest.TestCase):
     def test_explicit_remove_and_native_exclude_are_honored(self):
         # Arrange: native bindings and a removed experiment must not enter a pure coverage claim.
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
+            root = Path(temporary).resolve()
             for name in ['Policy.cs', 'Native.Dalamud.cs', 'Experiment.cs']:
                 (root / name).write_text('class Fixture {}', encoding='utf-8')
             project = root / 'source.csproj'
