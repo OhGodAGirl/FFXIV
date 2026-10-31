@@ -82,7 +82,15 @@ public sealed class RecoveryLimitDecisionTests : IDisposable
         {
             var destination = $"snapshots/characters/{id}/collection-data.json";
             var temporary = destination + "." + new string('a', 32) + ".tmp";
-            return new { destination, temporary, backup = temporary + ".bak", existed = false, delete = false, applied = false };
+            return new
+            {
+                destination,
+                temporary,
+                backup = temporary + ".bak",
+                existed = false,
+                delete = false,
+                applied = false
+            };
         }).ToArray(),
     });
 
@@ -91,5 +99,9 @@ public sealed class RecoveryLimitDecisionTests : IDisposable
         Directory.CreateDirectory(Path.Combine(root, "state"));
         await File.WriteAllTextAsync(Path.Combine(root, "state", "write-recovery.json"), json, new UTF8Encoding(false));
     }
-    public void Dispose() { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    public void Dispose()
+    {
+        if (Directory.Exists(root))
+            Directory.Delete(root, true);
+    }
 }

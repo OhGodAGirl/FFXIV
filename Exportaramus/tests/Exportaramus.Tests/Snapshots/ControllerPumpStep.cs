@@ -27,5 +27,8 @@ internal static class ControllerPumpStep
         controller.Error,
         controller.ActiveContentId,
         controller.DiagnosticTasks.Single(task => task.Name == "CollectionOutput").State,
-        controller.DiagnosticOperation(0) with { ElapsedMilliseconds = 0 });
+        controller.DiagnosticOperation(0) with
+        {
+            ElapsedMilliseconds = 0
+        });
 }

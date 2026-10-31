@@ -7,8 +7,13 @@ public sealed class StorageReadinessTests
     [Fact]
     public void ExactStorageKeysResetOnIdentityValidationAndReadinessLossBeforeReopening()
     {
-        var policy = new StorageReadinessPolicy(); var observed = new List<string>();
-        (bool, ulong) Ready(string key) { observed.Add(key); return (true, 1); }
+        var policy = new StorageReadinessPolicy();
+        var observed = new List<string>();
+        (bool, ulong) Ready(string key)
+        {
+            observed.Add(key);
+            return (true, 1);
+        }
         Assert.True(policy.Poll(true, _ => true, Ready, 0, false));
         Assert.Equal(new[] { "armoire", "chocoboSaddlebag", "glamourDresser", "premiumSaddlebag" }, observed.Order());
         Assert.False(policy.Poll(false, _ => true, Ready, 1, false));
@@ -24,7 +29,11 @@ public sealed class StorageReadinessTests
     {
         var policy = new StorageReadinessPolicy();
         var forbiddenReads = 0;
-        (bool, ulong) MustNotRead(string _) { forbiddenReads++; throw new IOException(); }
+        (bool, ulong) MustNotRead(string _)
+        {
+            forbiddenReads++;
+            throw new IOException();
+        }
         Assert.False(policy.Poll(false, _ => true, MustNotRead, 0, false));
         Assert.False(policy.Poll(true, _ => false, MustNotRead, 0, false));
         var reads = 0;

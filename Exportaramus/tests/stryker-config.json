@@ -1,0 +1,15 @@
+{
+  "stryker-config": {
+    "project": "Exportaramus.Testable.csproj",
+    "test-projects": ["../Exportaramus.Tests/Exportaramus.Tests.csproj"],
+    "configuration": "Release",
+    "mutate": ["**/*"],
+    "mutation-level": "Standard",
+    "concurrency": 4,
+    "coverage-analysis": "perTestInIsolation",
+    "disable-mix-mutants": true,
+    "additional-timeout": 30000,
+    "reporters": ["Json", "Html", "Progress"],
+    "thresholds": { "high": 100, "low": 100, "break": 100 }
+  }
+}

@@ -42,7 +42,8 @@ public sealed class ControllerLifecycleRegressionTests
         finally
         {
             await FinishWithoutReplacingBodyFailure(controller);
-            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, true);
         }
     }
 
@@ -77,7 +78,8 @@ public sealed class ControllerLifecycleRegressionTests
         {
             files.Release.TrySetResult();
             await FinishWithoutReplacingBodyFailure(controller);
-            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, true);
         }
     }
 
@@ -88,21 +90,40 @@ public sealed class ControllerLifecycleRegressionTests
     {
         // A mutation that breaks Dispose must remain attributed to the body assertion.
         // The held read is released by its caller before reaching this cleanup helper.
-        try { controller.Dispose(); } catch (Exception) { }
-        try { await controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5)); } catch (Exception) { }
+        try
+        {
+            controller.Dispose();
+        }
+        catch (Exception) { }
+        try
+        {
+            await controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        catch (Exception) { }
     }
 
     private sealed class Port : ISnapshotCapturePort
     {
         public CollectionCatalog? Catalog { get; } = SnapshotFixture.Create().Catalog;
-        public int CatalogPreparations { get; private set; }
-        public bool PrepareCatalog() { CatalogPreparations++; return true; }
+        public int CatalogPreparations
+        {
+            get; private set;
+        }
+        public bool PrepareCatalog()
+        {
+            CatalogPreparations++;
+            return true;
+        }
         public void Begin(bool full, ulong contentId, long generation, DateTimeOffset now) =>
             throw new InvalidOperationException("No native capture is requested by this fixture.");
         public bool Advance() => throw new InvalidOperationException("No native capture is pending.");
         public RawCaptureBatch? TakeResult() => null;
-        public void ResetSession() { }
-        public void Dispose() { }
+        public void ResetSession()
+        {
+        }
+        public void Dispose()
+        {
+        }
     }
 
     private sealed class HeldRead : IAtomicFileOperations

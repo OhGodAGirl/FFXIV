@@ -17,7 +17,10 @@ public sealed class RetainerInventoryChangeObserverTests
         var initial = Snapshot(1, Retainer);
         Assert.True(observer.Observe(initial));
         Assert.False(observer.Observe(initial));
-        Assert.True(observer.Observe(initial with { ContentId = 2 }));
+        Assert.True(observer.Observe(initial with
+        {
+            ContentId = 2
+        }));
         Assert.True(observer.Observe(null));
         Assert.False(observer.Observe(null));
         Assert.True(observer.Observe(initial));
@@ -28,8 +31,16 @@ public sealed class RetainerInventoryChangeObserverTests
     {
         var observer = new RetainerInventoryChangeObserver();
         observer.Observe(Snapshot(1, Retainer));
-        Assert.False(observer.Observe(Snapshot(2, Retainer with { Name = "Renamed", AttemptedAtUtc = Now.AddMinutes(1) },
-            Retainer with { Key = new(InventoryLocationKind.Inventory), Items = [new(200, 50, 0)] })));
+        Assert.False(observer.Observe(Snapshot(2, Retainer with
+        {
+            Name = "Renamed",
+            AttemptedAtUtc = Now.AddMinutes(1)
+        },
+            Retainer with
+            {
+                Key = new(InventoryLocationKind.Inventory),
+                Items = [new(200, 50, 0)]
+            })));
         Assert.False(observer.Observe(Snapshot(3, Retainer)));
     }
 
@@ -50,7 +61,10 @@ public sealed class RetainerInventoryChangeObserverTests
             var observer = new RetainerInventoryChangeObserver();
             observer.Observe(Snapshot(1, Retainer));
             Assert.True(observer.Observe(changed));
-            Assert.False(observer.Observe(changed with { Revision = 3 }));
+            Assert.False(observer.Observe(changed with
+            {
+                Revision = 3
+            }));
         }
     }
 }

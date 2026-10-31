@@ -8,11 +8,20 @@ public sealed class GuidedAdapterPolicyTests
     [Fact]
     public void DevelopmentCompatibilityDoesNotClaimSupervisedValidation()
     {
-        var compatible = Valid with { Supervised = false };
+        var compatible = Valid with
+        {
+            Supervised = false
+        };
         Assert.True(GuidedAdapterPolicy.IsCompatible(compatible));
         Assert.False(GuidedAdapterPolicy.IsValidated(compatible));
-        Assert.False(GuidedAdapterPolicy.IsCompatible(compatible with { CurrentVersion = "changed" }));
-        Assert.False(GuidedAdapterPolicy.IsCompatible(compatible with { ArmoireIdCount = 0 }));
+        Assert.False(GuidedAdapterPolicy.IsCompatible(compatible with
+        {
+            CurrentVersion = "changed"
+        }));
+        Assert.False(GuidedAdapterPolicy.IsCompatible(compatible with
+        {
+            ArmoireIdCount = 0
+        }));
     }
     [Fact]
     public void EveryValidationRecordRequirementMustHoldBeforeNativeObservationOrInput()

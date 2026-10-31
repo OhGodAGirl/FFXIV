@@ -15,7 +15,9 @@ public sealed class MutationSemanticEvidenceTests
     private static void RemovePresence(JsonObject root, string source, uint id)
     {
         var items = root["currentItemPresence"]![source]!["items"]!.AsArray();
-        for (var i = items.Count - 1; i >= 0; i--) if (items[i]!["itemId"]!.GetValue<uint>() == id) items.RemoveAt(i);
+        for (var i = items.Count - 1; i >= 0; i--)
+            if (items[i]!["itemId"]!.GetValue<uint>() == id)
+                items.RemoveAt(i);
     }
 
     [Theory]
@@ -32,7 +34,8 @@ public sealed class MutationSemanticEvidenceTests
     [InlineData("rewards", "[]")]
     public void QuestDynamicExportRejectsEachIndependentlySchemaValidStaticField(string property, string value)
     {
-        var root = Rich(); Item(root, "quests")[property] = JsonNode.Parse(value);
+        var root = Rich();
+        Item(root, "quests")[property] = JsonNode.Parse(value);
         using var document = JsonDocument.Parse(root.ToJsonString());
         Assert.True(ContractSchemaRegistry.Default.Validate(document.RootElement, "exportaramus-snapshot.schema.json"));
         Assert.Equal(CollectionDataValidationCode.SemanticValidationFailed, CollectionDataSemanticValidator.ValidateRich(root.ToJsonString()).Code);
@@ -41,12 +44,18 @@ public sealed class MutationSemanticEvidenceTests
     [Fact]
     public void OutfitNeedsAllConstituentsButOnePositiveSourceSufficesForEachConstituent()
     {
-        var root = Rich(); RemovePresence(root, "armoire", 2642); Facts(root, "outfits").Add(Presence("armoire", 2642, "Absent"));
+        var root = Rich();
+        RemovePresence(root, "armoire", 2642);
+        Facts(root, "outfits").Add(Presence("armoire", 2642, "Absent"));
         Assert.True(CollectionDataSemanticValidator.ValidateRich(root.ToJsonString()).Success);
-        foreach (var source in CollectionDataSemanticValidator.PresenceKeys) RemovePresence(root, source, 3747);
+        foreach (var source in CollectionDataSemanticValidator.PresenceKeys)
+            RemovePresence(root, source, 3747);
         var facts = Facts(root, "outfits");
-        for (var i = facts.Count - 1; i >= 0; i--) if (facts[i]!["subjectId"]!.GetValue<uint>() == 3747) facts.RemoveAt(i);
-        foreach (var source in CollectionDataSemanticValidator.PresenceKeys) facts.Add(Presence(source, 3747, "Absent"));
+        for (var i = facts.Count - 1; i >= 0; i--)
+            if (facts[i]!["subjectId"]!.GetValue<uint>() == 3747)
+                facts.RemoveAt(i);
+        foreach (var source in CollectionDataSemanticValidator.PresenceKeys)
+            facts.Add(Presence(source, 3747, "Absent"));
         Item(root, "outfits")["owned"] = false;
         Assert.True(CollectionDataSemanticValidator.ValidateRich(root.ToJsonString()).Success);
         Item(root, "outfits")["owned"] = true;
@@ -56,7 +65,9 @@ public sealed class MutationSemanticEvidenceTests
     [Fact]
     public void RelicPhysicalPresenceRemainsPositiveAlongsideAnAbsentLinkedAchievement()
     {
-        var root = Rich(); Item(root, "achievements")["owned"] = false; Facts(root, "achievements")[0]!["state"] = "Absent";
+        var root = Rich();
+        Item(root, "achievements")["owned"] = false;
+        Facts(root, "achievements")[0]!["state"] = "Absent";
         Facts(root, "relics").Single(fact => fact!["sourceKey"]!.GetValue<string>() == "achievements")!["state"] = "Absent";
         Assert.Contains(Facts(root, "relics"), fact => fact!["dataType"]!.GetValue<string>() == "CurrentItemPresence" && fact["state"]!.GetValue<string>() == "Present");
         Assert.True(CollectionDataSemanticValidator.ValidateRich(root.ToJsonString()).Success);

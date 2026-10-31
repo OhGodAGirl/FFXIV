@@ -25,7 +25,10 @@ public sealed class FingerprintCanonicalVectorTests
         var data = SnapshotFixture.Create();
         data = CollectionDataAssembler.Assemble(data.Catalog, data.State with
         {
-            ReportedEvidence = data.State.ReportedEvidence with { Items = [new(100, "Consumer", SnapshotFixture.Now)] }
+            ReportedEvidence = data.State.ReportedEvidence with
+            {
+                Items = [new(100, "Consumer", SnapshotFixture.Now)]
+            }
         });
         const string presence = """
             {"capabilityState":"Supported","completeness":"Complete","ids":[],"items":[{"id":100,"quantity":2},{"id":1675,"quantity":2},{"id":2642,"quantity":2},{"id":2965,"quantity":2},{"id":3747,"quantity":2}],"reasonCode":"None","sourceStatus":"Fresh"}
@@ -53,7 +56,8 @@ public sealed class FingerprintCanonicalVectorTests
     {
         var sources = CollectionFingerprint.Sources(SnapshotFixture.Create());
         var sorted = new SortedDictionary<string, string>(StringComparer.Ordinal);
-        foreach (var pair in sources) sorted.Add(pair.Key, pair.Value);
+        foreach (var pair in sources)
+            sorted.Add(pair.Key, pair.Value);
         var expected = Hash(JsonSerializer.Serialize(sorted));
         Assert.Equal(expected, CollectionFingerprint.Combined(sources));
         Assert.Equal(expected, CollectionFingerprint.Combined(sources.Reverse().ToImmutableDictionary()));

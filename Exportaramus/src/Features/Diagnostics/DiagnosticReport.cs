@@ -5,8 +5,11 @@ namespace Exportaramus.Features.Diagnostics;
 public sealed record DiagnosticReport
 {
     public string Format { get; init; } = "exportaramus-diagnostics";
-    public string SchemaVersion { get; init; } = "1.0";
-    public DateTime GeneratedAtUtc { get; init; }
+    public string SchemaVersion { get; init; } = "1.1";
+    public DateTime GeneratedAtUtc
+    {
+        get; init;
+    }
     public string ReportStatus { get; init; } = "Ready";
     public string FingerprintSha256 { get; init; } = "";
     public ImmutableArray<string> IncompleteSections { get; init; } = [];

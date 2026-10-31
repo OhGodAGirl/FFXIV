@@ -28,5 +28,9 @@ public sealed class PublicationTelemetryTests : IDisposable
         Assert.False(sink.HasUnrepresentableSamples);
     }
 
-    public void Dispose() { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    public void Dispose()
+    {
+        if (Directory.Exists(root))
+            Directory.Delete(root, true);
+    }
 }

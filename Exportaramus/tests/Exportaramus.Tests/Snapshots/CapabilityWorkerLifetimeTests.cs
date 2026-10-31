@@ -58,22 +58,41 @@ public sealed class CapabilityWorkerLifetimeTests
         private readonly string root = Path.Combine(AppContext.BaseDirectory, "capability-worker", Guid.NewGuid().ToString("N"));
         private readonly TaskCompletionSource<string> completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private Func<string>? work;
-        public int QueueCount { get; private set; }
-        public SnapshotController Controller { get; }
+        public int QueueCount
+        {
+            get; private set;
+        }
+        public SnapshotController Controller
+        {
+            get;
+        }
         public Fixture()
         {
             Controller = new(new Port(), new(root), null, prepareCapabilities: factory =>
             {
-                QueueCount++; work = factory; return completion.Task;
+                QueueCount++;
+                work = factory;
+                return completion.Task;
             });
         }
         public void Update() => Controller.Update(0, "", true, false, 0, SnapshotFixture.Now);
-        public void Complete() { if (!completion.Task.IsCompleted) completion.SetResult(work!()); }
-        public void Fail() { if (!completion.Task.IsCompleted) completion.SetException(new IOException("Controlled owned worker failure.")); }
+        public void Complete()
+        {
+            if (!completion.Task.IsCompleted)
+                completion.SetResult(work!());
+        }
+        public void Fail()
+        {
+            if (!completion.Task.IsCompleted)
+                completion.SetException(new IOException("Controlled owned worker failure."));
+        }
         public void Dispose()
         {
-            Complete(); Controller.Dispose(); Controller.ShutdownTask.GetAwaiter().GetResult();
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            Complete();
+            Controller.Dispose();
+            Controller.ShutdownTask.GetAwaiter().GetResult();
+            if (Directory.Exists(root))
+                Directory.Delete(root, true);
         }
     }
     private sealed class Port : ISnapshotCapturePort
@@ -83,8 +102,12 @@ public sealed class CapabilityWorkerLifetimeTests
         public void Begin(bool full, ulong id, long generation, DateTimeOffset now) => throw new InvalidOperationException();
         public bool Advance() => throw new InvalidOperationException();
         public RawCaptureBatch? TakeResult() => throw new InvalidOperationException();
-        public void ResetSession() { }
-        public void Dispose() { }
+        public void ResetSession()
+        {
+        }
+        public void Dispose()
+        {
+        }
     }
 }
 

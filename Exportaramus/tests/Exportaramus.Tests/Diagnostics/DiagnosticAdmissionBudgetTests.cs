@@ -14,8 +14,14 @@ public sealed class DiagnosticAdmissionBudgetTests(ITestOutputHelper output)
     {
         var failure = DiagnosticRedactionPolicy.Failure(new(2026, 9, 7, 0, 0, 0, DateTimeKind.Utc), "Storage", "Write", "WriteFailed", null)
             with
-        { Frames = Enumerable.Repeat(new DiagnosticFrame(new('A', 64), new('B', 64), new('C', 64), "Source.cs", 1), 32).ToImmutableArray() };
-        return new() { GeneratedAtUtc = new(2026, 9, 7, 0, 0, 0, DateTimeKind.Utc), RecentFailures = Enumerable.Repeat(failure, 20).ToImmutableArray() };
+        {
+            Frames = Enumerable.Repeat(new DiagnosticFrame(new('A', 64), new('B', 64), new('C', 64), "Source.cs", 1), 32).ToImmutableArray()
+        };
+        return new()
+        {
+            GeneratedAtUtc = new(2026, 9, 7, 0, 0, 0, DateTimeKind.Utc),
+            RecentFailures = Enumerable.Repeat(failure, 20).ToImmutableArray()
+        };
     }
 
     [Theory]
@@ -74,7 +80,10 @@ public sealed class DiagnosticAdmissionBudgetTests(ITestOutputHelper output)
 
     private static DiagnosticReport WithFrame(DiagnosticReport report, DiagnosticFrame frame) => report with
     {
-        RecentFailures = report.RecentFailures.SetItem(0, report.RecentFailures[0] with { Frames = report.RecentFailures[0].Frames.SetItem(0, frame) })
+        RecentFailures = report.RecentFailures.SetItem(0, report.RecentFailures[0] with
+        {
+            Frames = report.RecentFailures[0].Frames.SetItem(0, frame)
+        })
     };
 
     private void AssertAdmissionBudget(DiagnosticReport invalid)
@@ -84,7 +93,10 @@ public sealed class DiagnosticAdmissionBudgetTests(ITestOutputHelper output)
         Assert.Throws<InvalidDataException>(() => DiagnosticReportSerializer.Prepare(invalid));
         Exception? error = null;
         var before = GC.GetAllocatedBytesForCurrentThread();
-        try { DiagnosticReportSerializer.Prepare(invalid); }
+        try
+        {
+            DiagnosticReportSerializer.Prepare(invalid);
+        }
         catch (Exception exception) { error = exception; }
         var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
         Assert.IsType<InvalidDataException>(error);

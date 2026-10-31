@@ -16,7 +16,8 @@ public sealed class DresserSemanticBoundaryTests
     public void StandaloneSemanticEntryPointRejectsMalformedPhysicalEvidenceEvenBeforeSchemaBinding()
     {
         var valid = Rich();
-        using (var document = JsonDocument.Parse(valid.ToJsonString())) Assert.True(CollectionDataSemanticValidator.ValidateRich(document.RootElement));
+        using (var document = JsonDocument.Parse(valid.ToJsonString()))
+            Assert.True(CollectionDataSemanticValidator.ValidateRich(document.RootElement));
         foreach (var edit in new Action<JsonObject>[]
         {
             n => n["currentItemPresence"]!["glamourDresser"]!["dresserEntries"] = new JsonObject(),
@@ -32,7 +33,8 @@ public sealed class DresserSemanticBoundaryTests
             n => { Entry(n)["outfitId"] = 100; Entry(n)["components"]![0]!["itemId"] = 0; },
         })
         {
-            var root = valid.DeepClone().AsObject(); edit(root);
+            var root = valid.DeepClone().AsObject();
+            edit(root);
             using var document = JsonDocument.Parse(root.ToJsonString());
             Assert.False(CollectionDataSemanticValidator.ValidateRich(document.RootElement));
         }

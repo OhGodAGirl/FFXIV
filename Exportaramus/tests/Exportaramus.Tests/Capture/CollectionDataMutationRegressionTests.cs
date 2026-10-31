@@ -16,7 +16,13 @@ public sealed class CollectionDataMutationRegressionTests
     public void InvalidCompactAdmissionStopsBeforeAnyDownstreamPreparationMetrics()
     {
         var data = SnapshotFixture.Create();
-        data = data with { State = data.State with { ContentId = 0 } };
+        data = data with
+        {
+            State = data.State with
+            {
+                ContentId = 0
+            }
+        };
         var measurements = new Exportaramus.Features.Diagnostics.DiagnosticMeasurements();
         var publisher = new CollectionDataPublisher(new Exportaramus.Features.Snapshots.AtomicSnapshotStorage(
             Path.Combine(AppContext.BaseDirectory, "invalid-compact-admission-unused")), null, measurements);
@@ -65,7 +71,11 @@ public sealed class CollectionDataMutationRegressionTests
     {
         foreach (var pair in state.CurrentItemPresence)
         {
-            if (pair.Key != "glamourDresser") { Assert.Null(pair.Value.DresserEntries); continue; }
+            if (pair.Key != "glamourDresser")
+            {
+                Assert.Null(pair.Value.DresserEntries);
+                continue;
+            }
             var entry = Assert.Single(pair.Value.DresserEntries!.Value);
             Assert.Equal(100u, entry.OutfitId);
             Assert.Equal(1_000_100u, entry.RawItemId);
@@ -80,7 +90,10 @@ public sealed class CollectionDataMutationRegressionTests
         var data = SnapshotFixture.Create();
         var dresser = DresserCapturePolicy.Complete([DresserCapturePolicy.Entry(7, 1_000_100, data.Catalog.KnownItemIds,
             [0, 0, 2642, 0, 0, 0, 0, 0, 0, 0, 0], [false, false, true, false, false, false, false, false, false, false, false])], 1, SnapshotFixture.Now);
-        return CollectionDataAssembler.Assemble(data.Catalog, data.State with { CurrentItemPresence = data.State.CurrentItemPresence.SetItem("glamourDresser", dresser) });
+        return CollectionDataAssembler.Assemble(data.Catalog, data.State with
+        {
+            CurrentItemPresence = data.State.CurrentItemPresence.SetItem("glamourDresser", dresser)
+        });
     }
 
     [Fact]
@@ -106,7 +119,13 @@ public sealed class CollectionDataMutationRegressionTests
     {
         var data = SnapshotFixture.Create();
         var legacy = CollectionDataSerializer.Compact(data, 1);
-        var changed = data with { SourceHealth = data.SourceHealth.SetItem("facewear", data.SourceHealth["facewear"] with { CaptureGeneration = 99 }) };
+        var changed = data with
+        {
+            SourceHealth = data.SourceHealth.SetItem("facewear", data.SourceHealth["facewear"] with
+            {
+                CaptureGeneration = 99
+            })
+        };
         using var before = JsonDocument.Parse(legacy);
         using var after = JsonDocument.Parse(CollectionDataSerializer.Compact(changed, 1));
         Assert.Equal(before.RootElement.GetProperty("consistency").GetString(), after.RootElement.GetProperty("consistency").GetString());
@@ -131,7 +150,8 @@ public sealed class CollectionDataMutationRegressionTests
         {
             var completed = false;
             var maximumSteps = 2 + 2 + CollectionReadOperation.PhysicalSources.Length + 1;
-            for (var step = 0; step < maximumSteps && !completed; step++) completed = operation.Advance(1);
+            for (var step = 0; step < maximumSteps && !completed; step++)
+                completed = operation.Advance(1);
             Assert.True(completed);
             Assert.Equal(new[] { "facewear", "mounts" }, reader.Queries);
         }
@@ -147,9 +167,17 @@ public sealed class CollectionDataMutationRegressionTests
     {
         public int IdentityChecks;
         public List<string> Queries { get; } = [];
-        public bool IdentityMatches(ulong id) { IdentityChecks++; return id == 123; }
+        public bool IdentityMatches(ulong id)
+        {
+            IdentityChecks++;
+            return id == 123;
+        }
         public bool IsAvailable(string key, string version) => true;
-        public bool ReadUnlock(string key, CatalogItem row) { Queries.Add(key); return false; }
+        public bool ReadUnlock(string key, CatalogItem row)
+        {
+            Queries.Add(key);
+            return false;
+        }
         public QuestState ReadQuest(uint id, bool complete) => throw new InvalidOperationException();
         public CurrentItemPresenceState ReadPresence(string source, CollectionCatalog catalog, ulong id, long generation, DateTimeOffset now) => CaptureReadPolicy.Presence([], false, true, generation, now);
     }

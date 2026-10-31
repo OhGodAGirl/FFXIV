@@ -33,7 +33,8 @@ public static class InventoryQuery
     }, Json);
     public static string Item(InventorySnapshot? snapshot, uint itemId)
     {
-        if (itemId == 0) return "{\"schemaVersion\":\"1.0\",\"error\":\"InvalidItemId\"}";
+        if (itemId == 0)
+            return "{\"schemaVersion\":\"1.0\",\"error\":\"InvalidItemId\"}";
         var locations = snapshot?.Locations.Where(location => location.HasObservation).ToArray() ?? [];
         var matches = locations.SelectMany(location => location.Items.Where(item => item.ItemId == itemId).Select(item => new
         {

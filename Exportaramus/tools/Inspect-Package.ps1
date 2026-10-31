@@ -1,6 +1,10 @@
-param([string]$OutputDirectory = "$PSScriptRoot/../project/bin/Release")
+param(
+    [string]$OutputDirectory = "$PSScriptRoot/../project/bin/Release",
+    [string]$EvidenceDirectory = "$PSScriptRoot/../development/docs"
+)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
+if (![IO.Path]::IsPathRooted($OutputDirectory)) { $OutputDirectory = Join-Path $projectRoot $OutputDirectory }
 $output = [IO.Path]::GetFullPath($OutputDirectory)
 [xml]$project = Get-Content -LiteralPath "$projectRoot/project/Exportaramus.csproj"
 $version = [string]$project.Project.PropertyGroup.Version
@@ -9,17 +13,21 @@ $manifest = Get-Content -LiteralPath "$output/Exportaramus.json" -Raw | ConvertF
 if (@($manifest.Tags | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }).Count -eq 0) { throw 'Plugin manifest must include search tags.' }
 if ($assembly.Name -ne 'Exportaramus' -or $assembly.Version.ToString() -ne $version -or $manifest.InternalName -ne 'Exportaramus' -or $manifest.Name -ne 'Exportaramus' -or $manifest.AssemblyVersion -ne $version -or $manifest.DalamudApiLevel -ne 15) { throw 'Assembly/manifest/project identity mismatch.' }
 if ($manifest.IconUrl -ne "https://raw.githubusercontent.com/OhGodAGirl/FFXIV/main/Exportaramus/images/icon.png") { throw "Packaged manifest must include the public plugin icon URL." }
-$assemblyStream = [IO.File]::OpenRead("$output/Exportaramus.dll")
-$pe = [System.Reflection.PortableExecutable.PEReader]::new($assemblyStream)
-try {
-    $metadata = [System.Reflection.Metadata.PEReaderExtensions]::GetMetadataReader($pe)
-    foreach ($handle in $metadata.TypeDefinitions) {
-        $type = $metadata.GetTypeDefinition($handle)
-        $name = $metadata.GetString($type.Name); $ns = $metadata.GetString($type.Namespace)
-        if ($name -in @('CollectionDataIpcClient','CollectionDataGateBindings') -or $ns -like '*Reference*' -or $ns -like '*Tests*' -or $ns -like '*Wardrobe*') { throw "Reference consumer or test type ships: $ns.$name" }
+foreach ($runtimeName in @('Exportaramus','Exportaramus.ConsumerKit.V1_1','Exportaramus.ConsumerKit.V1_2')) {
+    $runtimePath = Join-Path $output ($runtimeName + '.dll')
+    if ([Reflection.AssemblyName]::GetAssemblyName($runtimePath).Name -cne $runtimeName) { throw "Runtime assembly identity differs: $runtimeName" }
+    $assemblyStream = [IO.File]::OpenRead($runtimePath)
+    $pe = [System.Reflection.PortableExecutable.PEReader]::new($assemblyStream)
+    try {
+        $metadata = [System.Reflection.Metadata.PEReaderExtensions]::GetMetadataReader($pe)
+        foreach ($handle in $metadata.TypeDefinitions) {
+            $type = $metadata.GetTypeDefinition($handle)
+            $name = $metadata.GetString($type.Name); $ns = $metadata.GetString($type.Namespace)
+            if ($name -in @('CollectionDataIpcClient','CollectionDataGateBindings') -or $ns -like '*Reference*' -or $ns -like '*Tests*' -or $ns -like '*Wardrobe*') { throw "Reference consumer or test type ships in ${runtimeName}: $ns.$name" }
+        }
     }
+    finally { $pe.Dispose(); $assemblyStream.Dispose() }
 }
-finally { $pe.Dispose(); $assemblyStream.Dispose() }
 $zipPath = Join-Path $output 'Exportaramus/latest.zip'
 $zip = [IO.Compression.ZipFile]::OpenRead($zipPath)
 try {
@@ -36,7 +44,8 @@ try {
     }
 }
 finally { $zip.Dispose() }
-$evidenceDirectory = Join-Path $projectRoot 'development/docs'
+if (![IO.Path]::IsPathRooted($EvidenceDirectory)) { $EvidenceDirectory = Join-Path $projectRoot $EvidenceDirectory }
+$evidenceDirectory = [IO.Path]::GetFullPath($EvidenceDirectory)
 [void][IO.Directory]::CreateDirectory($evidenceDirectory)
 $result = [ordered]@{ status='Passed'; product='Exportaramus'; version=$version; apiLevel=15; package=$zipPath; packageSha256=(Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant(); files=@($files); runtimeReferencesExcluded=$true; sourceAndPrivateEvidenceExcluded=$true }
 $result | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath "$evidenceDirectory/package-inspection.json" -Encoding utf8

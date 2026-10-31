@@ -15,7 +15,10 @@ public sealed class QuestPublicationTests
         var fixture = SnapshotFixture.Create();
         var state = fixture.State with
         {
-            Unlocks = fixture.State.Unlocks.SetItem("quests", fixture.State.Unlocks["quests"] with { UnlockedIds = completed ? [1u] : [] }),
+            Unlocks = fixture.State.Unlocks.SetItem("quests", fixture.State.Unlocks["quests"] with
+            {
+                UnlockedIds = completed ? [1u] : []
+            }),
             Quests = active ? [new(1, QuestStatus.InProgress, 7)] : []
         };
         var data = CollectionDataAssembler.Assemble(fixture.Catalog, state);
@@ -40,7 +43,11 @@ public sealed class QuestPublicationTests
         {
             Unlocks = fixture.State.Unlocks.SetItem("mounts", source with
             {
-                Health = source.Health with { SourceStatus = SourceStatus.Unavailable, Reason = reason }
+                Health = source.Health with
+                {
+                    SourceStatus = SourceStatus.Unavailable,
+                    Reason = reason
+                }
             })
         };
         var data = CollectionDataAssembler.Assemble(fixture.Catalog, state);

@@ -1,10 +1,10 @@
 // Regression parity with Contracts/ConsumerContractTests.cs, targeting the independently pinned 1.2 assembly.
-using ProductCollectTests = Exportaramus.Tests.Contracts.ProductCollectTests;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Exportaramus.ConsumerKit.V1_2;
 using Exportaramus.Features.CollectionData.Publication;
 using Exportaramus.Tests.Snapshots;
+using ProductCollectTests = Exportaramus.Tests.Contracts.ProductCollectTests;
 
 namespace Exportaramus.Tests.ContractsV12;
 
@@ -12,10 +12,21 @@ public sealed class ConsumerContractTests
 {
     internal static string Root
     {
-        get { var folder = new DirectoryInfo(AppContext.BaseDirectory); while (folder is not null && !File.Exists(Path.Combine(folder.FullName, "project", "Exportaramus.csproj"))) folder = folder.Parent; return folder?.FullName ?? throw new InvalidOperationException(); }
+        get
+        {
+            var folder = new DirectoryInfo(AppContext.BaseDirectory);
+            while (folder is not null && !File.Exists(Path.Combine(folder.FullName, "project", "Exportaramus.csproj")))
+                folder = folder.Parent;
+            return folder?.FullName ?? throw new InvalidOperationException();
+        }
     }
     internal static string Fixture(string name) => V12FixtureAdapter.Adapt(File.ReadAllText(Path.Combine(Root, "tests", "fixtures", "Contracts", "1.0", "fixtures", name.Contains("-invalid-", StringComparison.Ordinal) ? "invalid" : "valid", name)), name);
-    internal static string Edit(string payload, Action<JsonObject> edit) { var root = JsonNode.Parse(payload)!.AsObject(); edit(root); return root.ToJsonString(); }
+    internal static string Edit(string payload, Action<JsonObject> edit)
+    {
+        var root = JsonNode.Parse(payload)!.AsObject();
+        edit(root);
+        return root.ToJsonString();
+    }
 
     [Theory]
     [InlineData("compact-valid-full.json")]
@@ -25,7 +36,8 @@ public sealed class ConsumerContractTests
     public void AcceptsValidCompactFixtures(string file)
     {
         var result = CollectionDataSemanticValidator.ValidateSnapshot(Fixture(file), "12345678901234567");
-        Assert.True(result.Success, result.Code.ToString()); Assert.Equal("1.2", result.Value!.SchemaVersion);
+        Assert.True(result.Success, result.Code.ToString());
+        Assert.Equal("1.2", result.Value!.SchemaVersion);
     }
 
     [Theory]
@@ -46,13 +58,15 @@ public sealed class ConsumerContractTests
     [InlineData("compendium-invalid-partial-included-collection.json", false)]
     public void RichFixturesHaveExpectedAcceptance(string file, bool accepted)
     {
-        var result = CollectionDataSemanticValidator.ValidateRich(Fixture(file)); Assert.Equal(accepted, result.Success);
+        var result = CollectionDataSemanticValidator.ValidateRich(Fixture(file));
+        Assert.Equal(accepted, result.Success);
     }
 
     [Fact]
     public void CapabilitiesAndNoticesValidatePinnedHashAndExactContract()
     {
-        var caps = Fixture("capabilities-valid.json"); Assert.True(CollectionDataSemanticValidator.ValidateCapabilities(caps).Success);
+        var caps = Fixture("capabilities-valid.json");
+        Assert.True(CollectionDataSemanticValidator.ValidateCapabilities(caps).Success);
         Assert.Equal(CollectionDataValidationCode.SchemaHashMismatch, CollectionDataSemanticValidator.ValidateCapabilities(Edit(caps, n => n["collectionDataSchema"]!["sha256"] = new string('0', 64))).Code);
         Assert.False(CollectionDataSemanticValidator.ValidateCapabilities(Edit(caps, n => n["limits"]!["globalReportRate"]!["burst"] = 21)).Success);
         Assert.True(CollectionDataSemanticValidator.ValidateChanged(Fixture("snapshot-changed-valid.json")).Success);
@@ -71,7 +85,9 @@ public sealed class ConsumerContractTests
     public void WholeDocumentLimitsAreMeasuredInUtf8Bytes(int limit)
     {
         var exact = "{\"x\":\"" + new string('a', limit - 8) + "\"}";
-        var result = CollectionDataSemanticValidator.ParseDocument(exact, limit, false); Assert.True(result.Success); result.Value!.Dispose();
+        var result = CollectionDataSemanticValidator.ParseDocument(exact, limit, false);
+        Assert.True(result.Success);
+        result.Value!.Dispose();
         Assert.Equal(CollectionDataValidationCode.PayloadTooLarge, CollectionDataSemanticValidator.ParseDocument(exact + " ", limit, false).Code);
     }
 
@@ -90,10 +106,12 @@ public sealed class ConsumerContractTests
     {
         Assert.Equal(CollectionDataValidationCode.InvalidJson, CollectionDataSemanticValidator.ParseDocument("\ud800", 4096, true).Code);
         Assert.Equal(CollectionDataValidationCode.InvalidJson, CollectionDataSemanticValidator.ParseDocument(new string('[', 65) + new string(']', 65), 4096, true).Code);
-        var random = new Random(621); var original = Fixture("compact-valid-full.json");
+        var random = new Random(621);
+        var original = Fixture("compact-valid-full.json");
         for (var i = 0; i < 100; i++)
         {
-            var index = random.Next(original.Length); var payload = original[..index] + "\0" + original[index..];
+            var index = random.Next(original.Length);
+            var payload = original[..index] + "\0" + original[index..];
             Assert.False(CollectionDataSemanticValidator.ValidateSnapshot(payload, "12345678901234567").Success);
         }
     }
@@ -115,7 +133,8 @@ public sealed class ConsumerContractTests
             n => n["currentItemPresence"]!["inventory"]!["items"]![0]!["quantity"] = 4294967296L,
             n => n["reportedOwnership"]!["items"]![0]!["reporter"] = " consumer ",
             n => n["reportedOwnership"]!["items"]![0]!["reporter"] = new string('\u00e9', 33),
-        }) Assert.False(CollectionDataSemanticValidator.ValidateSnapshot(Edit(payload, mutate), "12345678901234567").Success);
+        })
+            Assert.False(CollectionDataSemanticValidator.ValidateSnapshot(Edit(payload, mutate), "12345678901234567").Success);
     }
 
     [Fact]
@@ -145,7 +164,8 @@ public sealed class ConsumerContractTests
         foreach (var (payload, limit, validate) in cases)
         {
             var exact = payload + new string(' ', limit - System.Text.Encoding.UTF8.GetByteCount(payload));
-            Assert.True(validate(exact)); Assert.False(validate(exact + " "));
+            Assert.True(validate(exact));
+            Assert.False(validate(exact + " "));
         }
     }
 
@@ -179,7 +199,8 @@ public sealed class ConsumerContractTests
             n => n["collections"]!["achievements"]!["items"]![0]!["rewardCollected"] = true,
             n => n["omittedCollections"]!["mounts"] = new JsonObject { ["reasonCode"] = "CaptureFailed", ["message"] = "Must not also be included." },
             n => n["collections"]!["armoires"]!["items"]![0]!["ownershipEvidence"]!["facts"]![0]!["sourceKey"] = "inventory",
-        }) Assert.False(CollectionDataSemanticValidator.ValidateRich(Edit(rich, edit)).Success);
+        })
+            Assert.False(CollectionDataSemanticValidator.ValidateRich(Edit(rich, edit)).Success);
     }
 
     [Fact]
@@ -198,11 +219,17 @@ public sealed class ConsumerContractTests
             var original = JsonNode.Parse(payload)!;
             foreach (var path in Paths(original, []))
             {
-                var copy = original.DeepClone(); var parent = copy;
-                foreach (var segment in path[..^1]) parent = parent is JsonArray ? parent[int.Parse(segment, System.Globalization.CultureInfo.InvariantCulture)]! : parent[segment]!;
-                var last = path[^1]; var existing = parent is JsonArray ? parent[int.Parse(last, System.Globalization.CultureInfo.InvariantCulture)] : parent[last];
+                var copy = original.DeepClone();
+                var parent = copy;
+                foreach (var segment in path[..^1])
+                    parent = parent is JsonArray ? parent[int.Parse(segment, System.Globalization.CultureInfo.InvariantCulture)]! : parent[segment]!;
+                var last = path[^1];
+                var existing = parent is JsonArray ? parent[int.Parse(last, System.Globalization.CultureInfo.InvariantCulture)] : parent[last];
                 JsonNode replacement = existing is JsonObject or JsonArray ? JsonValue.Create(false)! : new JsonObject();
-                if (parent is JsonArray array) array[int.Parse(last, System.Globalization.CultureInfo.InvariantCulture)] = replacement; else parent[last] = replacement;
+                if (parent is JsonArray array)
+                    array[int.Parse(last, System.Globalization.CultureInfo.InvariantCulture)] = replacement;
+                else
+                    parent[last] = replacement;
                 Assert.False(validate(copy.ToJsonString()), string.Join('/', path));
             }
         }
@@ -212,14 +239,18 @@ public sealed class ConsumerContractTests
             if (node is JsonObject obj)
                 foreach (var property in obj)
                 {
-                    var path = prefix.Append(property.Key).ToArray(); yield return path;
-                    foreach (var descendant in Paths(property.Value, path)) yield return descendant;
+                    var path = prefix.Append(property.Key).ToArray();
+                    yield return path;
+                    foreach (var descendant in Paths(property.Value, path))
+                        yield return descendant;
                 }
             else if (node is JsonArray array)
                 for (var i = 0; i < array.Count; i++)
                 {
-                    var path = prefix.Append(i.ToString(System.Globalization.CultureInfo.InvariantCulture)).ToArray(); yield return path;
-                    foreach (var descendant in Paths(array[i], path)) yield return descendant;
+                    var path = prefix.Append(i.ToString(System.Globalization.CultureInfo.InvariantCulture)).ToArray();
+                    yield return path;
+                    foreach (var descendant in Paths(array[i], path))
+                        yield return descendant;
                 }
         }
     }
@@ -229,7 +260,8 @@ public sealed class ConsumerContractTests
     {
         var snapshot = CollectionDataSemanticValidator.ValidateSnapshot(Fixture("compact-valid-unknown-property.json"), "12345678901234567").Value!;
         var encoded = JsonSerializer.Serialize(snapshot, CollectionDataJsonContext.Default.CollectionDataSnapshot);
-        Assert.DoesNotContain("futureOptional", encoded); Assert.True(CollectionDataSemanticValidator.ValidateSnapshot(encoded, snapshot.ContentId).Success);
+        Assert.DoesNotContain("futureOptional", encoded);
+        Assert.True(CollectionDataSemanticValidator.ValidateSnapshot(encoded, snapshot.ContentId).Success);
         var capabilities = CollectionDataSemanticValidator.ValidateCapabilities(Fixture("capabilities-valid.json")).Value!;
         Assert.True(CollectionDataSemanticValidator.ValidateCapabilities(JsonSerializer.Serialize(capabilities, CollectionDataJsonContext.Default.CollectionDataCapabilities)).Success);
         var changed = CollectionDataSemanticValidator.ValidateChanged(Fixture("snapshot-changed-valid.json")).Value!;

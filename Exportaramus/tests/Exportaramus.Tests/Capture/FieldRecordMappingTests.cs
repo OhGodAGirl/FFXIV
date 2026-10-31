@@ -1,7 +1,7 @@
-using Exportaramus.Features.CollectionData.Capture;
-using Exportaramus.Features.CollectionData.State;
-using Exportaramus.Features.CollectionData.Catalog;
 using System.Collections.Immutable;
+using Exportaramus.Features.CollectionData.Capture;
+using Exportaramus.Features.CollectionData.Catalog;
+using Exportaramus.Features.CollectionData.State;
 
 namespace Exportaramus.Tests.Capture;
 
@@ -14,7 +14,8 @@ public sealed class FieldRecordMappingTests
     {
         var map = FieldRecordMappingPolicy.CreateMap(Rows().Reverse());
         Assert.Equal(50, map.Count);
-        foreach (var (record, item) in Rows()) Assert.Equal(item, map[record]);
+        foreach (var (record, item) in Rows())
+            Assert.Equal(item, map[record]);
     }
 
     [Theory]
@@ -25,7 +26,8 @@ public sealed class FieldRecordMappingTests
     [InlineData(1, 30002)]
     public void InvalidOrAmbiguousMappingCannotProduceOwnership(uint record, uint item)
     {
-        var rows = Rows(); rows[0] = (record, item);
+        var rows = Rows();
+        rows[0] = (record, item);
         Assert.Equal(ReasonCode.MappingValidationFailed,
             Assert.Throws<SourceReadException>(() => FieldRecordMappingPolicy.CreateMap(rows)).Code);
     }

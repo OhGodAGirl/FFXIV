@@ -48,7 +48,9 @@ public sealed class MutationSemanticBoundaryTests
         witness["state"] = "Unknown";
         var id = witness["subjectId"]!.GetValue<uint>();
         var presence = root["currentItemPresence"]!["armoire"]!["items"]!.AsArray();
-        for (var index = presence.Count - 1; index >= 0; index--) if (presence[index]!["itemId"]!.GetValue<uint>() == id) presence.RemoveAt(index);
+        for (var index = presence.Count - 1; index >= 0; index--)
+            if (presence[index]!["itemId"]!.GetValue<uint>() == id)
+                presence.RemoveAt(index);
         facts.Add(witness);
         AssertSemanticFailure(root);
     }

@@ -1,8 +1,8 @@
 // Regression parity with Contracts/MutationValidationAllocationTests.cs, targeting the independently pinned 1.1 assembly.
-using Exportaramus.ConsumerKit.V1_1;
-using Exportaramus.Tests.Performance;
 using System.Text;
 using System.Text.Json;
+using Exportaramus.ConsumerKit.V1_1;
+using Exportaramus.Tests.Performance;
 using Xunit.Abstractions;
 
 namespace Exportaramus.Tests.ContractsV11;
@@ -42,9 +42,11 @@ public sealed class MutationValidationAllocationTests(ITestOutputHelper output)
             _ => "\"schemaVersion\":\"\\uD800\",",
         };
         var payload = "{" + prefix + "\"padding\":\"" + new string('a', 262144) + "\"}";
-        for (var index = 0; index < 3; index++) Assert.Equal(expected, CollectionDataSemanticValidator.ParseDocument(payload, 1048576, true).Code);
+        for (var index = 0; index < 3; index++)
+            Assert.Equal(expected, CollectionDataSemanticValidator.ParseDocument(payload, 1048576, true).Code);
         var before = GC.GetAllocatedBytesForCurrentThread();
-        for (var index = 0; index < 8; index++) Assert.Equal(expected, CollectionDataSemanticValidator.ParseDocument(payload, 1048576, true).Code);
+        for (var index = 0; index < 8; index++)
+            Assert.Equal(expected, CollectionDataSemanticValidator.ParseDocument(payload, 1048576, true).Code);
         var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
         output.WriteLine($"Eight rejected {defect} documents allocated {allocated} bytes after warmup.");
         // Returning pooled JSON buffers keeps repeated failures below even two full input buffers.

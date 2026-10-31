@@ -12,6 +12,9 @@ public static class DiagnosticReportSerializer
     private static readonly string[] ProhibitedNames = ["contentId", "characterName", "displayName", "world", "itemId", "itemIds", "quantity", "retainerId", "inventory", "environment", "commandLine", "clipboardText", "password", "token", "secret"];
     public static PreparedDiagnosticReport Prepare(DiagnosticReport report)
     {
+        // Only the current diagnostic report format is supported.
+        if (report.SchemaVersion != "1.1")
+            throw new InvalidDataException("DiagnosticSchemaInvalid");
         ValidateTypedStrings(report);
         if (report.ReportStatus == "Ready" && !report.IncompleteSections.IsEmpty || report.ReportStatus == "Partial" && report.IncompleteSections.IsEmpty)
             throw new InvalidDataException("DiagnosticSectionStatusInvalid");
@@ -20,12 +23,15 @@ public static class DiagnosticReportSerializer
         var element = JsonSerializer.SerializeToElement(report, DiagnosticJsonContext.Default.DiagnosticReport);
         ValidateTree(element);
         var fingerprint = JsonOutput.Fingerprint(writer => Write(writer, element, true));
-        report = report with { FingerprintSha256 = fingerprint };
+        report = report with
+        {
+            FingerprintSha256 = fingerprint
+        };
         element = JsonSerializer.SerializeToElement(report, DiagnosticJsonContext.Default.DiagnosticReport);
-        if (!ContractSchemaRegistry.Default.Validate(element, "exportaramus-diagnostics.schema.json"))
-            throw new InvalidDataException("DiagnosticSchemaInvalid");
+        ValidateSchema(element);
         var bytes = Canonical(element, false);
-        if (bytes.Length > MaximumUtf8Bytes) throw new InvalidDataException("DiagnosticOutputSizeLimitExceeded");
+        if (bytes.Length > MaximumUtf8Bytes)
+            throw new InvalidDataException("DiagnosticOutputSizeLimitExceeded");
         return new(report, Encoding.UTF8.GetString(bytes), bytes.Length, Display(element));
     }
 
@@ -36,15 +42,20 @@ public static class DiagnosticReportSerializer
             throw new InvalidDataException("DiagnosticOutputSizeLimitExceeded");
         using var document = JsonDocument.Parse(json, new JsonDocumentOptions { MaxDepth = 64 });
         ValidateTree(document.RootElement);
-        if (!ContractSchemaRegistry.Default.Validate(document.RootElement, "exportaramus-diagnostics.schema.json"))
-            throw new InvalidDataException("DiagnosticSchemaInvalid");
+        ValidateSchema(document.RootElement);
         var status = document.RootElement.GetProperty("reportStatus").GetString();
         var incomplete = document.RootElement.GetProperty("incompleteSections").GetArrayLength();
         if (status == "Ready" && incomplete != 0 || status == "Partial" && incomplete == 0)
             throw new InvalidDataException("DiagnosticSectionStatusInvalid");
         var actual = document.RootElement.GetProperty("fingerprintSha256").GetString();
         var expected = JsonOutput.Fingerprint(writer => Write(writer, document.RootElement, true));
-        if (actual != expected) throw new InvalidDataException("DiagnosticFingerprintMismatch");
+        if (actual != expected)
+            throw new InvalidDataException("DiagnosticFingerprintMismatch");
+    }
+    private static void ValidateSchema(JsonElement root)
+    {
+        if (!ContractSchemaRegistry.Default.Validate(root, "exportaramus-diagnostics-v1.1.schema.json"))
+            throw new InvalidDataException("DiagnosticSchemaInvalid");
     }
     private static void Write(Utf8JsonWriter writer, JsonElement value, bool omitRoot)
     {
@@ -54,13 +65,22 @@ public static class DiagnosticReportSerializer
                 writer.WriteStartObject();
                 foreach (var property in value.EnumerateObject().OrderBy(p => p.Name, StringComparer.Ordinal))
                 {
-                    if (omitRoot && property.Name is "generatedAtUtc" or "fingerprintSha256") continue;
-                    writer.WritePropertyName(property.Name); Write(writer, property.Value, false);
+                    if (omitRoot && property.Name is "generatedAtUtc" or "fingerprintSha256")
+                        continue;
+                    writer.WritePropertyName(property.Name);
+                    Write(writer, property.Value, false);
                 }
-                writer.WriteEndObject(); break;
+                writer.WriteEndObject();
+                break;
             case JsonValueKind.Array:
-                writer.WriteStartArray(); foreach (var item in value.EnumerateArray()) Write(writer, item, false); writer.WriteEndArray(); break;
-            default: value.WriteTo(writer); break;
+                writer.WriteStartArray();
+                foreach (var item in value.EnumerateArray())
+                    Write(writer, item, false);
+                writer.WriteEndArray();
+                break;
+            default:
+                value.WriteTo(writer);
+                break;
         }
     }
     private static void ValidateTree(JsonElement value)
@@ -68,11 +88,13 @@ public static class DiagnosticReportSerializer
         if (value.ValueKind == JsonValueKind.Object)
             foreach (var property in value.EnumerateObject())
             {
-                if (ProhibitedNames.Contains(property.Name, StringComparer.OrdinalIgnoreCase)) throw new InvalidDataException("DiagnosticProhibitedField");
+                if (ProhibitedNames.Contains(property.Name, StringComparer.OrdinalIgnoreCase))
+                    throw new InvalidDataException("DiagnosticProhibitedField");
                 ValidateTree(property.Value);
             }
         else if (value.ValueKind == JsonValueKind.Array)
-            foreach (var item in value.EnumerateArray()) ValidateTree(item);
+            foreach (var item in value.EnumerateArray())
+                ValidateTree(item);
         else if (value.ValueKind == JsonValueKind.String && !DiagnosticRedactionPolicy.IsSafe(value.GetString()!))
             throw new InvalidDataException("DiagnosticProhibitedText");
     }
@@ -85,7 +107,7 @@ public static class DiagnosticReportSerializer
             report.Runtime.FfxivClientVersion, report.Runtime.GameDataVersion, report.Runtime.ClientLanguage, report.Lifecycle.State,
             report.Operations.ControllerState, report.Operations.CaptureType, report.Operations.PendingRequestPriority,
             report.CollectionPipeline.CatalogCache.KeyHash, report.CollectionPipeline.CatalogCache.Status,
-            report.CollectionPipeline.Serializers.Compact, report.CollectionPipeline.Serializers.Compendium, report.CollectionPipeline.Serializers.FfxivCollect,
+            report.CollectionPipeline.Serializers.Compact, report.CollectionPipeline.Serializers.Expanded, report.CollectionPipeline.Serializers.FfxivCollect,
             report.CollectionPipeline.FfxivCollect.UpstreamCommit, report.CollectionPipeline.FfxivCollect.ContractSha256, report.CollectionPipeline.FfxivCollect.MappingSha256,
             report.Storage.LastRead.Status, report.Storage.LastRead.FailureCode, report.Storage.LastWrite.Status, report.Storage.LastWrite.FailureCode,
             report.Storage.RecoveryState, report.Ipc.LastWithdrawalReason, report.Redaction.SchemaVersion];
@@ -131,13 +153,16 @@ public static class DiagnosticReportSerializer
     {
         if (value.ValueKind == JsonValueKind.Object)
             foreach (var property in value.EnumerateObject().OrderBy(x => x.Name, StringComparer.Ordinal))
-                foreach (var row in Flatten(property.Value, path + "." + property.Name)) yield return row;
+                foreach (var row in Flatten(property.Value, path + "." + property.Name))
+                    yield return row;
         else if (value.ValueKind == JsonValueKind.Array)
         {
             var index = 0;
             foreach (var item in value.EnumerateArray())
-                foreach (var row in Flatten(item, path + "[" + index++ + "]")) yield return row;
+                foreach (var row in Flatten(item, path + "[" + index++ + "]"))
+                    yield return row;
         }
-        else yield return new(path, value.ValueKind == JsonValueKind.String ? value.GetString()! : value.ToString());
+        else
+            yield return new(path, value.ValueKind == JsonValueKind.String ? value.GetString()! : value.ToString());
     }
 }

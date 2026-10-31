@@ -34,7 +34,6 @@ public sealed class Plugin : IDalamudPlugin
     private readonly Exportaramus.Features.Inventory.InventoryIpcProvider inventoryIpc;
     private readonly Exportaramus.Features.Inventory.RetainerGuideAdapter retainerGuide;
     private readonly Exportaramus.Features.Inventory.RetainerInventoryChangeObserver retainerChanges = new();
-    private Task inventoryShutdown = Task.CompletedTask;
     private readonly WindowSystem windows = new(PluginIdentity.Name);
     private readonly DiagnosticMeasurements measurements = new();
     private readonly GuidedExportController guided = new();
@@ -64,8 +63,6 @@ public sealed class Plugin : IDalamudPlugin
     private readonly PresentationInvalidationPolicy presentation = new();
     private bool disposed;
     private bool commandRegistered;
-    private Task diagnosticShutdown = Task.CompletedTask;
-    private Task configurationShutdown = Task.CompletedTask;
     private bool updateFailed;
     private readonly GuidedCaptureCompletionTracker guidedCompletion = new();
 
@@ -73,8 +70,12 @@ public sealed class Plugin : IDalamudPlugin
         IUnlockState unlocks, IPlayerState player, IFramework framework, IGameGui gameGui,
         IObjectTable objects, ITargetManager targets, ICondition conditions, IPluginLog log, IGameConfig gameConfig, IAddonLifecycle addonLifecycle, IGameInventory gameInventory)
     {
-        this.pluginInterface = pluginInterface; this.commands = commands; this.framework = framework;
-        this.player = player; this.conditions = conditions; this.log = log;
+        this.pluginInterface = pluginInterface;
+        this.commands = commands;
+        this.framework = framework;
+        this.player = player;
+        this.conditions = conditions;
+        this.log = log;
         themeObserver = new(gameConfig);
         try
         {
@@ -85,7 +86,10 @@ public sealed class Plugin : IDalamudPlugin
                     .Add("LuminaExcel", typeof(Lumina.Excel.Sheets.Item).Assembly.GetName().Version!.ToString())
                     .Add("FFXIVClientStructs", typeof(FFXIVClientStructs.FFXIV.Component.GUI.AtkUnitBase).Assembly.GetName().Version!.ToString()));
             configuration = pluginInterface.GetPluginConfig() as Configuration ?? new();
-            configuration = new() { ReduceMotion = ConfigurationPolicy.RestoreReduceMotion(configuration.Version, configuration.ReduceMotion) };
+            configuration = new()
+            {
+                ReduceMotion = ConfigurationPolicy.RestoreReduceMotion(configuration.Version, configuration.ReduceMotion)
+            };
             configurationWrites = new(pluginInterface.ConfigFile.FullName);
             FFXIVCollectContract.TryLoadEmbedded(out var contract, out _);
             EmbeddedProductData.TryDiagnosticContract(out contractEvidence, out _);
@@ -108,7 +112,10 @@ public sealed class Plugin : IDalamudPlugin
                 effect =>
                 {
                     guidedCompletion.Begin(effect, controller.Publication.Current?.Revision ?? 0);
-                    if (effect.Kind == GuidedEffectKind.SavePartial) controller.RequestPresence(); else controller.RequestFull();
+                    if (effect.Kind == GuidedEffectKind.SavePartial)
+                        controller.RequestPresence();
+                    else
+                        controller.RequestFull();
                 });
             reportSource = new(measurements);
             diagnostics = new(reportSource.ReadAsync, measurements, text => ImGui.SetClipboardText(text));
@@ -120,7 +127,8 @@ public sealed class Plugin : IDalamudPlugin
             ipc = new(pluginInterface, controller, measurements);
             ipcV11 = new(pluginInterface, controller, measurements, true);
             ipcV12 = new(pluginInterface, controller, measurements, beasts: true);
-            windows.AddWindow(mainWindow); windows.AddWindow(diagnosticsWindow);
+            windows.AddWindow(mainWindow);
+            windows.AddWindow(diagnosticsWindow);
             if (!commands.AddHandler("/exportaramus", new CommandInfo(OnCommand) { HelpMessage = "Open Exportaramus.\n/exportaramus diagnostics — Open diagnostics." }))
                 throw new InvalidOperationException("The Exportaramus command could not be registered.");
             commandRegistered = true;
@@ -135,44 +143,64 @@ public sealed class Plugin : IDalamudPlugin
     private void OpenMain() => mainWindow.IsOpen = true;
     private void OnCommand(string command, string arguments)
     {
-        if (arguments.Trim().Equals("diagnostics", StringComparison.OrdinalIgnoreCase)) diagnosticsWindow.IsOpen = true;
-        else mainWindow.IsOpen = true;
+        if (arguments.Trim().Equals("diagnostics", StringComparison.OrdinalIgnoreCase))
+            diagnosticsWindow.IsOpen = true;
+        else
+            mainWindow.IsOpen = true;
     }
-    private void OnConditionChange(ConditionFlag flag, bool value) { /* The next bounded framework observation owns state changes. */ }
+    private void OnConditionChange(ConditionFlag flag, bool value)
+    { /* The next bounded framework observation owns state changes. */
+    }
     private void Draw()
     {
-        if (disposed) return;
-        var before = GC.GetAllocatedBytesForCurrentThread(); var start = Stopwatch.GetTimestamp();
-        try { windows.Draw(); }
+        if (disposed)
+            return;
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        var start = Stopwatch.GetTimestamp();
+        try
+        {
+            windows.Draw();
+        }
         finally { measurements.Record("Draw", Stopwatch.GetElapsedTime(start).TotalMilliseconds, GC.GetAllocatedBytesForCurrentThread() - before); }
     }
     private void Dispatch(MainIntent intent)
     {
-        if (disposed) return;
+        if (disposed)
+            return;
         if (intent == MainIntent.CopyJson)
         {
-            if (controller.Publication.Current?.Export.Json is { } json) ImGui.SetClipboardText(json);
+            if (controller.Publication.Current?.Export.Json is { } json)
+                ImGui.SetClipboardText(json);
             return;
         }
         IntentAdmissionPolicy.TryEnqueue(intents, intent, IntentAdmissionPolicy.MainCapacity);
     }
     private void DispatchDiagnostics(DiagnosticsIntent intent)
     {
-        if (intent == DiagnosticsIntent.CopyReport) diagnostics.Dispatch(intent);
-        else IntentAdmissionPolicy.TryEnqueue(diagnosticIntents, intent, IntentAdmissionPolicy.DiagnosticsCapacity);
+        if (intent == DiagnosticsIntent.CopyReport)
+            diagnostics.Dispatch(intent);
+        else
+            IntentAdmissionPolicy.TryEnqueue(diagnosticIntents, intent, IntentAdmissionPolicy.DiagnosticsCapacity);
     }
     private void Update(IFramework unused)
     {
-        if (disposed) return;
-        var before = GC.GetAllocatedBytesForCurrentThread(); var start = Stopwatch.GetTimestamp();
-        var now = DateTimeOffset.UtcNow; var seconds = (double)start / Stopwatch.Frequency;
+        if (disposed)
+            return;
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        var start = Stopwatch.GetTimestamp();
+        var now = DateTimeOffset.UtcNow;
+        var seconds = (double)start / Stopwatch.Frequency;
         try
         {
             themeObserver.Update(seconds);
             var contentId = player.IsLoaded ? player.ContentId : 0;
             var zoning = conditions[ConditionFlag.BetweenAreas] || conditions[ConditionFlag.BetweenAreas51];
             controller.Update(contentId, player.IsLoaded ? player.CharacterName : "", !player.IsLoaded && !zoning && !conditions.Any(), zoning, seconds, now);
-            if (hintCharacter != contentId) { hintCharacter = contentId; promptHints.Reset(); }
+            if (hintCharacter != contentId)
+            {
+                hintCharacter = contentId;
+                promptHints.Reset();
+            }
             hintTime = seconds;
             promptHints.Drain(acceptHint);
             inventory.SetCharacter(controller.ActiveContentId);
@@ -180,22 +208,32 @@ public sealed class Plugin : IDalamudPlugin
             inventoryCapture.Update(capturePort.Catalog);
             retainerGuide.Update();
             var inventoryState = inventory.GetSnapshot();
-            if (retainerChanges.Observe(inventoryState)) controller.RequestPresence();
+            if (retainerChanges.Observe(inventoryState))
+                controller.RequestPresence();
             inventoryIpc.Update(inventoryState);
             var hasIntent = intents.TryDequeue(out var intent);
             if (hasIntent && intent == MainIntent.Retainers)
             {
-                if (retainerGuide.Active) retainerGuide.Cancel();
-                else if (!guided.OwnsWindowEdges) retainerGuide.Start();
+                if (retainerGuide.Active)
+                    retainerGuide.Cancel();
+                else if (!guided.OwnsWindowEdges)
+                    retainerGuide.Start();
             }
-            if (retainerGuide.Active && hasIntent && intent is MainIntent.GuidedCapture or MainIntent.SyncNow) hasIntent = false;
+            if (retainerGuide.Active && hasIntent && intent is MainIntent.GuidedCapture or MainIntent.SyncNow)
+                hasIntent = false;
             var decision = MainIntentPolicy.Decide(hasIntent ? intent : null, guided.OwnsWindowEdges);
             switch (decision.Action)
             {
-                case MainUiAction.Close: mainWindow.IsOpen = false; break;
-                case MainUiAction.Sync: controller.RequestFull(); break;
+                case MainUiAction.Close:
+                    mainWindow.IsOpen = false;
+                    break;
+                case MainUiAction.Sync:
+                    controller.RequestFull();
+                    break;
                 case MainUiAction.ToggleReduceMotion:
-                    configuration.ReduceMotion = !configuration.ReduceMotion; configurationWrites.Request(configuration.ReduceMotion); break;
+                    configuration.ReduceMotion = !configuration.ReduceMotion;
+                    configurationWrites.Request(configuration.ReduceMotion);
+                    break;
             }
             var command = decision.GuidedCommand;
             if (command != GuidedCommand.None || guided.OwnsWindowEdges)
@@ -204,26 +242,35 @@ public sealed class Plugin : IDalamudPlugin
                     guidedAdapter.Observe(guided.CurrentSource, TimeSpan.FromSeconds(seconds), false),
                     controller.Publication.Current, controller.Error);
                 var effect = guided.Update(guidedFrame, command);
-                if (effect.Kind != GuidedEffectKind.None) guidedAdapter.Execute(effect, guided, contentId, TimeSpan.FromSeconds(seconds));
-                if (!guided.OwnsWindowEdges) guidedCompletion.Reset();
+                if (effect.Kind != GuidedEffectKind.None)
+                    guidedAdapter.Execute(effect, guided, contentId, TimeSpan.FromSeconds(seconds));
+                if (!guided.OwnsWindowEdges)
+                    guidedCompletion.Reset();
             }
-            if (capturePort.ObserveReadySources(contentId, seconds, guided.OwnsWindowEdges)) controller.RequestPresence();
-            if (capturePort.ObserveReadyUnlocks(contentId, seconds)) controller.HintSource("achievements", contentId, seconds);
-            if (capturePort.ObserveReadyBeasts(contentId, seconds)) controller.HintSource("beasts", contentId, seconds);
-            if (diagnosticIntents.TryDequeue(out var diagnosticIntent)) diagnostics.Dispatch(diagnosticIntent);
+            if (capturePort.ObserveReadySources(contentId, seconds, guided.OwnsWindowEdges))
+                controller.RequestPresence();
+            if (capturePort.ObserveReadyUnlocks(contentId, seconds))
+                controller.HintSource("achievements", contentId, seconds);
+            if (capturePort.ObserveReadyBeasts(contentId, seconds))
+                controller.HintSource("beasts", contentId, seconds);
+            if (diagnosticIntents.TryDequeue(out var diagnosticIntent))
+                diagnostics.Dispatch(diagnosticIntent);
             configurationWrites.Update();
-            diagnostics.Update(); diagnostics.SetReduceMotion(configuration.ReduceMotion);
+            diagnostics.Update();
+            diagnostics.SetReduceMotion(configuration.ReduceMotion);
             var revision = controller.Publication.Current?.Revision ?? 0;
             if (presentation.ShouldRefresh(seconds, revision, hasIntent, guided.State))
             {
                 view = PrepareView(now);
-                if (PrepareReport(now) is { } report) reportSource.Set(report);
+                if (PrepareReport(now) is { } report)
+                    reportSource.Set(report);
             }
             updateFailed = false;
         }
         catch (Exception)
         {
-            if (!updateFailed) log.Warning("Exportaramus encountered a bounded update failure.");
+            if (!updateFailed)
+                log.Warning("Exportaramus encountered a bounded update failure.");
             updateFailed = true;
         }
         finally { measurements.Record("FrameworkUpdate", Stopwatch.GetElapsedTime(start).TotalMilliseconds, GC.GetAllocatedBytesForCurrentThread() - before); }
@@ -234,7 +281,10 @@ public sealed class Plugin : IDalamudPlugin
             controller.Error, controller.Busy, configuration.ReduceMotion, guided.View, now, true);
         var storageView = Exportaramus.Features.Inventory.InventoryPresentation.Prepare(inventory?.GetSnapshot(), controller.Publication.Current, now);
         if (inventory?.LastCacheFailure is not null)
-            storageView = storageView with { Summary = storageView.Summary + " · Inventory cache could not be saved or restored; retry pending." };
+            storageView = storageView with
+            {
+                Summary = storageView.Summary + " · Inventory cache could not be saved or restored; retry pending."
+            };
         if (storageView.ConfirmedOutfits is { } count)
             result = result with
             {
@@ -258,7 +308,8 @@ public sealed class Plugin : IDalamudPlugin
     }
     private DiagnosticReport? PrepareReport(DateTimeOffset now)
     {
-        if (contractEvidence is null) return null;
+        if (contractEvidence is null)
+            return null;
         var bundle = controller.Publication.Current;
         var input = MainSnapshotPresenter.DiagnosticInput(bundle, PluginIdentity.Version, runtimeMetadata.DotnetRuntimeVersion,
             controller.Session, controller.Busy, configuration.ReduceMotion, controller.Reports.Count,
@@ -283,7 +334,9 @@ public sealed class Plugin : IDalamudPlugin
     }
     public void Dispose()
     {
-        if (disposed) return; disposed = true;
+        if (disposed)
+            return;
+        disposed = true;
         LifecycleCleanup.Run(
             () => promptHints?.Dispose(),
             () => framework.Update -= Update, () => conditions.ConditionChange -= OnConditionChange,
@@ -297,9 +350,11 @@ public sealed class Plugin : IDalamudPlugin
             () => ipcV12?.Dispose(),
             () => inventoryIpc?.Dispose(),
             () => retainerGuide?.Dispose(),
-            () => { if (inventory is not null) inventoryShutdown = inventory.DisposeAsync().AsTask(); },
-            () => { if (diagnostics is not null) diagnosticShutdown = diagnostics.DisposeAsync().AsTask(); },
-            () => { if (configurationWrites is not null) configurationShutdown = configurationWrites.DisposeAsync().AsTask(); },
+            () => LifecycleCleanup.Complete(
+                () => new(controller?.ShutdownTask ?? capturePort?.ShutdownTask ?? Task.CompletedTask),
+                () => inventory?.DisposeAsync() ?? default,
+                () => diagnostics?.DisposeAsync() ?? default,
+                () => configurationWrites?.DisposeAsync() ?? default),
             () => titleFont?.Dispose(), () => headingFont?.Dispose(), intents.Clear, diagnosticIntents.Clear);
     }
 }

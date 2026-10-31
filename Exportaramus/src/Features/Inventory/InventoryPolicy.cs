@@ -17,13 +17,16 @@ public static class InventoryPolicy
         var count = 0;
         foreach (var item in items)
         {
-            if (++count > MaximumItemsPerLocation || item is null || item.ItemId is 0 or >= 1000000) return false;
+            if (++count > MaximumItemsPerLocation || item is null || item.ItemId is 0 or >= 1000000)
+                return false;
             var total = (ulong)item.NormalQuantity + item.HighQualityQuantity;
-            if (supportsQuantity ? total is 0 or > uint.MaxValue : total != 0) return false;
+            if (supportsQuantity ? total is 0 or > uint.MaxValue : total != 0)
+                return false;
             quantities.TryGetValue(item.ItemId, out var prior);
             var normal = (ulong)(prior?.NormalQuantity ?? 0) + item.NormalQuantity;
             var high = (ulong)(prior?.HighQualityQuantity ?? 0) + item.HighQualityQuantity;
-            if (normal + high > uint.MaxValue) return false;
+            if (normal + high > uint.MaxValue)
+                return false;
             quantities[item.ItemId] = new(item.ItemId, (uint)normal, (uint)high);
         }
         normalized = quantities.Values.ToImmutableArray();
@@ -38,18 +41,33 @@ public static class InventoryPolicy
 
     public static InventorySnapshot Restore(InventorySnapshot current, InventorySnapshot saved)
     {
-        if (current.ContentId != saved.ContentId) return current;
+        if (current.ContentId != saved.ContentId)
+            return current;
         var locations = current.Locations.ToDictionary(location => location.Key);
         foreach (var location in saved.Locations)
         {
-            if (location.Key.Kind == InventoryLocationKind.Retainer && current.RetainerRosterKnown && !locations.ContainsKey(location.Key)) continue;
-            if (locations.TryGetValue(location.Key, out var live) && live.HasObservation) continue;
-            var retained = location.HasObservation ? location with { State = InventoryObservationState.Retained, RestoredFromCache = true } : location;
+            if (location.Key.Kind == InventoryLocationKind.Retainer && current.RetainerRosterKnown && !locations.ContainsKey(location.Key))
+                continue;
+            if (locations.TryGetValue(location.Key, out var live) && live.HasObservation)
+                continue;
+            var retained = location.HasObservation ? location with
+            {
+                State = InventoryObservationState.Retained,
+                RestoredFromCache = true
+            } : location;
             if (live is not null)
-                retained = retained with { Name = live.Name, State = live.State == InventoryObservationState.ReadFailed ? live.State : retained.State, AttemptedAtUtc = live.AttemptedAtUtc ?? retained.AttemptedAtUtc };
+                retained = retained with
+                {
+                    Name = live.Name,
+                    State = live.State == InventoryObservationState.ReadFailed ? live.State : retained.State,
+                    AttemptedAtUtc = live.AttemptedAtUtc ?? retained.AttemptedAtUtc
+                };
             locations[location.Key] = retained;
         }
-        return current with { Locations = Order(locations.Values) };
+        return current with
+        {
+            Locations = Order(locations.Values)
+        };
     }
 
     public static ImmutableArray<InventoryLocationSnapshot> Order(IEnumerable<InventoryLocationSnapshot> locations) =>

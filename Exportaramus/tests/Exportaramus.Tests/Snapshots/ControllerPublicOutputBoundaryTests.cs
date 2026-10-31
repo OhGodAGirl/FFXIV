@@ -81,7 +81,8 @@ public sealed class ControllerPublicOutputBoundaryTests
         await Pump(controller, 0, loggedOut, zoning, 0, () => !controller.Busy && controller.Publication.GetCapabilities().Length != 0);
         for (var tick = 0; tick < 20; tick++)
         {
-            controller.RequestFull(); controller.RequestPresence();
+            controller.RequestFull();
+            controller.RequestPresence();
             controller.Update(0, "", loggedOut, zoning, 1, SnapshotFixture.Now.AddSeconds(1));
             await Task.Delay(1);
         }
@@ -90,9 +91,12 @@ public sealed class ControllerPublicOutputBoundaryTests
         Assert.Empty(controller.Publication.GetSnapshot());
         Assert.Null(controller.Error);
         Assert.False(controller.Busy);
-        Assert.Equal(0, fixture.Port.BeginCount); Assert.Equal(0, fixture.Port.AdvanceCount); Assert.Equal(0, fixture.Port.TakeCount);
+        Assert.Equal(0, fixture.Port.BeginCount);
+        Assert.Equal(0, fixture.Port.AdvanceCount);
+        Assert.Equal(0, fixture.Port.TakeCount);
         Assert.Equal(0, fixture.Port.RestoreScopeReadCount);
-        Assert.Equal(0, fixture.Files.ReadCount); Assert.Equal(0, fixture.Files.WriterCount);
+        Assert.Equal(0, fixture.Files.ReadCount);
+        Assert.Equal(0, fixture.Files.WriterCount);
         Assert.Equal("Never", controller.StorageDiagnostic.LastRead.Status);
         Assert.False(fixture.Measurements.Snapshot().ContainsKey("FileRead"));
         Assert.False(fixture.Measurements.Snapshot().ContainsKey("FileWrite"));
@@ -117,10 +121,14 @@ public sealed class ControllerPublicOutputBoundaryTests
         }
 
         Assert.Equal(123ul, controller.ActiveContentId);
-        Assert.Null(controller.Error); Assert.False(controller.Busy);
+        Assert.Null(controller.Error);
+        Assert.False(controller.Busy);
         Assert.Empty(controller.Publication.GetSnapshot());
-        Assert.Equal(0, fixture.Port.BeginCount); Assert.Equal(0, fixture.Port.AdvanceCount); Assert.Equal(0, fixture.Port.TakeCount);
-        Assert.Equal(openReads, fixture.Files.ReadCount); Assert.Equal(0, fixture.Files.WriterCount);
+        Assert.Equal(0, fixture.Port.BeginCount);
+        Assert.Equal(0, fixture.Port.AdvanceCount);
+        Assert.Equal(0, fixture.Port.TakeCount);
+        Assert.Equal(openReads, fixture.Files.ReadCount);
+        Assert.Equal(0, fixture.Files.WriterCount);
         Assert.Equal(restoreScopes, fixture.Port.RestoreScopeReadCount);
     }
 
@@ -138,7 +146,8 @@ public sealed class ControllerPublicOutputBoundaryTests
         for (var attempt = 0; attempt < 500; attempt++)
         {
             controller.Update(id, id == 0 ? "" : "Fixture", loggedOut, zoning, monotonic, SnapshotFixture.Now.AddSeconds(monotonic));
-            if (complete()) return;
+            if (complete())
+                return;
             await Task.Delay(2);
         }
         Assert.Fail("Controller did not reach the requested public state: " + controller.Error);
@@ -150,8 +159,14 @@ public sealed class ControllerPublicOutputBoundaryTests
         public Port Port { get; } = new();
         public Files Files { get; } = new();
         public DiagnosticMeasurements Measurements { get; } = new();
-        public AtomicSnapshotStorage Storage { get; }
-        public SnapshotController Controller { get; }
+        public AtomicSnapshotStorage Storage
+        {
+            get;
+        }
+        public SnapshotController Controller
+        {
+            get;
+        }
         public Fixture()
         {
             Storage = new(root, Files, Measurements);
@@ -161,7 +176,8 @@ public sealed class ControllerPublicOutputBoundaryTests
         {
             Controller.Dispose();
             await Controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(3));
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            if (Directory.Exists(root))
+                Directory.Delete(root, true);
         }
     }
 
@@ -172,13 +188,32 @@ public sealed class ControllerPublicOutputBoundaryTests
         public CollectionCatalog Catalog => data.Catalog;
         public ImmutableHashSet<string> TrustedSourceKeys
         {
-            get { RestoreScopeReadCount++; return ImmutableHashSet<string>.Empty; }
+            get
+            {
+                RestoreScopeReadCount++;
+                return ImmutableHashSet<string>.Empty;
+            }
         }
-        public int RestoreScopeReadCount { get; private set; }
-        public bool InventoryUnavailable { get; set; }
-        public int BeginCount { get; private set; }
-        public int AdvanceCount { get; private set; }
-        public int TakeCount { get; private set; }
+        public int RestoreScopeReadCount
+        {
+            get; private set;
+        }
+        public bool InventoryUnavailable
+        {
+            get; set;
+        }
+        public int BeginCount
+        {
+            get; private set;
+        }
+        public int AdvanceCount
+        {
+            get; private set;
+        }
+        public int TakeCount
+        {
+            get; private set;
+        }
         public bool PrepareCatalog() => true;
         public void Begin(bool full, ulong contentId, long generation, DateTimeOffset now)
         {
@@ -186,11 +221,23 @@ public sealed class ControllerPublicOutputBoundaryTests
             var unlocks = data.State.Unlocks.ToImmutableDictionary(pair => pair.Key, pair => pair.Value with { Health = pair.Value.Health with { CaptureGeneration = generation, ObservedAtUtc = now } });
             var presence = data.State.CurrentItemPresence.ToImmutableDictionary(pair => pair.Key, pair => pair.Value with { Health = pair.Value.Health with { CaptureGeneration = generation, ObservedAtUtc = now } });
             if (InventoryUnavailable)
-                presence = presence.SetItem("inventory", presence["inventory"] with { Items = [], Health = CaptureReadPolicy.Health(DataType.CurrentItemPresence, generation, now, ReasonCode.NotLoadedThisSession) });
+                presence = presence.SetItem("inventory", presence["inventory"] with
+                {
+                    Items = [],
+                    Health = CaptureReadPolicy.Health(DataType.CurrentItemPresence, generation, now, ReasonCode.NotLoadedThisSession)
+                });
             result = new(full ? unlocks : ImmutableDictionary<string, PermanentUnlockState>.Empty, presence, full ? data.State.Quests : []);
         }
-        public bool Advance() { AdvanceCount++; return true; }
-        public RawCaptureBatch? TakeResult() { TakeCount++; return result; }
+        public bool Advance()
+        {
+            AdvanceCount++;
+            return true;
+        }
+        public RawCaptureBatch? TakeResult()
+        {
+            TakeCount++;
+            return result;
+        }
         public void ResetSession() => result = null;
         public void Dispose() => ResetSession();
     }
@@ -203,18 +250,38 @@ public sealed class ControllerPublicOutputBoundaryTests
         public int ReadCount => Volatile.Read(ref reads);
         public int WriterCount => Volatile.Read(ref writers);
         public int EvidenceInstallAttempts => Volatile.Read(ref evidenceInstalls);
-        public bool FailEvidence { get; set; }
-        public Stream OpenRead(string path) { Interlocked.Increment(ref reads); return new AtomicFileOperations().OpenRead(path); }
+        public bool FailEvidence
+        {
+            get; set;
+        }
+        public Stream OpenRead(string path)
+        {
+            Interlocked.Increment(ref reads);
+            return new AtomicFileOperations().OpenRead(path);
+        }
         public FileStream OpenWrite(string path, FileMode mode, int bufferSize, FileOptions options)
-        { Interlocked.Increment(ref writers); return new(path, mode, FileAccess.Write, FileShare.None, bufferSize, options); }
-        public void Move(string source, string destination) { Check(destination); File.Move(source, destination); }
-        public void Replace(string source, string destination, string? backup) { Check(destination); File.Replace(source, destination, backup); }
+        {
+            Interlocked.Increment(ref writers);
+            return new(path, mode, FileAccess.Write, FileShare.None, bufferSize, options);
+        }
+        public void Move(string source, string destination)
+        {
+            Check(destination);
+            File.Move(source, destination);
+        }
+        public void Replace(string source, string destination, string? backup)
+        {
+            Check(destination);
+            File.Replace(source, destination, backup);
+        }
         public void Delete(string path) => File.Delete(path);
         private void Check(string destination)
         {
-            if (!destination.EndsWith("reported-evidence.json", StringComparison.Ordinal)) return;
+            if (!destination.EndsWith("reported-evidence.json", StringComparison.Ordinal))
+                return;
             Interlocked.Increment(ref evidenceInstalls);
-            if (FailEvidence) throw new IOException("Evidence installation fixture failure.");
+            if (FailEvidence)
+                throw new IOException("Evidence installation fixture failure.");
         }
     }
 }

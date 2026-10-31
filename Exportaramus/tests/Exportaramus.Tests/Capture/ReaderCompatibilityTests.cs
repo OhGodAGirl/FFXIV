@@ -68,10 +68,18 @@ public sealed class ReaderCompatibilityTests
 
     private sealed class Reader : ICollectionReader
     {
-        public int Reads { get; private set; }
+        public int Reads
+        {
+            get; private set;
+        }
         public bool IdentityMatches(ulong contentId) => contentId == 123;
         public bool IsAvailable(string key, string version) => ReaderCompatibility.SourcesFor(version).Contains(key);
-        public bool ReadUnlock(string key, CatalogItem row) { Assert.NotEqual("field_records", key); Reads++; return row.Id == 1; }
+        public bool ReadUnlock(string key, CatalogItem row)
+        {
+            Assert.NotEqual("field_records", key);
+            Reads++;
+            return row.Id == 1;
+        }
         public QuestState ReadQuest(uint id, bool completed) => throw new InvalidOperationException();
         public CurrentItemPresenceState ReadPresence(string source, CollectionCatalog catalog, ulong contentId, long generation, DateTimeOffset now) =>
             CaptureReadPolicy.FailedPresence(true, generation, now, ReasonCode.IncompleteContainerSet);

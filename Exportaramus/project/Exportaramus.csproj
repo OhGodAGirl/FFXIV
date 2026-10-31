@@ -1,6 +1,6 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
   <PropertyGroup>
-    <Version>1.0.0.2</Version>
+    <Version>1.0.0.3</Version>
     <Author>OhGodAGirl</Author>
     <Name>Exportaramus</Name>
     <AssemblyName>Exportaramus</AssemblyName>
@@ -18,7 +18,7 @@
     <EmbeddedResource Include="../data/Contracts/1.0/schemas/*.json" />
     <EmbeddedResource Include="../data/FFXIVCollect/1.0/*.json" />
     <EmbeddedResource Include="../data/FFXIVCollect/1.2/*.json" />
-    <EmbeddedResource Include="../data/Diagnostics/1.0/*.schema.json" />
+    <EmbeddedResource Include="../data/Diagnostics/1.1/*.schema.json" />
     <Content Link="images/icon.png" Include="../images/icon.png" CopyToOutputDirectory="PreserveNewest" Condition="Exists('../images/icon.png')" />
   </ItemGroup>
 </Project>

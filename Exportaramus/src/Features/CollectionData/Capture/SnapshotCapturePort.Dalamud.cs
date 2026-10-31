@@ -1,7 +1,7 @@
-using Exportaramus.Features.Diagnostics;
 using System.Collections.Immutable;
 using Dalamud.Plugin.Services;
 using Exportaramus.Features.CollectionData.Catalog;
+using Exportaramus.Features.Diagnostics;
 
 namespace Exportaramus.Features.CollectionData.Capture;
 
@@ -20,7 +20,8 @@ public sealed class SnapshotCapturePort : ISnapshotCapturePort
         IFramework framework, IGameGui gameGui, DerivedCatalogInputs inputs, DiagnosticMeasurements? measurements = null, Func<Exportaramus.Features.Inventory.InventorySnapshot?>? inventorySnapshot = null)
     {
         this.inventorySnapshot = inventorySnapshot;
-        this.data = data; this.measurements = measurements ?? new();
+        this.data = data;
+        this.measurements = measurements ?? new();
         preparation = new(() => new CollectionCatalogBuilder(data, inputs, this.measurements), (projection, token) => Task.Run(() =>
         {
             token.ThrowIfCancellationRequested();
@@ -45,7 +46,8 @@ public sealed class SnapshotCapturePort : ISnapshotCapturePort
         ObjectDisposedException.ThrowIf(disposed, this);
         operation?.Dispose();
         reader.BeginCapture();
-        if (inventorySnapshot is not null) reader.SetRetainerInventory(inventorySnapshot());
+        if (inventorySnapshot is not null)
+            reader.SetRetainerInventory(inventorySnapshot());
         operation = new(reader, Catalog ?? throw new InvalidOperationException("Catalog is not ready."), full, contentId, generation, now, measurements);
     }
 
@@ -55,21 +57,34 @@ public sealed class SnapshotCapturePort : ISnapshotCapturePort
         ObjectDisposedException.ThrowIf(disposed, this);
         operation?.Dispose();
         reader.BeginCapture();
-        if (inventorySnapshot is not null) reader.SetRetainerInventory(inventorySnapshot());
+        if (inventorySnapshot is not null)
+            reader.SetRetainerInventory(inventorySnapshot());
         operation = new(reader, Catalog ?? throw new InvalidOperationException("Catalog is not ready."), false, contentId, generation, now, measurements, sources);
     }
     public RawCaptureBatch? TakeResult()
     {
-        var result = operation?.Result; operation?.Dispose(); operation = null; return result;
+        var result = operation?.Result;
+        operation?.Dispose();
+        operation = null;
+        return result;
     }
     public bool ObserveReadySources(ulong contentId, double monotonicNow, bool guidedOwnsEdges) =>
         !disposed && readiness.Poll(contentId, monotonicNow, guidedOwnsEdges);
     public bool ObserveReadyUnlocks(ulong contentId, double now) => !disposed && readiness.PollUnlocks(contentId, now);
     public bool ObserveReadyBeasts(ulong contentId, double now) => !disposed && readiness.PollBeasts(contentId, now);
-    public void ResetSession() { operation?.Dispose(); operation = null; reader.ResetSession(); readiness.Reset(); }
+    public void ResetSession()
+    {
+        operation?.Dispose();
+        operation = null;
+        reader.ResetSession();
+        readiness.Reset();
+    }
     public void Dispose()
     {
-        if (disposed) return; disposed = true;
-        ResetSession(); preparation.Dispose();
+        if (disposed)
+            return;
+        disposed = true;
+        ResetSession();
+        preparation.Dispose();
     }
 }

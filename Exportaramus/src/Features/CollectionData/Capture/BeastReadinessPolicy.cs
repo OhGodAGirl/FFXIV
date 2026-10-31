@@ -6,8 +6,13 @@ public sealed class BeastReadinessPolicy
 
     public bool Poll(bool identityMatches, bool compatible, Func<(bool Received, int Count)> read, double now)
     {
-        if (!identityMatches || !compatible) { Reset(); return false; }
-        if (!edge.IsDue(now)) return false;
+        if (!identityMatches || !compatible)
+        {
+            Reset();
+            return false;
+        }
+        if (!edge.IsDue(now))
+            return false;
         try
         {
             var observation = read();

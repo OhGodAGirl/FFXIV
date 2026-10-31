@@ -27,11 +27,13 @@ public static class CatalogRowPolicy
             "armoires" => row.Order != 0 && row.ItemId != 0,
             _ => row.RowId != 0 && named,
         };
-        if (!eligible) return ("", new(0, 0, "", false));
+        if (!eligible)
+            return ("", new(0, 0, "", false));
         bool linkedId = row.Key == "frames" || row.Key == "hairstyles" || row.Key == "field_records";
         var id = linkedId ? row.LinkId : row.Key == "armoires" ? checked(row.RowId + 1) : row.RowId;
         var name = row.Key == "quests" ? null : row.Name;
-        if (row.Key == "hairstyles" && row.ItemId == 0) name = $"Hairstyle {id}";
+        if (row.Key == "hairstyles" && row.ItemId == 0)
+            name = $"Hairstyle {id}";
         var fallback = string.IsNullOrWhiteSpace(name) || (row.Key == "hairstyles" && row.ItemId == 0);
         return (row.Key, new(id, row.Key == "frames" ? id : row.RowId,
             string.IsNullOrWhiteSpace(name) ? $"Entry {id}" : name, fallback,

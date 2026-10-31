@@ -23,7 +23,8 @@ public sealed class ControllerSchedulingIntegrationTests
         var wait = Stopwatch.StartNew();
         while (run.Controller.DiagnosticTasks.Single(task => task.Name == "CollectionOutput").State != "Completed")
         {
-            if (wait.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Owned output worker did not complete.");
+            if (wait.Elapsed > TimeSpan.FromSeconds(5))
+                Assert.Fail("Owned output worker did not complete.");
             await Task.Delay(1);
         }
         Assert.Null(run.Controller.Publication.Current);
@@ -33,7 +34,8 @@ public sealed class ControllerSchedulingIntegrationTests
         run.AssertNoCapture(400, 1);
         run.AssertNoCapture(499.999, 1);
         await run.Accept(500, 2, CaptureType.Lightweight);
-        run.Controller.RequestPresence(); await run.Accept(1800, 3, CaptureType.Lightweight);
+        run.Controller.RequestPresence();
+        await run.Accept(1800, 3, CaptureType.Lightweight);
         run.AssertNoCapture(1999.999, 3);
         await run.Accept(2000, 4, CaptureType.Full);
         Assert.Equal(new double[] { 5, 500, 1800, 2000 }, run.Port.Begins.Select(value => value.Time));
@@ -45,13 +47,15 @@ public sealed class ControllerSchedulingIntegrationTests
     {
         await using var run = new Harness();
         await run.Restore(0);
-        run.Controller.RequestFull(); await run.Accept(5, 1, CaptureType.Full);
+        run.Controller.RequestFull();
+        await run.Accept(5, 1, CaptureType.Full);
         run.AssertNoCapture(15, 1);
         run.AssertNoCapture(304.999, 1);
         await run.Accept(305, 2, CaptureType.Lightweight);
         Assert.Equal(new[] { true, false }, run.Port.Begins.Select(value => value.Full));
 
-        run.Controller.RequestPresence(); await run.Accept(1600, 3, CaptureType.Lightweight);
+        run.Controller.RequestPresence();
+        await run.Accept(1600, 3, CaptureType.Lightweight);
         run.AssertNoCapture(1804.999, 3);
         await run.Accept(1805, 4, CaptureType.Full);
         Assert.Equal(new[] { true, false, false, true }, run.Port.Begins.Select(value => value.Full));
@@ -63,12 +67,15 @@ public sealed class ControllerSchedulingIntegrationTests
     {
         await using var run = new Harness();
         await run.Restore(0);
-        run.Controller.RequestFull(); await run.Accept(5, 1, CaptureType.Full);
-        run.Controller.RequestPresence(); await run.Accept(100, 2, CaptureType.Lightweight);
+        run.Controller.RequestFull();
+        await run.Accept(5, 1, CaptureType.Full);
+        run.Controller.RequestPresence();
+        await run.Accept(100, 2, CaptureType.Lightweight);
         run.AssertNoCapture(305, 2);
         run.AssertNoCapture(399.999, 2);
         await run.Accept(400, 3, CaptureType.Lightweight);
-        run.Controller.RequestPresence(); await run.Accept(1700, 4, CaptureType.Lightweight);
+        run.Controller.RequestPresence();
+        await run.Accept(1700, 4, CaptureType.Lightweight);
 
         run.AssertNoCapture(1804.999, 4);
         await run.Accept(1805, 5, CaptureType.Full);
@@ -82,12 +89,14 @@ public sealed class ControllerSchedulingIntegrationTests
     {
         await using var run = new Harness();
         await run.Restore(0);
-        run.Controller.RequestFull(); await run.Accept(5, 1, CaptureType.Full);
+        run.Controller.RequestFull();
+        await run.Accept(5, 1, CaptureType.Full);
         await run.Report(100, 2);
         Assert.Single(run.Port.Begins);
         run.AssertNoCapture(304.999, 1);
         await run.Accept(305, 3, CaptureType.Lightweight);
-        run.Controller.RequestPresence(); await run.Accept(1700, 4, CaptureType.Lightweight);
+        run.Controller.RequestPresence();
+        await run.Accept(1700, 4, CaptureType.Lightweight);
         await run.Report(1750, 5);
 
         run.AssertNoCapture(1804.999, 3);
@@ -112,11 +121,14 @@ public sealed class ControllerSchedulingIntegrationTests
         run.Port.FullFailures = 3;
 
         run.AssertNoCapture(14.999, 0);
-        run.Update(15); Assert.Single(run.Port.Begins);
+        run.Update(15);
+        Assert.Single(run.Port.Begins);
         run.AssertNoCapture(44.999, 1);
-        run.Update(45); Assert.Equal(2, run.Port.Begins.Count);
+        run.Update(45);
+        Assert.Equal(2, run.Port.Begins.Count);
         run.AssertNoCapture(164.999, 2);
-        run.Update(165); Assert.Equal(3, run.Port.Begins.Count);
+        run.Update(165);
+        Assert.Equal(3, run.Port.Begins.Count);
         run.AssertNoCapture(310, 3); // Treating restoration at10 as a capture incorrectly makes presence due here.
         run.AssertNoCapture(314.999, 3);
         await run.Accept(315, 2, CaptureType.Lightweight);
@@ -129,9 +141,19 @@ public sealed class ControllerSchedulingIntegrationTests
     {
         private readonly string root = Path.Combine(AppContext.BaseDirectory, "controller-schedule", Guid.NewGuid().ToString("N"));
         public Port Port { get; } = new();
-        public AtomicSnapshotStorage Storage { get; }
-        public SnapshotController Controller { get; }
-        public Harness(Exportaramus.Features.Diagnostics.DiagnosticMeasurements? measurements = null) { Storage = new(root); Controller = new(Port, Storage, null, measurements); }
+        public AtomicSnapshotStorage Storage
+        {
+            get;
+        }
+        public SnapshotController Controller
+        {
+            get;
+        }
+        public Harness(Exportaramus.Features.Diagnostics.DiagnosticMeasurements? measurements = null)
+        {
+            Storage = new(root);
+            Controller = new(Port, Storage, null, measurements);
+        }
         public void Update(double now) => Controller.Update(123, "Fixture", false, false, now, SnapshotFixture.Now.AddSeconds(now));
         public async Task Restore(double now) => await Pump(now, () => Controller.Reports.Available && !Controller.Busy);
         public async Task Accept(double now, long revision, CaptureType type)
@@ -160,22 +182,32 @@ public sealed class ControllerSchedulingIntegrationTests
             var clock = Stopwatch.StartNew();
             while (!finished())
             {
-                if (clock.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Controller did not reach its public completion state: " + Controller.Error);
-                ControllerPumpStep.Advance(Controller, () => Update(now)); await Task.Delay(1);
+                if (clock.Elapsed > TimeSpan.FromSeconds(5))
+                    Assert.Fail("Controller did not reach its public completion state: " + Controller.Error);
+                ControllerPumpStep.Advance(Controller, () => Update(now));
+                await Task.Delay(1);
             }
         }
         public async ValueTask DisposeAsync()
         {
-            Controller.Dispose(); await Controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            Controller.Dispose();
+            await Controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
+            if (Directory.Exists(root))
+                Directory.Delete(root, true);
         }
     }
 
     internal sealed class Port : ISnapshotCapturePort
     {
         public List<(bool Full, double Time)> Begins { get; } = [];
-        public int FullFailures { get; set; }
-        public RawCaptureBatch? SuppliedBatch { get; set; }
+        public int FullFailures
+        {
+            get; set;
+        }
+        public RawCaptureBatch? SuppliedBatch
+        {
+            get; set;
+        }
         public bool CatalogReady { get; set; } = true;
         public bool AdvanceReady { get; set; } = true;
         public CollectionCatalog? Catalog { get; } = SnapshotFixture.Create().Catalog;
@@ -184,13 +216,19 @@ public sealed class ControllerSchedulingIntegrationTests
         public void Begin(bool full, ulong contentId, long generation, DateTimeOffset now)
         {
             Begins.Add((full, (now - SnapshotFixture.Now).TotalSeconds));
-            if (full && FullFailures > 0) { FullFailures--; throw new IOException("Controlled full capture failure."); }
+            if (full && FullFailures > 0)
+            {
+                FullFailures--;
+                throw new IOException("Controlled full capture failure.");
+            }
             var state = CollectionStateFactory.Empty(contentId, Guid.NewGuid(), now, generation);
             result = SuppliedBatch ?? new(full ? state.Unlocks : ImmutableDictionary<string, PermanentUnlockState>.Empty, state.CurrentItemPresence, []);
         }
         public bool Advance() => AdvanceReady;
         public RawCaptureBatch? TakeResult() => result;
         public void ResetSession() => result = null;
-        public void Dispose() { }
+        public void Dispose()
+        {
+        }
     }
 }

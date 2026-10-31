@@ -32,15 +32,20 @@ public sealed class MutationSchemaDepthTests
         JsonNode input = JsonValue.Create(0)!;
         for (var index = levels; index >= 1; index--)
         {
-            JsonObject child = index == levels ? new() : new() { ["$ref"] = "#/$defs/node" + (index + 1) };
+            JsonObject child = index == levels ? new() : new()
+            {
+                ["$ref"] = "#/$defs/node" + (index + 1)
+            };
             definitions["node" + index] = keyword switch
             {
                 "allOf" => new JsonObject { [keyword] = new JsonArray(child) },
                 "properties" => new JsonObject { [keyword] = new JsonObject { ["a"] = child } },
                 _ => new JsonObject { [keyword] = child },
             };
-            if (keyword == "items") input = new JsonArray(input);
-            else if (keyword is "properties" or "additionalProperties") input = new JsonObject { ["a"] = input };
+            if (keyword == "items")
+                input = new JsonArray(input);
+            else if (keyword is "properties" or "additionalProperties")
+                input = new JsonObject { ["a"] = input };
         }
         var schema = new JsonObject
         {
@@ -61,10 +66,13 @@ public sealed class MutationSchemaDepthTests
             }
             catch (Exception exception) { failure = exception; }
         }, 32 * 1024 * 1024)
-        { IsBackground = true };
+        {
+            IsBackground = true
+        };
         thread.Start();
         Assert.True(thread.Join(TimeSpan.FromSeconds(10)), "Finite vocabulary evaluation did not terminate.");
-        if (failure is not null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+        if (failure is not null)
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
     }
 
     [Theory]

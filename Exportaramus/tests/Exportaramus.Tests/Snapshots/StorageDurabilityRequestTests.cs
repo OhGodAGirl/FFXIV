@@ -1,5 +1,5 @@
-using Microsoft.Win32.SafeHandles;
 using Exportaramus.Features.Snapshots;
+using Microsoft.Win32.SafeHandles;
 
 namespace Exportaramus.Tests.Snapshots;
 
@@ -8,7 +8,9 @@ public sealed class StorageDurabilityRequestTests
     [Fact]
     public async Task RealTemporaryStreamsRequestWriteThroughAndFlushToDiskBeforeAtomicInstallation()
     {
-        var root = Root(); var operations = new Operations(); var storage = new AtomicSnapshotStorage(root, operations);
+        var root = Root();
+        var operations = new Operations();
+        var storage = new AtomicSnapshotStorage(root, operations);
         try
         {
             await storage.CommitAsync(1, "{\"revision\":1}", "{\"rich\":1}", "{\"items\":[]}", true, true, SnapshotFixture.Now, default);
@@ -33,7 +35,8 @@ public sealed class StorageDurabilityRequestTests
     [Fact]
     public async Task AFailedDurabilityRequestPreventsEveryPayloadInstallationAndPreservesPriorFiles()
     {
-        var root = Root(); var original = new AtomicSnapshotStorage(root);
+        var root = Root();
+        var original = new AtomicSnapshotStorage(root);
         try
         {
             await original.CommitAsync(1, "{\"revision\":1}", "{\"rich\":1}", "{\"items\":[]}", true, true, SnapshotFixture.Now, default);
@@ -45,7 +48,9 @@ public sealed class StorageDurabilityRequestTests
 
             Assert.Equal(0, operations.InstalledPayloads);
             var failed = Assert.Single(operations.Writers, writer => writer.Mode == FileMode.CreateNew);
-            Assert.True(failed.WroteBytes); Assert.True(failed.CapturedHandle.IsClosed); Assert.False(failed.FlushedToDisk);
+            Assert.True(failed.WroteBytes);
+            Assert.True(failed.CapturedHandle.IsClosed);
+            Assert.False(failed.FlushedToDisk);
             Assert.Equal("{\"revision\":1}", await original.ReadAsync(1, false, default));
             Assert.Equal("{\"items\":[]}", await original.ReadAsync(1, true, default));
             Assert.Equal("{\"rich\":1}", await File.ReadAllTextAsync(original.CanonicalPath));
@@ -61,26 +66,47 @@ public sealed class StorageDurabilityRequestTests
     private sealed class Operations : IAtomicFileOperations
     {
         public List<Writer> Writers { get; } = [];
-        public bool FailPayloadFlush { get; init; }
-        public int InstalledPayloads { get; private set; }
+        public bool FailPayloadFlush
+        {
+            get; init;
+        }
+        public int InstalledPayloads
+        {
+            get; private set;
+        }
         public Stream OpenRead(string path) => new AtomicFileOperations().OpenRead(path);
         public FileStream OpenWrite(string path, FileMode mode, int bufferSize, FileOptions options)
         {
             var writer = new Writer(path, mode, bufferSize, options, FailPayloadFlush && mode == FileMode.CreateNew);
-            Writers.Add(writer); return writer;
+            Writers.Add(writer);
+            return writer;
         }
-        public void Replace(string source, string destination, string? backup) { VerifyInstall(source); File.Replace(source, destination, backup); }
-        public void Move(string source, string destination) { VerifyInstall(source); File.Move(source, destination); }
+        public void Replace(string source, string destination, string? backup)
+        {
+            VerifyInstall(source);
+            File.Replace(source, destination, backup);
+        }
+        public void Move(string source, string destination)
+        {
+            VerifyInstall(source);
+            File.Move(source, destination);
+        }
         public void Delete(string path) => File.Delete(path);
         private void VerifyInstall(string source)
         {
             var writer = Writers.LastOrDefault(writer => writer.Path == source);
-            if (writer is null) return;
-            Assert.True(writer.WroteBytes); Assert.True(writer.FlushedToDisk); Assert.True(writer.CapturedHandle.IsClosed);
+            if (writer is null)
+                return;
+            Assert.True(writer.WroteBytes);
+            Assert.True(writer.FlushedToDisk);
+            Assert.True(writer.CapturedHandle.IsClosed);
             if (writer.Mode == FileMode.CreateNew)
             {
                 Assert.All(Writers.Where(value => value.Mode == FileMode.CreateNew), value =>
-                { Assert.True(value.FlushedToDisk); Assert.True(value.CapturedHandle.IsClosed); });
+                {
+                    Assert.True(value.FlushedToDisk);
+                    Assert.True(value.CapturedHandle.IsClosed);
+                });
                 InstalledPayloads++;
             }
             writer.Installed = true;
@@ -90,28 +116,64 @@ public sealed class StorageDurabilityRequestTests
     private sealed class Writer : FileStream
     {
         private readonly bool failFlush;
-        public string Path { get; }
-        public FileMode Mode { get; }
-        public FileOptions Options { get; }
-        public SafeFileHandle CapturedHandle { get; }
-        public bool WroteBytes { get; private set; }
-        public bool FlushedToDisk { get; private set; }
-        public bool Installed { get; set; }
+        public string Path
+        {
+            get;
+        }
+        public FileMode Mode
+        {
+            get;
+        }
+        public FileOptions Options
+        {
+            get;
+        }
+        public SafeFileHandle CapturedHandle
+        {
+            get;
+        }
+        public bool WroteBytes
+        {
+            get; private set;
+        }
+        public bool FlushedToDisk
+        {
+            get; private set;
+        }
+        public bool Installed
+        {
+            get; set;
+        }
         public Writer(string path, FileMode mode, int bufferSize, FileOptions options, bool failFlush)
             : base(path, mode, FileAccess.Write, FileShare.None, bufferSize, options)
-        { Path = path; Mode = mode; Options = options; this.failFlush = failFlush; CapturedHandle = SafeFileHandle; }
+        {
+            Path = path;
+            Mode = mode;
+            Options = options;
+            this.failFlush = failFlush;
+            CapturedHandle = SafeFileHandle;
+        }
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
-        { await base.WriteAsync(buffer, cancellationToken).ConfigureAwait(false); WroteBytes = buffer.Length != 0; }
-        public override void Write(ReadOnlySpan<byte> buffer) { base.Write(buffer); WroteBytes = buffer.Length != 0; }
+        {
+            await base.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
+            WroteBytes = buffer.Length != 0;
+        }
+        public override void Write(ReadOnlySpan<byte> buffer)
+        {
+            base.Write(buffer);
+            WroteBytes = buffer.Length != 0;
+        }
         public override void Flush(bool flushToDisk)
         {
             if (flushToDisk)
             {
                 Assert.True(WroteBytes);
-                if (failFlush) throw new IOException("Durability request fixture failure.");
+                if (failFlush)
+                    throw new IOException("Durability request fixture failure.");
             }
             base.Flush(flushToDisk);
-            if (flushToDisk) FlushedToDisk = true;
+            if (flushToDisk)
+                FlushedToDisk = true;
         }
     }
 }

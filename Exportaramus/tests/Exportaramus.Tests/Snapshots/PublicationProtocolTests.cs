@@ -14,17 +14,25 @@ public sealed class PublicationProtocolTests
     public void PublicationGettersExposeOnlyTheExactAcceptedBytesAndWithdrawIdentity()
     {
         var store = new CollectionDataPublicationStore();
-        Assert.Null(store.Current); Assert.Empty(store.GetSnapshot()); Assert.Empty(store.GetCapabilities());
+        Assert.Null(store.Current);
+        Assert.Empty(store.GetSnapshot());
+        Assert.Empty(store.GetCapabilities());
         var first = Bundle(SnapshotFixture.Create(), 1);
-        store.SetCapabilities(first.CapabilitiesJson); store.Accept(first);
-        Assert.Same(first, store.Current); Assert.Same(first.CompactJson, store.GetSnapshot());
+        store.SetCapabilities(first.CapabilitiesJson);
+        store.Accept(first);
+        Assert.Same(first, store.Current);
+        Assert.Same(first.CompactJson, store.GetSnapshot());
         Assert.Same(first.CapabilitiesJson, store.GetCapabilities());
-        var second = Bundle(first.Data, 2); store.Accept(second);
-        Assert.Same(second.CompactJson, store.GetSnapshot()); Assert.NotEqual(first.CompactJson, store.GetSnapshot());
+        var second = Bundle(first.Data, 2);
+        store.Accept(second);
+        Assert.Same(second.CompactJson, store.GetSnapshot());
+        Assert.NotEqual(first.CompactJson, store.GetSnapshot());
         store.Withdraw();
-        Assert.Null(store.Current); Assert.Empty(store.GetSnapshot());
+        Assert.Null(store.Current);
+        Assert.Empty(store.GetSnapshot());
         Assert.Same(second.UnavailableReportsCapabilitiesJson, store.GetCapabilities());
-        store.Withdraw(); Assert.Same(second.UnavailableReportsCapabilitiesJson, store.GetCapabilities());
+        store.Withdraw();
+        Assert.Same(second.UnavailableReportsCapabilitiesJson, store.GetCapabilities());
     }
 
     [Theory]
@@ -54,11 +62,22 @@ public sealed class PublicationProtocolTests
     [Fact]
     public void CapabilityOnlyChangeIsNotClassifiedAsACollectionValueChange()
     {
-        var data = SnapshotFixture.Create(); var before = Bundle(data, 1);
+        var data = SnapshotFixture.Create();
+        var before = Bundle(data, 1);
         var source = data.State.Unlocks["mounts"];
-        var state = data.State with { Unlocks = data.State.Unlocks.SetItem("mounts", source with { Health = source.Health with { CapabilityState = CapabilityState.Degraded } }) };
+        var state = data.State with
+        {
+            Unlocks = data.State.Unlocks.SetItem("mounts", source with
+            {
+                Health = source.Health with
+                {
+                    CapabilityState = CapabilityState.Degraded
+                }
+            })
+        };
         var after = Bundle(CollectionDataAssembler.Assemble(data.Catalog, state), 2);
-        var notices = new ChangedNoticeCoalescer(); notices.Add(after, before, ["mounts", "mounts", "outfits", "unknown"]);
+        var notices = new ChangedNoticeCoalescer();
+        notices.Add(after, before, ["mounts", "mounts", "outfits", "unknown"]);
         using var parsed = JsonDocument.Parse(notices.Take()!);
         Assert.Equal(new[] { "mounts" }, Strings(parsed.RootElement, "changedSources"));
         Assert.Equal(new[] { "SourceCapabilities", "SourceHealth" }, Strings(parsed.RootElement, "changedDataTypes"));
@@ -68,9 +87,13 @@ public sealed class PublicationProtocolTests
     public void CoalescingRetainsPriorChangedSourcesAndNewestRevisionThenClearsAllState()
     {
         var first = Bundle(SnapshotFixture.Create(), 1);
-        var latest = first with { Revision = 3 };
+        var latest = first with
+        {
+            Revision = 3
+        };
         var notices = new ChangedNoticeCoalescer();
-        notices.Add(first, first, ["mounts"]); notices.Add(latest, first, ["inventory"]);
+        notices.Add(first, first, ["mounts"]);
+        notices.Add(latest, first, ["inventory"]);
         using (var parsed = JsonDocument.Parse(notices.Take()!))
         {
             AssertEventHeader(parsed.RootElement, latest);
@@ -79,17 +102,30 @@ public sealed class PublicationProtocolTests
         notices.Add(latest, latest, ["minions"]);
         using var next = JsonDocument.Parse(notices.Take()!);
         Assert.Equal(new[] { "minions" }, Strings(next.RootElement, "changedSources"));
-        notices.Add(latest, latest, []); Assert.Null(notices.Take());
-        notices.Clear(); Assert.Null(notices.Take());
+        notices.Add(latest, latest, []);
+        Assert.Null(notices.Take());
+        notices.Clear();
+        Assert.Null(notices.Take());
     }
 
     [Fact]
     public void CharacterChangeDropsQueuedSourcesFromThePreviousCharacter()
     {
         var first = Bundle(SnapshotFixture.Create(), 1);
-        var foreign = first with { Data = first.Data with { State = first.Data.State with { ContentId = 124 } }, Revision = 2 };
+        var foreign = first with
+        {
+            Data = first.Data with
+            {
+                State = first.Data.State with
+                {
+                    ContentId = 124
+                }
+            },
+            Revision = 2
+        };
         var notices = new ChangedNoticeCoalescer();
-        notices.Add(first, first, ["mounts"]); notices.Add(foreign, foreign, ["inventory"]);
+        notices.Add(first, first, ["mounts"]);
+        notices.Add(foreign, foreign, ["inventory"]);
         using var parsed = JsonDocument.Parse(notices.Take()!);
         AssertEventHeader(parsed.RootElement, foreign);
         Assert.Equal(new[] { "inventory" }, Strings(parsed.RootElement, "changedSources"));
@@ -99,7 +135,9 @@ public sealed class PublicationProtocolTests
     [Fact]
     public void InitialNoticeAdvertisesEveryCompactSourceAndNoDerivedOnlySource()
     {
-        var first = Bundle(SnapshotFixture.Create(), 1); var notices = new ChangedNoticeCoalescer(); notices.Add(first, null, []);
+        var first = Bundle(SnapshotFixture.Create(), 1);
+        var notices = new ChangedNoticeCoalescer();
+        notices.Add(first, null, []);
         using var parsed = JsonDocument.Parse(notices.Take()!);
         AssertEventHeader(parsed.RootElement, first);
         Assert.Equal(CollectionKeys.Compact.Where(key => key is not ("facewear" or "beasts")).Order(StringComparer.Ordinal), Strings(parsed.RootElement, "changedSources"));

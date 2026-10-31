@@ -30,12 +30,18 @@ public sealed unsafe class StorageReadinessObserver(CollectionReader reader, IDa
     private static (bool, int) ReadBeasts()
     {
         var manager = XBMManager.Instance();
-        if (manager == null || manager->State != XBMManager.DataState.Received) return (false, 0);
+        if (manager == null || manager->State != XBMManager.DataState.Received)
+            return (false, 0);
         int count = manager->NumUnlockedPets;
         return (manager == XBMManager.Instance() && manager->State == XBMManager.DataState.Received && manager->NumUnlockedPets == count, count);
     }
 
-    public void Reset() { policy.Reset(); achievements.Reset(); beasts.Reset(); }
+    public void Reset()
+    {
+        policy.Reset();
+        achievements.Reset();
+        beasts.Reset();
+    }
 
     private (bool, ulong) Read(string key)
     {
@@ -44,7 +50,8 @@ public sealed unsafe class StorageReadinessObserver(CollectionReader reader, IDa
         {
             var addon = gui.GetAddonByName<AtkUnitBase>("MiragePrismPrismBox", 1);
             var manager = MirageManager.Instance();
-            if (addon == null || !addon->IsReady || !addon->IsVisible || manager == null || !manager->PrismBoxLoaded) return (false, 0);
+            if (addon == null || !addon->IsReady || !addon->IsVisible || manager == null || !manager->PrismBoxLoaded)
+                return (false, 0);
             Span<bool> unlockedSlots = stackalloc bool[11];
             for (var itemIndex = 0; itemIndex < manager->PrismBoxItemIds.Length; itemIndex++)
             {
@@ -56,23 +63,28 @@ public sealed unsafe class StorageReadinessObserver(CollectionReader reader, IDa
                         unlockedSlots[slot] = manager->IsSetSlotUnlocked((uint)itemIndex, slot);
                     hash = StorageFingerprint.AddDresserEntry(hash, id, unlockedSlots);
                 }
-                else hash = StorageFingerprint.AddDresserEntry(hash, id, []);
+                else
+                    hash = StorageFingerprint.AddDresserEntry(hash, id, []);
             }
             return (manager == MirageManager.Instance() && manager->PrismBoxLoaded && addon == gui.GetAddonByName<AtkUnitBase>("MiragePrismPrismBox", 1) && addon->IsReady && addon->IsVisible, hash);
         }
         if (key == "armoire")
         {
             var ui = UIState.Instance();
-            if (ui == null || !ui->Cabinet.IsCabinetLoaded()) return (false, 0);
+            if (ui == null || !ui->Cabinet.IsCabinetLoaded())
+                return (false, 0);
             foreach (var row in data.GetExcelSheet<CabinetRow>())
-                if (row.Order != 0 && row.Item.RowId != 0) hash = StorageFingerprint.Add(hash, ui->Cabinet.IsItemInCabinet(row.RowId) ? row.RowId + 1ul : 0);
+                if (row.Order != 0 && row.Item.RowId != 0)
+                    hash = StorageFingerprint.Add(hash, ui->Cabinet.IsItemInCabinet(row.RowId) ? row.RowId + 1ul : 0);
             return (ui == UIState.Instance() && ui->Cabinet.IsCabinetLoaded(), hash);
         }
         var inventory = InventoryManager.Instance();
-        if (inventory == null) return (false, 0);
+        if (inventory == null)
+            return (false, 0);
         InventoryType first = key == "chocoboSaddlebag" ? InventoryType.SaddleBag1 : InventoryType.PremiumSaddleBag1;
         InventoryType second = key == "chocoboSaddlebag" ? InventoryType.SaddleBag2 : InventoryType.PremiumSaddleBag2;
-        var a = inventory->GetInventoryContainer(first); var b = inventory->GetInventoryContainer(second);
+        var a = inventory->GetInventoryContainer(first);
+        var b = inventory->GetInventoryContainer(second);
         return (a != null && b != null && a->IsLoaded && b->IsLoaded, 0);
     }
 }

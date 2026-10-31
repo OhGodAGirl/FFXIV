@@ -5,8 +5,14 @@ namespace Exportaramus.Features.Inventory;
 public interface IRetainerGuidePort
 {
     bool IsSafe(ulong contentId);
-    bool ListReady { get; }
-    bool InventoryVisible { get; }
+    bool ListReady
+    {
+        get;
+    }
+    bool InventoryVisible
+    {
+        get;
+    }
     bool OpenBell();
     bool TryReadRoster(out ImmutableArray<InventoryRetainer> roster);
     bool SelectRetainer(ulong retainerId);

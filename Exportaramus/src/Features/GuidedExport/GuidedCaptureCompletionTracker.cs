@@ -10,17 +10,29 @@ public sealed class GuidedCaptureCompletionTracker
     private GuidedSource source;
     private GuidedEffectKind kind;
     public void Begin(GuidedEffect effect, long currentRevision)
-    { requestedRevision = currentRevision; source = effect.Source; kind = effect.Kind; }
+    {
+        requestedRevision = currentRevision;
+        source = effect.Source;
+        kind = effect.Kind;
+    }
     public void Reset() => requestedRevision = -1;
     public GuidedFrame Apply(GuidedFrame frame, AcceptedSnapshotBundle? accepted, string? error)
     {
-        if (requestedRevision < 0) return frame;
+        if (requestedRevision < 0)
+            return frame;
         var result = error is not null ? GuidedResult.Failed : accepted is not null && accepted.Revision > requestedRevision ? GuidedResult.Succeeded : GuidedResult.Pending;
         if (kind == GuidedEffectKind.Capture && result == GuidedResult.Succeeded)
         {
             var key = source == GuidedSource.Dresser ? "glamourDresser" : "armoire";
-            if (accepted!.Data.SourceHealth[key].SourceStatus != SourceStatus.Fresh) result = GuidedResult.Failed;
+            if (accepted!.Data.SourceHealth[key].SourceStatus != SourceStatus.Fresh)
+                result = GuidedResult.Failed;
         }
-        return kind == GuidedEffectKind.Capture ? frame with { CaptureResult = result } : frame with { SaveResult = result };
+        return kind == GuidedEffectKind.Capture ? frame with
+        {
+            CaptureResult = result
+        } : frame with
+        {
+            SaveResult = result
+        };
     }
 }

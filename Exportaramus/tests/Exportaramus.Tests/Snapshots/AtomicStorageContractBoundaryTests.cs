@@ -48,7 +48,8 @@ public sealed class AtomicStorageContractBoundaryTests(ITestOutputHelper output)
         await Assert.ThrowsAsync<EncoderFallbackException>(() => storage.CommitAsync(1, inputs[0], inputs[1], inputs[2], true, true, Now.AddSeconds(1), default));
 
         Assert.Equal(before.Keys.Order(StringComparer.Ordinal), Directory.GetFiles(root, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal));
-        foreach (var file in before) Assert.Equal(file.Value, await File.ReadAllBytesAsync(file.Key));
+        foreach (var file in before)
+            Assert.Equal(file.Value, await File.ReadAllBytesAsync(file.Key));
         Assert.Equal("Failed", storage.Diagnostic.LastWrite.Status);
         Assert.Equal("None", storage.RecoveryState);
     }
@@ -94,7 +95,11 @@ public sealed class AtomicStorageContractBoundaryTests(ITestOutputHelper output)
                 gate.TrySetResult();
                 if (operation is not null)
                 {
-                    try { if (!operation.Wait(TimeSpan.FromSeconds(3))) failure ??= new TimeoutException("Storage cleanup did not complete."); }
+                    try
+                    {
+                        if (!operation.Wait(TimeSpan.FromSeconds(3)))
+                            failure ??= new TimeoutException("Storage cleanup did not complete.");
+                    }
                     catch (Exception exception) { failure ??= exception; }
                 }
                 if (allocator.ThreadState != System.Threading.ThreadState.Unstarted && !allocator.Join(TimeSpan.FromSeconds(3)))
@@ -103,7 +108,8 @@ public sealed class AtomicStorageContractBoundaryTests(ITestOutputHelper output)
         });
         owner.Start();
         Assert.True(owner.Join(TimeSpan.FromSeconds(12)), "The bounded storage owner did not stop.");
-        if (failure is not null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+        if (failure is not null)
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
         Assert.Equal(writing ? "{\"revision\":2}" : "{}", File.ReadAllText(storage.CharacterPath(1)));
         output.WriteLine($"Known retained allocation on another thread: {payloadBytes}; actual {(writing ? "FileWrite" : "FileRead")} sample: {allocated} bytes.");
         GC.KeepAlive(payload);
@@ -111,8 +117,14 @@ public sealed class AtomicStorageContractBoundaryTests(ITestOutputHelper output)
 
     private sealed class Files : IAtomicFileOperations
     {
-        public Func<string, Stream>? Read { get; init; }
-        public Task? Gate { get; init; }
+        public Func<string, Stream>? Read
+        {
+            get; init;
+        }
+        public Task? Gate
+        {
+            get; init;
+        }
         public Stream OpenRead(string path) => Read?.Invoke(path) ?? new GatedReadStream(File.ReadAllBytes(path), Gate!);
         public FileStream OpenWrite(string path, FileMode mode, int bufferSize, FileOptions options) =>
             Gate is not null && options.HasFlag(FileOptions.Asynchronous)
@@ -126,27 +138,56 @@ public sealed class AtomicStorageContractBoundaryTests(ITestOutputHelper output)
     private sealed class OversizeStream() : MemoryStream("{}"u8.ToArray())
     {
         public override long Length => 4194305;
-        public int ReadCalls { get; private set; }
-        public bool WasDisposed { get; private set; }
+        public int ReadCalls
+        {
+            get; private set;
+        }
+        public bool WasDisposed
+        {
+            get; private set;
+        }
         public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
-        { ReadCalls++; return base.ReadAsync(buffer, cancellationToken); }
-        protected override void Dispose(bool disposing) { WasDisposed = true; base.Dispose(disposing); }
+        {
+            ReadCalls++;
+            return base.ReadAsync(buffer, cancellationToken);
+        }
+        protected override void Dispose(bool disposing)
+        {
+            WasDisposed = true;
+            base.Dispose(disposing);
+        }
     }
 
     private sealed class GatedReadStream(byte[] bytes, Task gate) : MemoryStream(bytes)
     {
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
-        { await gate.ConfigureAwait(false); cancellationToken.ThrowIfCancellationRequested(); return Read(buffer.Span); }
+        {
+            await gate.ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            return Read(buffer.Span);
+        }
     }
 
     private sealed class GatedWriteStream(string path, FileMode mode, int bufferSize, FileOptions options, Task gate)
         : FileStream(path, mode, FileAccess.Write, FileShare.None, bufferSize, options)
     {
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
-        { await gate.ConfigureAwait(false); cancellationToken.ThrowIfCancellationRequested(); Write(buffer.Span); }
+        {
+            await gate.ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            Write(buffer.Span);
+        }
         public override Task FlushAsync(CancellationToken cancellationToken)
-        { cancellationToken.ThrowIfCancellationRequested(); Flush(); return Task.CompletedTask; }
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Flush();
+            return Task.CompletedTask;
+        }
     }
 
-    public void Dispose() { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    public void Dispose()
+    {
+        if (Directory.Exists(root))
+            Directory.Delete(root, true);
+    }
 }

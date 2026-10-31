@@ -33,7 +33,8 @@ public sealed class MainOrchestrationTests
     public void IntentPolicyMapsOnlyAuthorizedCommands(MainIntent intent, MainUiAction action, GuidedCommand command)
     {
         var decision = MainIntentPolicy.Decide(intent, false);
-        Assert.Equal(action, decision.Action); Assert.Equal(command, decision.GuidedCommand);
+        Assert.Equal(action, decision.Action);
+        Assert.Equal(command, decision.GuidedCommand);
     }
 
     [Fact]
@@ -66,17 +67,35 @@ public sealed class MainOrchestrationTests
     [InlineData(GuidedSource.Armoire, "armoire")]
     public void CaptureCompletionRequiresNewPublicationAndFreshMatchingSource(GuidedSource source, string key)
     {
-        var tracker = new GuidedCaptureCompletionTracker(); var frame = Frame; var bundle = Bundle;
+        var tracker = new GuidedCaptureCompletionTracker();
+        var frame = Frame;
+        var bundle = Bundle;
         Assert.Same(frame, tracker.Apply(frame, bundle, null));
         tracker.Begin(new(GuidedEffectKind.Capture, source, 1), 1);
         Assert.Equal(GuidedResult.Pending, tracker.Apply(frame, null, null).CaptureResult);
-        Assert.Equal(GuidedResult.Pending, tracker.Apply(frame, bundle with { Revision = 1 }, null).CaptureResult);
-        Assert.Equal(GuidedResult.Pending, tracker.Apply(frame, bundle with { Revision = 0 }, null).CaptureResult);
+        Assert.Equal(GuidedResult.Pending, tracker.Apply(frame, bundle with
+        {
+            Revision = 1
+        }, null).CaptureResult);
+        Assert.Equal(GuidedResult.Pending, tracker.Apply(frame, bundle with
+        {
+            Revision = 0
+        }, null).CaptureResult);
         Assert.Equal(GuidedResult.Succeeded, tracker.Apply(frame, bundle, null).CaptureResult);
         Assert.Equal(GuidedResult.Failed, tracker.Apply(frame, bundle, "Failed").CaptureResult);
-        var stale = bundle with { Data = bundle.Data with { SourceHealth = bundle.Data.SourceHealth.SetItem(key, bundle.Data.SourceHealth[key] with { SourceStatus = SourceStatus.Stale }) } };
+        var stale = bundle with
+        {
+            Data = bundle.Data with
+            {
+                SourceHealth = bundle.Data.SourceHealth.SetItem(key, bundle.Data.SourceHealth[key] with
+                {
+                    SourceStatus = SourceStatus.Stale
+                })
+            }
+        };
         Assert.Equal(GuidedResult.Failed, tracker.Apply(frame, stale, null).CaptureResult);
-        tracker.Reset(); Assert.Same(frame, tracker.Apply(frame, bundle, "Failed"));
+        tracker.Reset();
+        Assert.Same(frame, tracker.Apply(frame, bundle, "Failed"));
     }
 
     [Theory]
@@ -84,9 +103,11 @@ public sealed class MainOrchestrationTests
     [InlineData(GuidedEffectKind.SavePartial)]
     public void SaveCompletionDoesNotFabricateACaptureResult(GuidedEffectKind kind)
     {
-        var tracker = new GuidedCaptureCompletionTracker(); tracker.Begin(new(kind, GuidedSource.Armoire, 1), 1);
+        var tracker = new GuidedCaptureCompletionTracker();
+        tracker.Begin(new(kind, GuidedSource.Armoire, 1), 1);
         var completed = tracker.Apply(Frame, Bundle, null);
-        Assert.Equal(GuidedResult.Succeeded, completed.SaveResult); Assert.Equal(GuidedResult.Pending, completed.CaptureResult);
+        Assert.Equal(GuidedResult.Succeeded, completed.SaveResult);
+        Assert.Equal(GuidedResult.Pending, completed.CaptureResult);
         Assert.Equal(GuidedResult.Pending, tracker.Apply(Frame, null, null).SaveResult);
         Assert.Equal(GuidedResult.Failed, tracker.Apply(Frame, null, "Failed").SaveResult);
     }

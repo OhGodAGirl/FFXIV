@@ -18,7 +18,10 @@ public sealed class InventoryRetainerMutationBoundaryTests
     public void MultipleRetainedLocationsRemainStaleWithExplicitProvenance(bool restored)
     {
         var result = Capture(Snapshot(new[] { Location(11), Location(22) }.Select(location => location with
-        { State = InventoryObservationState.Retained, RestoredFromCache = restored })));
+        {
+            State = InventoryObservationState.Retained,
+            RestoredFromCache = restored
+        })));
         Assert.Equal(SourceStatus.Stale, result.Health.SourceStatus);
         Assert.Equal(restored ? ProvenanceType.Restored : ProvenanceType.Observed, result.Health.ProvenanceType);
         Assert.Equal(restored ? ReasonCode.RestoredFromDisk : ReasonCode.WindowNotReady, result.Health.ReasonCode);
@@ -68,8 +71,14 @@ public sealed class InventoryRetainerMutationBoundaryTests
     {
         var observer = new RetainerInventoryChangeObserver();
         Assert.True(observer.Observe(Snapshot([Location(11), Location(22)])));
-        Assert.False(observer.Observe(Snapshot([Location(22), Location(11)]) with { Revision = 2 }));
-        Assert.False(observer.Observe(Snapshot([Location(11), Location(22)]) with { Revision = 3 }));
+        Assert.False(observer.Observe(Snapshot([Location(22), Location(11)]) with
+        {
+            Revision = 2
+        }));
+        Assert.False(observer.Observe(Snapshot([Location(11), Location(22)]) with
+        {
+            Revision = 3
+        }));
     }
 }
 

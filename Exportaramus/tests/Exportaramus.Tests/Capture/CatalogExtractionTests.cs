@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
-using Exportaramus.Features.CollectionData.Catalog;
 using Exportaramus.Features.CollectionData.Capture;
+using Exportaramus.Features.CollectionData.Catalog;
 using Exportaramus.Features.CollectionData.State;
 
 namespace Exportaramus.Tests.Capture;
@@ -13,13 +13,17 @@ public sealed class CatalogExtractionTests
         var good = new CatalogRowFact("mounts", 7, "Name", LinkId: 12, ItemId: 99, Order: 1, Icon: 2, IsAetheryte: true, LinkedRowExists: true);
         foreach (var key in new[] { "@items", "mounts", "minions", "emotes", "spells", "aetherytes", "hairstyles", "field_records", "armoires", "frames", "bardings" })
         {
-            var row = good with { Key = key };
+            var row = good with
+            {
+                Key = key
+            };
             var actual = CatalogRowPolicy.Project(row);
             Assert.Equal(key, actual.Key);
             Assert.Equal(key is "frames" or "hairstyles" or "field_records" ? 12u : key == "armoires" ? 8u : 7u, actual.Item.Id);
             Assert.Equal(key == "frames" ? 12u : 7u, actual.Item.SourceRowId);
             Assert.Equal(key == "armoires" ? 99u : (uint?)null, actual.Item.ItemId);
-            Assert.Equal("Name", actual.Item.Name); Assert.False(actual.Item.IsFallbackName);
+            Assert.Equal("Name", actual.Item.Name);
+            Assert.False(actual.Item.IsFallbackName);
             var bad = key switch
             {
                 "hairstyles" or "field_records" or "frames" => row with { LinkId = 0 },
@@ -38,16 +42,47 @@ public sealed class CatalogExtractionTests
             good with { Key = "armoires", ItemId = 0 }, good with { Key = "bardings", Name = "" },
             good with { Key = "npcs", RowId = 2293759 }, good with { Key = "npcs", RowId = 2359296 },
             good with { Key = "npcs", RowId = 2293760, LinkedRowExists = false },
-        }) Assert.Equal(0u, CatalogRowPolicy.Project(bad).Item.Id);
-        Assert.Equal(7u, CatalogRowPolicy.Project(good with { Order = 0 }).Item.Id);
-        Assert.Equal(2293760u, CatalogRowPolicy.Project(good with { Key = "npcs", RowId = 2293760 }).Item.Id);
-        Assert.Equal(2359295u, CatalogRowPolicy.Project(good with { Key = "npcs", RowId = 2359295 }).Item.Id);
-        Assert.Equal(0u, CatalogRowPolicy.Project(good with { Key = "frames", LinkId = 1 }).Item.Id);
-        Assert.Equal(12u, CatalogRowPolicy.Project(good with { Key = "frames" }).Item.SourceRowId);
-        Assert.Equal(12u, CatalogRowPolicy.Project(good with { Key = "field_records" }).Item.Id);
-        Assert.Equal(7u, CatalogRowPolicy.Project(good with { Key = "hairstyles" }).Item.SourceRowId);
-        var cabinet = CatalogRowPolicy.Project(good with { Key = "armoires", RowId = 0 }).Item;
-        Assert.Equal(1u, cabinet.Id); Assert.Equal(0u, cabinet.SourceRowId); Assert.Equal(99u, cabinet.ItemId);
+        })
+            Assert.Equal(0u, CatalogRowPolicy.Project(bad).Item.Id);
+        Assert.Equal(7u, CatalogRowPolicy.Project(good with
+        {
+            Order = 0
+        }).Item.Id);
+        Assert.Equal(2293760u, CatalogRowPolicy.Project(good with
+        {
+            Key = "npcs",
+            RowId = 2293760
+        }).Item.Id);
+        Assert.Equal(2359295u, CatalogRowPolicy.Project(good with
+        {
+            Key = "npcs",
+            RowId = 2359295
+        }).Item.Id);
+        Assert.Equal(0u, CatalogRowPolicy.Project(good with
+        {
+            Key = "frames",
+            LinkId = 1
+        }).Item.Id);
+        Assert.Equal(12u, CatalogRowPolicy.Project(good with
+        {
+            Key = "frames"
+        }).Item.SourceRowId);
+        Assert.Equal(12u, CatalogRowPolicy.Project(good with
+        {
+            Key = "field_records"
+        }).Item.Id);
+        Assert.Equal(7u, CatalogRowPolicy.Project(good with
+        {
+            Key = "hairstyles"
+        }).Item.SourceRowId);
+        var cabinet = CatalogRowPolicy.Project(good with
+        {
+            Key = "armoires",
+            RowId = 0
+        }).Item;
+        Assert.Equal(1u, cabinet.Id);
+        Assert.Equal(0u, cabinet.SourceRowId);
+        Assert.Equal(99u, cabinet.ItemId);
         Assert.Throws<OverflowException>(() => CatalogRowPolicy.Project(good with { Key = "armoires", RowId = uint.MaxValue }));
     }
 
@@ -55,9 +90,11 @@ public sealed class CatalogExtractionTests
     public void CatalogNamesRespectFallbackAndQuestMetadataOmission()
     {
         var quest = CatalogRowPolicy.Project(new("quests", 8, "Do not export static text")).Item;
-        Assert.Equal("Entry 8", quest.Name); Assert.True(quest.IsFallbackName);
+        Assert.Equal("Entry 8", quest.Name);
+        Assert.True(quest.IsFallbackName);
         var hair = CatalogRowPolicy.Project(new("hairstyles", 9, null, LinkId: 17)).Item;
-        Assert.Equal("Hairstyle 17", hair.Name); Assert.True(hair.IsFallbackName);
+        Assert.Equal("Hairstyle 17", hair.Name);
+        Assert.True(hair.IsFallbackName);
         Assert.False(CatalogRowPolicy.Project(new("hairstyles", 9, "Hint", LinkId: 17, ItemId: 1)).Item.IsFallbackName);
         Assert.True(CatalogRowPolicy.Project(new("frames", 2, " ", LinkId: 573)).Item.IsFallbackName);
         Assert.Equal("Resolved", CatalogRowPolicy.WithItemName(quest, "Resolved").Name);
@@ -74,21 +111,31 @@ public sealed class CatalogExtractionTests
         var visited = 0;
         IEnumerable<(string, CatalogItem)> Rows()
         {
-            for (var i = 0; i < 1000; i++) { visited++; yield return ("", new(0, 0, "", false)); }
+            for (var i = 0; i < 1000; i++)
+            {
+                visited++;
+                yield return ("", new(0, 0, "", false));
+            }
             yield return ("@items", new(99, 99, "Known", false));
             yield return ("mounts", new(3, 3, "Mount", false));
         }
         using var builder = new BoundedCatalogProjection("English", "build", Rows().GetEnumerator(), () => ("English", "build"), () => 0);
-        Assert.False(builder.Advance(2)); Assert.Equal(2, visited);
+        Assert.False(builder.Advance(2));
+        Assert.Equal(2, visited);
         var completed = false;
-        for (var slice = 0; slice < 5 && !completed; slice++) completed = builder.Advance();
+        for (var slice = 0; slice < 5 && !completed; slice++)
+            completed = builder.Advance();
         Assert.True(completed, "The remaining 1,000 rows must complete within five 256-row slices when no elapsed-time limit is reached.");
-        Assert.Equal(1000, visited); Assert.Equal(99u, Assert.Single(builder.Projection!.KnownItemIds));
-        Assert.Equal(new[] { "glamour_dresser", "mounts" }, builder.Projection.Rows.Select(row => row.Key)); Assert.True(builder.Advance());
+        Assert.Equal(1000, visited);
+        Assert.Equal(99u, Assert.Single(builder.Projection!.KnownItemIds));
+        Assert.Equal(new[] { "glamour_dresser", "mounts" }, builder.Projection.Rows.Select(row => row.Key));
+        Assert.True(builder.Advance());
         var tick = 0.0;
         using var timed = new BoundedCatalogProjection("English", "build", Rows().GetEnumerator(), () => ("English", "build"), () => tick++);
-        Assert.False(timed.Advance()); Assert.Equal(1001, visited);
-        timed.Dispose(); Assert.True(timed.Advance());
+        Assert.False(timed.Advance());
+        Assert.Equal(1001, visited);
+        timed.Dispose();
+        Assert.True(timed.Advance());
     }
 
     [Fact]
@@ -100,8 +147,10 @@ public sealed class CatalogExtractionTests
         using var builder = new BoundedCatalogProjection("English", "build", Rows(), () => identity, () => 0);
         Assert.Throws<ArgumentOutOfRangeException>(() => builder.Advance(0));
         Assert.Throws<ArgumentOutOfRangeException>(() => builder.Advance(2049));
-        identity = ("Japanese", "build"); Assert.Throws<InvalidOperationException>(() => builder.Advance());
-        identity = ("English", "new"); Assert.Throws<InvalidOperationException>(() => builder.Advance());
+        identity = ("Japanese", "build");
+        Assert.Throws<InvalidOperationException>(() => builder.Advance());
+        identity = ("English", "new");
+        Assert.Throws<InvalidOperationException>(() => builder.Advance());
     }
 
     [Fact]
@@ -127,7 +176,10 @@ public sealed class CatalogExtractionTests
         };
         var rich = CollectionDataAssembler.Assemble(catalog, state).Collections["glamour_dresser"];
         var item = Assert.Single(rich.Items);
-        Assert.Equal(100u, item.Id); Assert.Equal("Stored coat", item.Name); Assert.True(item.Owned); Assert.False(rich.TotalKnown);
+        Assert.Equal(100u, item.Id);
+        Assert.Equal("Stored coat", item.Name);
+        Assert.True(item.Owned);
+        Assert.False(rich.TotalKnown);
         state = state with
         {
             CurrentItemPresence = state.CurrentItemPresence.SetItem("glamourDresser",

@@ -32,8 +32,14 @@ public sealed class StorageCancellationBoundaryTests
 
     private sealed class Operations(CancellationTokenSource cancellation) : IAtomicFileOperations
     {
-        public int PayloadWrites { get; set; }
-        public int PayloadDurabilityRequests { get; set; }
+        public int PayloadWrites
+        {
+            get; set;
+        }
+        public int PayloadDurabilityRequests
+        {
+            get; set;
+        }
         public Stream OpenRead(string path) => new AtomicFileOperations().OpenRead(path);
         public FileStream OpenWrite(string path, FileMode mode, int bufferSize, FileOptions options) =>
             new Writer(path, mode, bufferSize, options, this, cancellation);
@@ -49,11 +55,16 @@ public sealed class StorageCancellationBoundaryTests
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
             await base.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
-            if (isPayload) { owner.PayloadWrites++; cancellation.Cancel(); }
+            if (isPayload)
+            {
+                owner.PayloadWrites++;
+                cancellation.Cancel();
+            }
         }
         public override void Flush(bool flushToDisk)
         {
-            if (isPayload && flushToDisk) owner.PayloadDurabilityRequests++;
+            if (isPayload && flushToDisk)
+                owner.PayloadDurabilityRequests++;
             base.Flush(flushToDisk);
         }
     }

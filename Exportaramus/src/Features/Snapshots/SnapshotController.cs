@@ -127,6 +127,11 @@ public sealed class SnapshotController : IDisposable
                     {
                         state = result.State;
                         restored = true;
+                        if (result.RestorationFailure is { } failure)
+                        {
+                            Error = failure;
+                            captureError = true;
+                        }
                         Reports.SetScope(ActiveContentId, capture.Catalog!.KnownItemIds, state.ReportedEvidence.Items);
                         if (!result.EvidenceHealthy)
                         {
@@ -290,6 +295,7 @@ public sealed class SnapshotController : IDisposable
         var store = storage;
         var catalog = capture.Catalog!;
         var nextRevision = revision + 1;
+        var output = publisher;
         workerGeneration = gen;
         persistingReports = false;
         var trustedSources = capture.TrustedSourceKeys;
@@ -317,16 +323,29 @@ public sealed class SnapshotController : IDisposable
             restoredState ??= CollectionStateFactory.Empty(id, session, now, gen);
             restoredState = RestoredStatePolicy.Reconcile(catalog, restoredState, trustedSources, evidence, evidenceHealthy, now, gen);
             AcceptedSnapshotBundle? bundle = null;
+            string? restorationFailure = null;
             if (hadCompact)
             {
                 var data = CollectionDataAssembler.Assemble(catalog, restoredState);
-                var prints = CollectionFingerprint.Sources(data);
-                bundle = new(data, nextRevision, CollectionDataSerializer.Compact(data, nextRevision), null, CollectionFingerprint.Combined(prints), prints,
-                    PreparedFFXIVCollectExport.Unavailable("Sync to prepare FFXIV Collect output."), 0, null);
-                bundle = SnapshotBundlePreparation.Prepare(bundle, null, evidenceHealthy);
+                try
+                {
+                    // Restoration must satisfy the same current contract checks as a new publication.
+                    bundle = output.Prepare(data, string.Empty, nextRevision, null, false, false, token, evidenceHealthy).Bundle with
+                    {
+                        Export = PreparedFFXIVCollectExport.Unavailable("Sync to prepare FFXIV Collect output."),
+                        ExportBytes = 0,
+                    };
+                }
+                catch (Exception exception) when (exception is InvalidDataException or OutputSizeLimitException)
+                {
+                    measurements.Failure("Storage", "Restore", "StoredSnapshotInvalid", exception);
+                    restorationFailure = "Saved collection data could not be restored. Use Sync Now to capture current data.";
+                    restoredState = RestoredStatePolicy.Reconcile(catalog, CollectionStateFactory.Empty(id, session, now, gen),
+                        trustedSources, evidence, evidenceHealthy, now, gen);
+                }
             }
             var restoredCapabilities = bundle?.CapabilitiesJsonV12 ?? CapabilityDocumentWriter.BuildV12(CollectionDataAssembler.Assemble(catalog, restoredState), evidenceHealthy);
-            return new WorkerResult(gen, id, restoredState, bundle, true, evidenceHealthy, restoredCapabilities);
+            return new WorkerResult(gen, id, restoredState, bundle, true, evidenceHealthy, restoredCapabilities, RestorationFailure: restorationFailure);
         }, token);
     }
 
@@ -375,14 +394,18 @@ public sealed class SnapshotController : IDisposable
             if (raw is not null)
             {
                 var prior = candidate;
+                var unlocks = full
+                    ? raw.Unlocks.ToImmutableDictionary(pair => pair.Key, pair => CollectionStatePolicy.Resolve(prior.Unlocks.GetValueOrDefault(pair.Key), pair.Value, true, true))
+                    : prior.Unlocks;
                 candidate = isTargeted ? TargetedCaptureMerge.Apply(prior, raw, gen, capturedAt) : prior with
                 {
                     CaptureGeneration = gen,
                     CapturedAtUtc = capturedAt,
                     CaptureType = full ? CaptureType.Full : CaptureType.Lightweight,
-                    Unlocks = full ? raw.Unlocks.ToImmutableDictionary(pair => pair.Key, pair => CollectionStatePolicy.Resolve(prior.Unlocks.GetValueOrDefault(pair.Key), pair.Value, true, false)) : prior.Unlocks,
+                    Unlocks = unlocks,
                     CurrentItemPresence = raw.CurrentItemPresence.ToImmutableDictionary(pair => pair.Key, pair => CollectionStatePolicy.Resolve(prior.CurrentItemPresence.GetValueOrDefault(pair.Key), pair.Value, true, true)),
-                    Quests = full ? raw.Quests : prior.Quests,
+                    Quests = !full ? prior.Quests : raw.Unlocks["quests"].Health.IsUsable ? raw.Quests
+                        : unlocks["quests"].Health.IsUsable ? prior.Quests : [],
                 };
             }
             if (reports)
@@ -499,5 +522,5 @@ public sealed class SnapshotController : IDisposable
         catch (Exception) { }
         finally { token.Dispose(); }
     }
-    private sealed record WorkerResult(long Generation, ulong ContentId, CollectionState State, AcceptedSnapshotBundle? Bundle, bool Restoration, bool EvidenceHealthy = true, string RestoredCapabilities = "", bool Targeted = false, ImmutableArray<string> Observed = default);
+    private sealed record WorkerResult(long Generation, ulong ContentId, CollectionState State, AcceptedSnapshotBundle? Bundle, bool Restoration, bool EvidenceHealthy = true, string RestoredCapabilities = "", bool Targeted = false, ImmutableArray<string> Observed = default, string? RestorationFailure = null);
 }

@@ -14,7 +14,8 @@ public static class FieldRecordMappingPolicy
             if (recordId is < 1 or > 50 || itemId == 0 || !items.Add(itemId) || !result.TryAdd(recordId, itemId))
                 throw new SourceReadException(ReasonCode.MappingValidationFailed);
         }
-        if (result.Count != 50) throw new SourceReadException(ReasonCode.MappingValidationFailed);
+        if (result.Count != 50)
+            throw new SourceReadException(ReasonCode.MappingValidationFailed);
         return result.ToImmutable();
     }
 

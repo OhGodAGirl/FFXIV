@@ -23,8 +23,14 @@ public sealed class CollectionDataV12Tests : IDisposable
         {
             Items = [.. Enumerable.Range(1, 50).Select(id => new CatalogItem((uint)id, (uint)id, "Beast " + id, false, null, [], null))],
         };
-        return CollectionDataAssembler.Assemble(data.Catalog with { Collections = data.Catalog.Collections.SetItem("beasts", definition) },
-            data.State with { Unlocks = data.State.Unlocks.SetItem("beasts", new(ids, health ?? SnapshotFixture.Health(DataType.PermanentUnlock))) });
+        return CollectionDataAssembler.Assemble(data.Catalog with
+        {
+            Collections = data.Catalog.Collections.SetItem("beasts", definition)
+        },
+            data.State with
+            {
+                Unlocks = data.State.Unlocks.SetItem("beasts", new(ids, health ?? SnapshotFixture.Health(DataType.PermanentUnlock)))
+            });
     }
 
     [Theory]
@@ -58,12 +64,22 @@ public sealed class CollectionDataV12Tests : IDisposable
     [InlineData(SourceStatus.Unavailable, Completeness.Unknown, CapabilityState.UnavailablePendingValidation, false)]
     public void BeastsUnknownIsOmittedAndStalePreservesObservation(SourceStatus status, Completeness complete, CapabilityState capability, bool included)
     {
-        var health = SnapshotFixture.Health(DataType.PermanentUnlock, status) with { Completeness = complete, CapabilityState = capability };
-        if (status == SourceStatus.Stale) health = health with { ReasonCode = ReasonCode.CaptureFailed, Reason = "Native capture failed." };
+        var health = SnapshotFixture.Health(DataType.PermanentUnlock, status) with
+        {
+            Completeness = complete,
+            CapabilityState = capability
+        };
+        if (status == SourceStatus.Stale)
+            health = health with
+            {
+                ReasonCode = ReasonCode.CaptureFailed,
+                Reason = "Native capture failed."
+            };
         var result = V12.ValidateSnapshot(CollectionDataSerializer.CompactV12(Data([], health), 3), "123");
         Assert.True(result.Success, result.Code.ToString());
         Assert.Equal(included, result.Value!.Unlocks.ContainsKey("beasts"));
-        if (included) Assert.Equal(SnapshotFixture.Now, DateTimeOffset.Parse(result.Value.SourceHealth["beasts"].ObservedAtUtc!));
+        if (included)
+            Assert.Equal(SnapshotFixture.Now, DateTimeOffset.Parse(result.Value.SourceHealth["beasts"].ObservedAtUtc!));
     }
 
     [Fact]
@@ -90,16 +106,19 @@ public sealed class CollectionDataV12Tests : IDisposable
         var publisher = new CollectionDataPublisher(new(root), null);
         var previous = publisher.Prepare(Data([1]), "Test", 1, null, false, false, default).Bundle;
         var next = publisher.Prepare(Data([1, 50]), "Test", 2, previous, false, false, default).Bundle;
-        var notices = new ChangedNoticeCoalescer(); notices.Add(next, previous, ["beasts"]);
+        var notices = new ChangedNoticeCoalescer();
+        notices.Add(next, previous, ["beasts"]);
         var notice = notices.TakeV12()!;
         Assert.True(V12.ValidateChanged(notice).Success);
         Assert.Equal<string>(["beasts"], V12.ValidateChanged(notice).Value!.ChangedSources);
         Assert.Null(CollectionDataLegacyProjection.Notice(notice));
         Assert.Null(CollectionDataLegacyProjection.NoticeV11(notice));
-        var store = new CollectionDataPublicationStore(); store.Accept(next);
+        var store = new CollectionDataPublicationStore();
+        store.Accept(next);
         store.SetCapabilities(next.CapabilitiesJson, next.CapabilitiesJsonV11, next.CapabilitiesJsonV12);
         Assert.Equal(next.CompactJsonV12, store.GetSnapshotV12());
-        store.Withdraw(); Assert.Empty(store.GetSnapshotV12());
+        store.Withdraw();
+        Assert.Empty(store.GetSnapshotV12());
         Assert.False(V12.ValidateCapabilities(store.GetCapabilitiesV12()).Value!.ReportedOwnershipEvidence.Available);
     }
 
@@ -132,24 +151,50 @@ public sealed class CollectionDataV12Tests : IDisposable
     public void CollectBeastsNeedsValidatedContractCompleteObservationAndCatalog(bool validated, bool observed, bool included)
     {
         var data = observed ? Data([]) : Data([], CollectionStateFactory.Empty(123, Guid.NewGuid(), SnapshotFixture.Now).Unlocks["beasts"].Health);
-        data = data with { Catalog = data.Catalog with { GameDataVersion = "2026.09.01.0000.0000" } };
+        data = data with
+        {
+            Catalog = data.Catalog with
+            {
+                GameDataVersion = "2026.09.01.0000.0000"
+            }
+        };
         var contract = new FFXIVCollectContract(data.Catalog.GameDataVersion, data.Catalog.Collections.Where(pair => CollectionKeys.Collect.Contains(pair.Key)).ToImmutableDictionary(pair => pair.Key, pair => pair.Value.Items.Select(item => item.Id).ToImmutableHashSet())) with
-        { Beasts = new("2026.09.01.0000.0000", Enumerable.Range(1, 50).Select(id => (uint)id).ToImmutableHashSet(), validated) };
+        {
+            Beasts = new("2026.09.01.0000.0000", Enumerable.Range(1, 50).Select(id => (uint)id).ToImmutableHashSet(), validated)
+        };
         var export = FFXIVCollectImportSerializer.Serialize(data, contract);
         Assert.Equal(included, JsonNode.Parse(export.Json!)!.AsObject().ContainsKey("beasts"));
-        if (included) Assert.Empty(JsonNode.Parse(export.Json!)!["beasts"]!.AsArray());
+        if (included)
+            Assert.Empty(JsonNode.Parse(export.Json!)!["beasts"]!.AsArray());
     }
 
     [Fact]
     public void CollectOmitsStaleBeastsAndRejectsUnknownIdsAtPublication()
     {
-        var health = SnapshotFixture.Health(DataType.PermanentUnlock, SourceStatus.Stale) with { ReasonCode = ReasonCode.CaptureFailed, Reason = "Native capture failed." };
-        var data = Data([1], health); data = data with { Catalog = data.Catalog with { GameDataVersion = "2026.09.01.0000.0000" } };
+        var health = SnapshotFixture.Health(DataType.PermanentUnlock, SourceStatus.Stale) with
+        {
+            ReasonCode = ReasonCode.CaptureFailed,
+            Reason = "Native capture failed."
+        };
+        var data = Data([1], health);
+        data = data with
+        {
+            Catalog = data.Catalog with
+            {
+                GameDataVersion = "2026.09.01.0000.0000"
+            }
+        };
         var contract = new FFXIVCollectContract(data.Catalog.GameDataVersion, data.Catalog.Collections.Where(pair => CollectionKeys.Collect.Contains(pair.Key)).ToImmutableDictionary(pair => pair.Key, pair => pair.Value.Items.Select(item => item.Id).ToImmutableHashSet())) with
-        { Beasts = new("2026.09.01.0000.0000", Enumerable.Range(1, 50).Select(id => (uint)id).ToImmutableHashSet(), true) };
+        {
+            Beasts = new("2026.09.01.0000.0000", Enumerable.Range(1, 50).Select(id => (uint)id).ToImmutableHashSet(), true)
+        };
         Assert.DoesNotContain("\"beasts\"", FFXIVCollectImportSerializer.Serialize(data, contract).Json!);
         Assert.Throws<InvalidDataException>(() => new CollectionDataPublisher(new(root), null).Prepare(Data([51]), "Test", 1, null, false, false, default));
     }
 
-    public void Dispose() { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    public void Dispose()
+    {
+        if (Directory.Exists(root))
+            Directory.Delete(root, true);
+    }
 }

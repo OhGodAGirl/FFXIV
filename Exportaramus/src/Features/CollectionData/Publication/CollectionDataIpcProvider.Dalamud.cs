@@ -20,7 +20,9 @@ public sealed class CollectionDataIpcProvider : IDisposable
 
     public CollectionDataIpcProvider(IDalamudPluginInterface pluginInterface, SnapshotController controller, DiagnosticMeasurements measurements, bool extended = false, bool beasts = false)
     {
-        this.controller = controller; this.extended = extended; this.beasts = beasts;
+        this.controller = controller;
+        this.extended = extended;
+        this.beasts = beasts;
         string Gate(string legacy) => beasts ? legacy.Replace("Exportaramus.CollectionData.", "Exportaramus.CollectionData.V1_2.", StringComparison.Ordinal) : extended ? legacy.Replace("Exportaramus.CollectionData.", "Exportaramus.CollectionData.V1_1.", StringComparison.Ordinal) : legacy;
         capabilities = pluginInterface.GetIpcProvider<string>(Gate(CollectionDataGates.GetCapabilities));
         snapshot = pluginInterface.GetIpcProvider<string>(Gate(CollectionDataGates.GetSnapshot));
@@ -47,22 +49,66 @@ public sealed class CollectionDataIpcProvider : IDisposable
                 measurements.CountReport(result == "Accepted", result == "RateLimited");
                 return result;
             });
-            if (beasts) { controller.ChangedV12 += SendChanged; controller.WithdrawnV12 += SendWithdrawn; }
-            else if (extended) { controller.ChangedV11 += SendChanged; controller.WithdrawnV11 += SendWithdrawn; }
-            else { controller.Changed += SendChanged; controller.Withdrawn += SendWithdrawn; }
+            if (beasts)
+            {
+                controller.ChangedV12 += SendChanged;
+                controller.WithdrawnV12 += SendWithdrawn;
+            }
+            else if (extended)
+            {
+                controller.ChangedV11 += SendChanged;
+                controller.WithdrawnV11 += SendWithdrawn;
+            }
+            else
+            {
+                controller.Changed += SendChanged;
+                controller.Withdrawn += SendWithdrawn;
+            }
         }
         catch { Dispose(); throw; }
     }
     // Dalamud owns subscriber dispatch. Catch its aggregate failure so accepted publication survives.
     // API 15 offers no supported per-subscriber dispatch or timeout facility (documented discrepancy).
-    private void SendChanged(string json) { try { changed.SendMessage(json); } catch (Exception) { } }
-    private void SendWithdrawn(string json) { try { withdrawn.SendMessage(json); } catch (Exception) { } }
+    private void SendChanged(string json)
+    {
+        try
+        {
+            changed.SendMessage(json);
+        }
+        catch (Exception) { }
+    }
+    private void SendWithdrawn(string json)
+    {
+        try
+        {
+            withdrawn.SendMessage(json);
+        }
+        catch (Exception) { }
+    }
     public void Dispose()
     {
-        if (disposed) return; disposed = true;
-        if (beasts) { controller.ChangedV12 -= SendChanged; controller.WithdrawnV12 -= SendWithdrawn; }
-        else if (extended) { controller.ChangedV11 -= SendChanged; controller.WithdrawnV11 -= SendWithdrawn; }
-        else { controller.Changed -= SendChanged; controller.Withdrawn -= SendWithdrawn; }
-        try { report.UnregisterFunc(); } finally { try { snapshot.UnregisterFunc(); } finally { capabilities.UnregisterFunc(); } }
+        if (disposed)
+            return;
+        disposed = true;
+        if (beasts)
+        {
+            controller.ChangedV12 -= SendChanged;
+            controller.WithdrawnV12 -= SendWithdrawn;
+        }
+        else if (extended)
+        {
+            controller.ChangedV11 -= SendChanged;
+            controller.WithdrawnV11 -= SendWithdrawn;
+        }
+        else
+        {
+            controller.Changed -= SendChanged;
+            controller.Withdrawn -= SendWithdrawn;
+        }
+        try
+        {
+            report.UnregisterFunc();
+        }
+        finally { try { snapshot.UnregisterFunc(); } finally { capabilities.UnregisterFunc(); } }
     }
 }

@@ -62,7 +62,10 @@ public sealed class MainUiFinalMutationTests
         var failed = new PermanentUnlockState([], CaptureReadPolicy.Health(DataType.PermanentUnlock, 2,
             SnapshotFixture.Now, ReasonCode.WindowNotReady));
         var retained = CollectionStatePolicy.Resolve(prior, failed, true, true);
-        var state = original.State with { Unlocks = original.State.Unlocks.SetItem("survey_records", retained) };
+        var state = original.State with
+        {
+            Unlocks = original.State.Unlocks.SetItem("survey_records", retained)
+        };
         var view = View(Bundle(CollectionDataAssembler.Assemble(original.Catalog, state)));
         var row = view.Rows.Single(value => value.Key == "survey_records");
         Assert.Equal(MainStatus.Partial, view.Status);
@@ -101,8 +104,18 @@ public sealed class MainUiFinalMutationTests
     {
         var original = SnapshotFixture.Create();
         var definition = original.Catalog.Collections["outfits"];
-        var second = definition.Items[0] with { Id = 45095, RequiredItemIds = [100] };
-        var catalog = original.Catalog with { Collections = original.Catalog.Collections.SetItem("outfits", definition with { Items = [.. definition.Items, second] }) };
+        var second = definition.Items[0] with
+        {
+            Id = 45095,
+            RequiredItemIds = [100]
+        };
+        var catalog = original.Catalog with
+        {
+            Collections = original.Catalog.Collections.SetItem("outfits", definition with
+            {
+                Items = [.. definition.Items, second]
+            })
+        };
         var state = CollectionStateFactory.Empty(original.State.ContentId, original.State.ProviderSessionId, SnapshotFixture.Now);
         state = state with
         {
@@ -111,7 +124,10 @@ public sealed class MainUiFinalMutationTests
         };
         var data = CollectionDataAssembler.Assemble(catalog, state);
         Assert.False(data.Collections.ContainsKey("outfits"));
-        var bundle = Bundle(data) with { ConfirmedPartialCounts = ImmutableDictionary<string, int>.Empty.Add("outfits", 1) };
+        var bundle = Bundle(data) with
+        {
+            ConfirmedPartialCounts = ImmutableDictionary<string, int>.Empty.Add("outfits", 1)
+        };
         var row = View(bundle).Rows.Single(value => value.Key == "outfits");
         Assert.Equal("1+", row.Count);
         Assert.Empty(row.Marker);
@@ -175,7 +191,10 @@ public sealed class MainUiFinalMutationTests
         var original = SnapshotFixture.Create();
         var failed = new PermanentUnlockState([], CaptureReadPolicy.Health(DataType.PermanentUnlock, 2, SnapshotFixture.Now, reason));
         return Bundle(CollectionDataAssembler.Assemble(original.Catalog,
-            original.State with { Unlocks = original.State.Unlocks.SetItem(key, failed) }));
+            original.State with
+            {
+                Unlocks = original.State.Unlocks.SetItem(key, failed)
+            }));
     }
 
     private static AcceptedSnapshotBundle RetainedDresser(ReasonCode reason)
@@ -184,7 +203,10 @@ public sealed class MainUiFinalMutationTests
         var failed = CaptureReadPolicy.FailedPresence(false, 2, SnapshotFixture.Now, reason);
         var retained = CollectionStatePolicy.Resolve(original.State.CurrentItemPresence["glamourDresser"], failed, true, true);
         return Bundle(CollectionDataAssembler.Assemble(original.Catalog,
-            original.State with { CurrentItemPresence = original.State.CurrentItemPresence.SetItem("glamourDresser", retained) }));
+            original.State with
+            {
+                CurrentItemPresence = original.State.CurrentItemPresence.SetItem("glamourDresser", retained)
+            }));
     }
 
     private static AcceptedSnapshotBundle Bundle(CollectionData data) => new(data, 12, "{}", null, "fingerprint",

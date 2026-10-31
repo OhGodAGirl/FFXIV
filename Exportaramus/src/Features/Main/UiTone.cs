@@ -3,4 +3,7 @@ using Exportaramus.Features.GuidedExport;
 
 namespace Exportaramus.Features.Main;
 
-public enum UiTone { Primary, Muted, Success, Working, Warning, Error }
+public enum UiTone
+{
+    Primary, Muted, Success, Working, Warning, Error
+}

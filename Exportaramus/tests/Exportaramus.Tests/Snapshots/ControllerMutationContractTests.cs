@@ -21,8 +21,10 @@ public sealed class ControllerMutationContractTests
         var notices = new List<string>();
         run.Controller.Withdrawn += notices.Add;
         var before = DateTimeOffset.UtcNow;
-        if (stopping) run.Controller.Dispose();
-        else run.Controller.Update(0, "", true, false, 10, SnapshotFixture.Now.AddSeconds(10));
+        if (stopping)
+            run.Controller.Dispose();
+        else
+            run.Controller.Update(0, "", true, false, 10, SnapshotFixture.Now.AddSeconds(10));
         var after = DateTimeOffset.UtcNow;
         var payload = Assert.Single(notices);
         Assert.True(CollectionDataSemanticValidator.ValidateWithdrawn(payload).Success);
@@ -34,8 +36,10 @@ public sealed class ControllerMutationContractTests
         Assert.Equal("123", value.GetProperty("contentId").GetString());
         Assert.Equal(stopping ? "ProviderStopping" : "LoggedOut", value.GetProperty("reasonCode").GetString());
         var time = value.GetProperty("withdrawnAtUtc").GetDateTimeOffset();
-        if (stopping) Assert.InRange(time, before, after);
-        else Assert.Equal(SnapshotFixture.Now.AddSeconds(10), time);
+        if (stopping)
+            Assert.InRange(time, before, after);
+        else
+            Assert.Equal(SnapshotFixture.Now.AddSeconds(10), time);
     }
 
     [Fact]
@@ -60,7 +64,8 @@ public sealed class ControllerMutationContractTests
     {
         await using var run = new Harness();
         await run.Restore(0);
-        run.Controller.RequestFull(); await run.Accept(5, 1, CaptureType.Full);
+        run.Controller.RequestFull();
+        await run.Accept(5, 1, CaptureType.Full);
         var fullGeneration = run.Controller.Publication.Current!.Data.State.CaptureGeneration;
         Assert.True(fullGeneration > 0);
         Assert.Equal(fullGeneration, run.Controller.DiagnosticOperation(5).CaptureGeneration);
@@ -76,22 +81,53 @@ public sealed class ControllerMutationContractTests
     }
 
     [Fact]
-    public async Task FailedSameCharacterRefreshRetainsPhysicalPresenceButClearsPermanentUnlocks()
+    public async Task FailedSameCharacterRefreshRetainsPriorObservationsWithTheirOriginalTimes()
     {
         await using var run = new Harness();
         await run.Restore(0);
         var fixture = SnapshotFixture.Create().State;
         run.Port.SuppliedBatch = new(fixture.Unlocks, fixture.CurrentItemPresence, fixture.Quests);
-        run.Controller.RequestFull(); await run.Accept(5, 1, CaptureType.Full);
+        run.Controller.RequestFull();
+        await run.Accept(5, 1, CaptureType.Full);
         var previous = run.Controller.Publication.Current!.Data.State;
         run.Port.SuppliedBatch = new(
             fixture.Unlocks.ToImmutableDictionary(pair => pair.Key, pair => pair.Value with
-            { Health = pair.Value.Health with { SourceStatus = SourceStatus.Unavailable, Completeness = Completeness.Unknown, ProvenanceType = ProvenanceType.None, ObservedAtUtc = null, ReasonCode = ReasonCode.CaptureFailed } }),
+            {
+                Health = pair.Value.Health with
+                {
+                    SourceStatus = SourceStatus.Unavailable,
+                    Completeness = Completeness.Unknown,
+                    ProvenanceType = ProvenanceType.None,
+                    ObservedAtUtc = null,
+                    ReasonCode = ReasonCode.CaptureFailed,
+                    Reason = "The source could not be completely read."
+                }
+            }),
             fixture.CurrentItemPresence.ToImmutableDictionary(pair => pair.Key, pair => pair.Value with
-            { Items = [], Health = pair.Value.Health with { SourceStatus = SourceStatus.Unavailable, Completeness = Completeness.Unknown, ProvenanceType = ProvenanceType.None, ObservedAtUtc = null, ReasonCode = ReasonCode.CaptureFailed } }), []);
-        run.Controller.RequestFull(); await run.Accept(10, 2, CaptureType.Full);
+            {
+                Items = [],
+                Health = pair.Value.Health with
+                {
+                    SourceStatus = SourceStatus.Unavailable,
+                    Completeness = Completeness.Unknown,
+                    ProvenanceType = ProvenanceType.None,
+                    ObservedAtUtc = null,
+                    ReasonCode = ReasonCode.CaptureFailed,
+                    Reason = "The source could not be completely read."
+                }
+            }), []);
+        run.Controller.RequestFull();
+        await run.Accept(10, 2, CaptureType.Full);
         var updated = run.Controller.Publication.Current!.Data.State;
-        Assert.All(updated.Unlocks.Values, source => Assert.Empty(source.UnlockedIds));
+        foreach (var (key, source) in updated.Unlocks)
+        {
+            Assert.Equal(previous.Unlocks[key].UnlockedIds, source.UnlockedIds);
+            Assert.Equal(SourceStatus.Stale, source.Health.SourceStatus);
+            Assert.Equal(previous.Unlocks[key].Health.ObservedAtUtc, source.Health.ObservedAtUtc);
+            Assert.Equal(previous.Unlocks[key].Health.CaptureGeneration, source.Health.CaptureGeneration);
+            Assert.Equal(ReasonCode.CaptureFailed, source.Health.ReasonCode);
+        }
+        Assert.Equal(previous.Quests, updated.Quests);
         foreach (var (key, source) in updated.CurrentItemPresence)
         {
             Assert.Equal(previous.CurrentItemPresence[key].Items, source.Items);
@@ -106,13 +142,15 @@ public sealed class ControllerMutationContractTests
         var measurements = new DiagnosticMeasurements();
         await using var run = new Harness(measurements);
         await run.Restore(0);
-        run.Controller.RequestFull(); await run.Accept(5, 1, CaptureType.Full);
+        run.Controller.RequestFull();
+        await run.Accept(5, 1, CaptureType.Full);
         Assert.True(measurements.Snapshot().ContainsKey("Normalization"));
         Assert.Equal(0, run.Controller.DiagnosticOperation(100).ElapsedMilliseconds);
         Assert.Equal(new[] { "CollectionOutput", "Capabilities", "CaptureShutdown", "ControllerShutdown" },
             run.Controller.DiagnosticTasks.Select(task => task.Name));
         run.Port.FullFailures = 1;
-        run.Controller.RequestFull(); run.Update(101);
+        run.Controller.RequestFull();
+        run.Update(101);
         Assert.False(run.Controller.Busy);
         Assert.Equal("Synchronization failed. Try Sync Now again.", run.Controller.Error);
         var failure = Assert.Single(measurements.Failures, entry => entry.Component == "Controller");
@@ -126,38 +164,48 @@ public sealed class ControllerMutationContractTests
     public void LoginResetsPriorCadencePendingRequestsAndAutomaticRetry()
     {
         var policy = new SnapshotSchedulePolicy();
-        policy.Login(0); policy.Tick(15);
+        policy.Login(0);
+        policy.Tick(15);
         Assert.Equal(CaptureRequest.AutomaticFull, policy.Take());
         policy.Failed(CaptureRequest.AutomaticFull, 15, false);
         policy.Request(CaptureRequest.AutomaticLightweight);
         policy.Login(100);
         Assert.Equal(CaptureRequest.None, policy.Take());
         Assert.Equal(0, policy.FailureCount);
-        policy.Tick(100); Assert.Equal(CaptureRequest.None, policy.Take());
-        policy.Tick(114.999); Assert.Equal(CaptureRequest.None, policy.Take());
-        policy.Tick(115); Assert.Equal(CaptureRequest.AutomaticFull, policy.Take());
+        policy.Tick(100);
+        Assert.Equal(CaptureRequest.None, policy.Take());
+        policy.Tick(114.999);
+        Assert.Equal(CaptureRequest.None, policy.Take());
+        policy.Tick(115);
+        Assert.Equal(CaptureRequest.AutomaticFull, policy.Take());
     }
 
     [Fact]
     public void ManualRequestCancelsAutomaticRetryAndManualFailureNeverSchedulesRetry()
     {
         var policy = new SnapshotSchedulePolicy();
-        policy.Login(0); policy.Accepted(true, 5);
+        policy.Login(0);
+        policy.Accepted(true, 5);
         policy.Failed(CaptureRequest.AutomaticLightweight, 100, false);
         policy.Request(CaptureRequest.ManualFull);
         Assert.Equal(CaptureRequest.ManualFull, policy.Take());
         Assert.Equal(0, policy.FailureCount);
         policy.Failed(CaptureRequest.ManualFull, 110, false);
-        policy.Tick(130); Assert.Equal(CaptureRequest.None, policy.Take());
-        policy.Tick(140); Assert.Equal(CaptureRequest.None, policy.Take());
-        policy.Tick(305); Assert.Equal(CaptureRequest.AutomaticLightweight, policy.Take());
+        policy.Tick(130);
+        Assert.Equal(CaptureRequest.None, policy.Take());
+        policy.Tick(140);
+        Assert.Equal(CaptureRequest.None, policy.Take());
+        policy.Tick(305);
+        Assert.Equal(CaptureRequest.AutomaticLightweight, policy.Take());
     }
 
     [Fact]
     public void ResetCancelsCadenceAndPendingRetryUntilNextLogin()
     {
         var policy = new SnapshotSchedulePolicy();
-        policy.Login(0); policy.Tick(15); policy.Failed(CaptureRequest.AutomaticFull, 15, false);
+        policy.Login(0);
+        policy.Tick(15);
+        policy.Failed(CaptureRequest.AutomaticFull, 15, false);
         policy.Reset();
         Assert.Equal(0, policy.FailureCount);
         Assert.Equal(CaptureRequest.None, policy.Take());
@@ -169,11 +217,14 @@ public sealed class ControllerMutationContractTests
     public void EarlyAutomaticFullFailureDoesNotPostponePreviouslyScheduledFullCadence()
     {
         var policy = new SnapshotSchedulePolicy();
-        policy.Login(0); policy.Accepted(true, 5);
+        policy.Login(0);
+        policy.Accepted(true, 5);
         policy.Failed(CaptureRequest.AutomaticFull, 100, false);
         policy.Accepted(false, 1700);
-        policy.Tick(1804.999); Assert.Equal(CaptureRequest.None, policy.Take());
-        policy.Tick(1805); Assert.Equal(CaptureRequest.AutomaticFull, policy.Take());
+        policy.Tick(1804.999);
+        Assert.Equal(CaptureRequest.None, policy.Take());
+        policy.Tick(1805);
+        Assert.Equal(CaptureRequest.AutomaticFull, policy.Take());
     }
 
     [Fact]

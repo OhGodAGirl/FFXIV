@@ -10,7 +10,8 @@ internal static class MainHeaderRenderer
     internal static float Draw(Vector2 origin, float width, MainViewState state, IFontHandle titleFont, Action<MainIntent> dispatch)
     {
         var u = Drawing.Unit;
-        ImGui.SetCursorScreenPos(origin); Drawing.Heading("Exportaramus", titleFont);
+        ImGui.SetCursorScreenPos(origin);
+        Drawing.Heading("Exportaramus", titleFont);
         var titleHeight = ImGui.GetItemRectSize().Y;
         ImGui.SetCursorScreenPos(origin + new Vector2(width - 28 * u, 0));
         ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0f);
@@ -21,8 +22,10 @@ internal static class MainHeaderRenderer
         var iconSize = 18 * u;
         var iconOrigin = (ImGui.GetItemRectMin() + ImGui.GetItemRectMax() - new Vector2(iconSize)) / 2;
         UiIcons.Draw("Close", iconOrigin, iconSize);
-        if (ImGui.IsItemHovered()) ImGui.SetTooltip("Close");
-        if (closePressed) dispatch(MainIntent.Close);
+        if (ImGui.IsItemHovered())
+            ImGui.SetTooltip("Close");
+        if (closePressed)
+            dispatch(MainIntent.Close);
         var y = Math.Max(36 * u, titleHeight + 6 * u);
         const string subtitle = "Snapshot and synchronize your FFXIV collection data with other plugins.";
         Drawing.Wrapped(origin + new Vector2(2 * u, y), width - 4 * u, subtitle, VisualTokens.Secondary);

@@ -3,4 +3,7 @@ using Exportaramus.Features.GuidedExport;
 
 namespace Exportaramus.Features.Main;
 
-public enum MainStatus { NoCharacter, NoSnapshot, Synchronizing, Current, Partial, Error }
+public enum MainStatus
+{
+    NoCharacter, NoSnapshot, Synchronizing, Current, Partial, Error
+}

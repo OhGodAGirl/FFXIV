@@ -56,7 +56,8 @@ public sealed class SchemaVocabularyTests
     [InlineData("{\"pattern\":\"^a+$\"}", "\"bbb\"", false)]
     public void IndependentSchemaVocabularyVectors(string body, string input, bool expected)
     {
-        var schema = JsonNode.Parse(body)!.AsObject(); schema["$id"] = "https://exportaramus.local/schemas/1.0/collection-data.schema.json";
+        var schema = JsonNode.Parse(body)!.AsObject();
+        schema["$id"] = "https://exportaramus.local/schemas/1.0/collection-data.schema.json";
         var registry = new ContractSchemaRegistry([Encoding.UTF8.GetBytes(schema.ToJsonString())]);
         using var document = JsonDocument.Parse(input);
         Assert.Equal(expected, registry.Validate(document.RootElement, "collection-data.schema.json"));
@@ -105,9 +106,12 @@ public sealed class SchemaVocabularyTests
             }
             catch (Exception exception) { failure = exception; }
         }, 32 * 1024 * 1024)
-        { IsBackground = true };
+        {
+            IsBackground = true
+        };
         thread.Start();
         Assert.True(thread.Join(TimeSpan.FromSeconds(10)), "Finite reference-chain evaluation did not terminate.");
-        if (failure is not null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+        if (failure is not null)
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
     }
 }

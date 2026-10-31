@@ -10,7 +10,11 @@ public sealed class MutationConfigurationLifecycleTests
     {
         private readonly ConcurrentQueue<(SendOrPostCallback Callback, object? State)> callbacks = new();
         public override void Post(SendOrPostCallback callback, object? state) => callbacks.Enqueue((callback, state));
-        public void Drain() { while (callbacks.TryDequeue(out var next)) next.Callback(next.State); }
+        public void Drain()
+        {
+            while (callbacks.TryDequeue(out var next))
+                next.Callback(next.State);
+        }
     }
 
     private static Task DisposeOnContext(ConfigurationWriteCoordinator coordinator, QueuedContext context)
@@ -49,7 +53,8 @@ public sealed class MutationConfigurationLifecycleTests
         using var cancellation = new CancellationTokenSource();
         try
         {
-            if (canonicalExists) await ConfigurationFile.WriteAsync(path, previous);
+            if (canonicalExists)
+                await ConfigurationFile.WriteAsync(path, previous);
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => ConfigurationFile.WriteAsync(path, candidate,
                 async (temporary, json, encoding, token) =>
                 {
@@ -90,7 +95,9 @@ public sealed class MutationConfigurationLifecycleTests
         Task repeated = Task.CompletedTask;
         try
         {
-            coordinator.Request(true); coordinator.Update(); coordinator.Request(false);
+            coordinator.Request(true);
+            coordinator.Update();
+            coordinator.Request(false);
             first = coordinator.DisposeAsync().AsTask();
             Assert.False(first.IsCompleted);
             repeated = coordinator.DisposeAsync().AsTask();
@@ -122,7 +129,9 @@ public sealed class MutationConfigurationLifecycleTests
         Task shutdown = Task.CompletedTask;
         try
         {
-            coordinator.Request(true); coordinator.Update(); coordinator.Request(false);
+            coordinator.Request(true);
+            coordinator.Update();
+            coordinator.Request(false);
             shutdown = DisposeOnContext(coordinator, context);
             Assert.False(shutdown.IsCompleted);
             active.TrySetResult();

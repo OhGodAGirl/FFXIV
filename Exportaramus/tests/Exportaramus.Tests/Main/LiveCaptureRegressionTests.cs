@@ -1,8 +1,8 @@
+using System.Collections.Immutable;
 using Exportaramus.Features.CollectionData.Capture;
 using Exportaramus.Features.CollectionData.Publication;
 using Exportaramus.Features.CollectionData.State;
 using Exportaramus.Tests.Snapshots;
-using System.Collections.Immutable;
 
 namespace Exportaramus.Tests.Main;
 
@@ -31,7 +31,10 @@ public sealed class LiveCaptureRegressionTests
     public void ConfirmedOutfitsAreCountedWithoutClaimingMissingStorageIsEmpty()
     {
         var data = SnapshotFixture.Create();
-        data = data with { Collections = data.Collections.Remove("outfits") };
+        data = data with
+        {
+            Collections = data.Collections.Remove("outfits")
+        };
         var bundle = new AcceptedSnapshotBundle(data, 1, "{}", "{}", "", ImmutableDictionary<string, string>.Empty,
             new("{}", [], ["outfits"], null), 0, null);
         var prepared = SnapshotBundlePreparation.Prepare(bundle, null, false);

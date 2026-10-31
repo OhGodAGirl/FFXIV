@@ -18,8 +18,12 @@ public sealed class EfficiencyRefinementTests
         var value = new string('界', length) + "\"<&\n😀";
         Action<Utf8JsonWriter> write = writer =>
         {
-            writer.WriteStartObject(); writer.WriteString("a", value);
-            writer.WriteStartArray("z"); writer.WriteNumberValue(ulong.MaxValue); writer.WriteEndArray(); writer.WriteEndObject();
+            writer.WriteStartObject();
+            writer.WriteString("a", value);
+            writer.WriteStartArray("z");
+            writer.WriteNumberValue(ulong.MaxValue);
+            writer.WriteEndArray();
+            writer.WriteEndObject();
         };
         var bytes = JsonOutput.Build(write);
         var expected = "{\"a\":\"" + string.Concat(Enumerable.Repeat("\\u754C", length)) + "\\u0022\\u003C\\u0026\\n\\uD83D\\uDE00\",\"z\":[18446744073709551615]}";
@@ -35,7 +39,8 @@ public sealed class EfficiencyRefinementTests
     [Fact]
     public void EmptyAndFailedWritesPreserveConsumerBehavior()
     {
-        Assert.Empty(JsonOutput.Build(_ => { })); Assert.Empty(JsonOutput.Text(_ => { }));
+        Assert.Empty(JsonOutput.Build(_ => { }));
+        Assert.Empty(JsonOutput.Text(_ => { }));
         Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(Array.Empty<byte>())), JsonOutput.Fingerprint(_ => { }));
         var failure = new OperationCanceledException();
         Action<Utf8JsonWriter> cancel = writer => { writer.WriteStartObject(); throw failure; };
@@ -54,24 +59,44 @@ public sealed class EfficiencyRefinementTests
     {
         var dependencies = ImmutableDictionary<string, string>.Empty.Add("Dalamud", "15.0.3.2");
         var metadata = new DiagnosticRuntimeMetadata("10.0.1", "Windows 10.0", dependencies);
-        var first = metadata.Apply(new() { DalamudApiVersion = "15", FfxivClientVersion = "first", GameDataVersion = "one", ClientLanguage = "English" });
-        var second = metadata.Apply(first with { FfxivClientVersion = "second", GameDataVersion = "two", ClientLanguage = "Japanese" });
+        var first = metadata.Apply(new()
+        {
+            DalamudApiVersion = "15",
+            FfxivClientVersion = "first",
+            GameDataVersion = "one",
+            ClientLanguage = "English"
+        });
+        var second = metadata.Apply(first with
+        {
+            FfxivClientVersion = "second",
+            GameDataVersion = "two",
+            ClientLanguage = "Japanese"
+        });
 
-        Assert.Same(dependencies, first.Dependencies); Assert.Same(first.Dependencies, second.Dependencies);
-        Assert.Same(first.DotnetRuntimeVersion, second.DotnetRuntimeVersion); Assert.Equal("10.0.1", second.DotnetRuntimeVersion);
-        Assert.Same(first.OsVersion, second.OsVersion); Assert.Equal("Windows 10.0", second.OsVersion);
-        Assert.Equal("second", second.FfxivClientVersion); Assert.Equal("two", second.GameDataVersion); Assert.Equal("Japanese", second.ClientLanguage);
-        Assert.Equal("15", second.DalamudApiVersion); Assert.Equal("first", first.FfxivClientVersion);
+        Assert.Same(dependencies, first.Dependencies);
+        Assert.Same(first.Dependencies, second.Dependencies);
+        Assert.Same(first.DotnetRuntimeVersion, second.DotnetRuntimeVersion);
+        Assert.Equal("10.0.1", second.DotnetRuntimeVersion);
+        Assert.Same(first.OsVersion, second.OsVersion);
+        Assert.Equal("Windows 10.0", second.OsVersion);
+        Assert.Equal("second", second.FfxivClientVersion);
+        Assert.Equal("two", second.GameDataVersion);
+        Assert.Equal("Japanese", second.ClientLanguage);
+        Assert.Equal("15", second.DalamudApiVersion);
+        Assert.Equal("first", first.FfxivClientVersion);
         var reloaded = new DiagnosticRuntimeMetadata("10.0.2", "Windows 11.0", dependencies.Add("Lumina", "7.6.0.0")).Apply(second);
-        Assert.Equal("10.0.2", reloaded.DotnetRuntimeVersion); Assert.Equal("Windows 11.0", reloaded.OsVersion);
-        Assert.Equal(2, reloaded.Dependencies.Count); Assert.Single(first.Dependencies);
+        Assert.Equal("10.0.2", reloaded.DotnetRuntimeVersion);
+        Assert.Equal("Windows 11.0", reloaded.OsVersion);
+        Assert.Equal(2, reloaded.Dependencies.Count);
+        Assert.Single(first.Dependencies);
     }
 
     [Fact]
     public async Task CapturesRemainBoundedAndIndependentAcrossConcurrentResetAndRecording()
     {
         var measurements = new DiagnosticMeasurements();
-        for (var i = 0; i < 300; i++) measurements.Record("Draw", i, i * 2);
+        for (var i = 0; i < 300; i++)
+            measurements.Record("Draw", i, i * 2);
         measurements.Record("draw", 7, 14);
         var before = measurements.Snapshot();
         var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -79,7 +104,8 @@ public sealed class EfficiencyRefinementTests
         {
             await start.Task;
             measurements.ResetMeasurements();
-            for (var i = 0; i < 300; i++) measurements.Record("Draw", 1000 + i, 2000 + i);
+            for (var i = 0; i < 300; i++)
+                measurements.Record("Draw", 1000 + i, 2000 + i);
         });
         try
         {
@@ -102,7 +128,8 @@ public sealed class EfficiencyRefinementTests
         Assert.Equal(new DiagnosticPercentiles(342, 574, 598), before["Draw"].AllocatedBytes);
         Assert.Contains("draw", before.Keys);
         var after = Assert.Single(measurements.Snapshot());
-        Assert.Equal("Draw", after.Key); Assert.Equal(new DiagnosticPercentiles(1171, 1287, 1299), after.Value.DurationMilliseconds);
+        Assert.Equal("Draw", after.Key);
+        Assert.Equal(new DiagnosticPercentiles(1171, 1287, 1299), after.Value.DurationMilliseconds);
     }
 
 }

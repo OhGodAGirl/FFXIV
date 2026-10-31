@@ -22,7 +22,10 @@ public sealed class PreparedPublicationDecisionTests : IDisposable
         {
             CaptureType = CaptureType.Lightweight,
             CapturedAtUtc = SnapshotFixture.Now.AddMinutes(5),
-            CurrentItemPresence = data.State.CurrentItemPresence.SetItem("inventory", data.State.CurrentItemPresence["inventory"] with { Items = [] })
+            CurrentItemPresence = data.State.CurrentItemPresence.SetItem("inventory", data.State.CurrentItemPresence["inventory"] with
+            {
+                Items = []
+            })
         });
 
         var accepted = await publisher.PrepareAndPersistAsync(next, "Test", 2, full, false, false, default);
@@ -42,7 +45,10 @@ public sealed class PreparedPublicationDecisionTests : IDisposable
         var first = SnapshotBundlePreparation.Prepare(StateAndPublicationTests.Bundle(data, 1), null, true);
         var next = CollectionDataAssembler.Assemble(data.Catalog, data.State with
         {
-            Unlocks = data.State.Unlocks.SetItem("mounts", data.State.Unlocks["mounts"] with { UnlockedIds = [] })
+            Unlocks = data.State.Unlocks.SetItem("mounts", data.State.Unlocks["mounts"] with
+            {
+                UnlockedIds = []
+            })
         });
 
         var accepted = SnapshotBundlePreparation.Prepare(StateAndPublicationTests.Bundle(next, 2), first, true);
@@ -70,10 +76,19 @@ public sealed class PreparedPublicationDecisionTests : IDisposable
         using var rich = JsonDocument.Parse(CollectionDataSerializer.Rich(data, "Test", SnapshotFixture.Now));
         Assert.Equal(255, rich.RootElement.GetProperty("collections").GetProperty("quests").GetProperty("items")[0].GetProperty("progress").GetProperty("sequence").GetInt32());
         Assert.Equal("Coherent", CollectionDataSerializer.Consistency(data));
-        Assert.Equal("MixedObservationTimes", CollectionDataSerializer.Consistency(data with { State = data.State with { CaptureType = CaptureType.Lightweight } }));
         Assert.Equal("MixedObservationTimes", CollectionDataSerializer.Consistency(data with
         {
-            SourceHealth = data.SourceHealth.SetItem("inventory", data.SourceHealth["inventory"] with { SourceStatus = SourceStatus.Stale })
+            State = data.State with
+            {
+                CaptureType = CaptureType.Lightweight
+            }
+        }));
+        Assert.Equal("MixedObservationTimes", CollectionDataSerializer.Consistency(data with
+        {
+            SourceHealth = data.SourceHealth.SetItem("inventory", data.SourceHealth["inventory"] with
+            {
+                SourceStatus = SourceStatus.Stale
+            })
         }));
     }
 
@@ -94,5 +109,9 @@ public sealed class PreparedPublicationDecisionTests : IDisposable
         Assert.Equal(new[] { "A", "Z", "Z" }, records.Select(record => record.GetProperty("reporter").GetString()));
     }
 
-    public void Dispose() { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    public void Dispose()
+    {
+        if (Directory.Exists(root))
+            Directory.Delete(root, true);
+    }
 }

@@ -93,6 +93,7 @@ public sealed class SnapshotRecoveryMutationTests
 
     private static void RemoveDirectory(string directory)
     {
-        if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        if (Directory.Exists(directory))
+            Directory.Delete(directory, true);
     }
 }

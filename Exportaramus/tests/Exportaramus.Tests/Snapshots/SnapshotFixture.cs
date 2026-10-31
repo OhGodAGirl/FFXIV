@@ -21,7 +21,10 @@ public static class SnapshotFixture
                 key != "glamour_dresser", [new CatalogItem(key == "outfits" ? 45094u : key == "relics" ? 1675u : key == "achievements" ? 129u : key == "glamour_dresser" ? 100u : 1u, key == "armoires" ? 0u : 1u, key, false, key is "armoires" or "glamour_dresser" ? 100u : null, key == "outfits" ? [2642, 2965, 3747] : [], key == "relics" ? 129u : null)]));
         var catalog = new CollectionCatalog("English", "2026.08.11.0000.0000", definitions, [100, 1675, 2642, 2965, 3747]);
         var state = new CollectionState(123, Guid.Parse("f8b58df7-dc88-4ae8-b0e5-6dce6416e365"), 1, CaptureType.Full, Now, unlocks, presence,
-            new([], Health(DataType.ReportedOwnership) with { ProvenanceType = ProvenanceType.Reported }), [new(1, QuestStatus.Completed, 255)]);
+            new([], Health(DataType.ReportedOwnership) with
+            {
+                ProvenanceType = ProvenanceType.Reported
+            }), [new(1, QuestStatus.Completed, 255)]);
         return CollectionDataAssembler.Assemble(catalog, state);
     }
 }

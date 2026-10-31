@@ -50,7 +50,13 @@ public sealed class DiagnosticPublicationBoundaryTests
         var next = false;
         var copies = new List<string>();
         await using var controller = new DiagnosticsController(_ => Task.FromResult(next
-            ? Report with { Build = new() { PluginVersion = "0.2.0.0" } }
+            ? Report with
+            {
+                Build = new()
+                {
+                    PluginVersion = "0.2.0.0"
+                }
+            }
             : Report), new(), copies.Add);
         controller.Dispatch(DiagnosticsIntent.GenerateReport);
         await WaitForCompletedWorker(controller);

@@ -19,7 +19,8 @@ public sealed class DiagnosticTimingPrecisionTests(ITestOutputHelper output)
         {
             while (requested.WaitOne())
             {
-                if (Volatile.Read(ref stopping)) return;
+                if (Volatile.Read(ref stopping))
+                    return;
                 payload = new byte[payloadSize];
                 completed.Set();
             }
@@ -27,13 +28,15 @@ public sealed class DiagnosticTimingPrecisionTests(ITestOutputHelper output)
         worker.Start();
         try
         {
-            requested.Set(); Assert.True(completed.WaitOne(TimeSpan.FromSeconds(3)));
+            requested.Set();
+            Assert.True(completed.WaitOne(TimeSpan.FromSeconds(3)));
             var measurements = new DiagnosticMeasurements();
             _ = new DiagnosticTiming(measurements, "AsyncCapture", true).AllocatedBytes;
 
             var outerStart = GC.GetTotalAllocatedBytes(true);
             var timing = new DiagnosticTiming(measurements, "AsyncCapture", true);
-            requested.Set(); var completedInTime = completed.WaitOne(TimeSpan.FromSeconds(3));
+            requested.Set();
+            var completedInTime = completed.WaitOne(TimeSpan.FromSeconds(3));
             var measured = timing.AllocatedBytes;
             var outerAllocated = GC.GetTotalAllocatedBytes(true) - outerStart;
 
@@ -44,7 +47,8 @@ public sealed class DiagnosticTimingPrecisionTests(ITestOutputHelper output)
         }
         finally
         {
-            Volatile.Write(ref stopping, true); requested.Set();
+            Volatile.Write(ref stopping, true);
+            requested.Set();
             Assert.True(worker.Join(TimeSpan.FromSeconds(3)));
         }
     }
@@ -53,7 +57,8 @@ public sealed class DiagnosticTimingPrecisionTests(ITestOutputHelper output)
     public void PreciseBackgroundCounterPairFitsWithinTheReportConstructionBudget()
     {
         var measurements = new DiagnosticMeasurements();
-        for (var i = 0; i < 10; i++) _ = new DiagnosticTiming(measurements, "AsyncCapture", true).AllocatedBytes;
+        for (var i = 0; i < 10; i++)
+            _ = new DiagnosticTiming(measurements, "AsyncCapture", true).AllocatedBytes;
         var durations = new double[100];
 
         for (var i = 0; i < durations.Length; i++)

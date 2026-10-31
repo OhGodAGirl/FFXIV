@@ -23,7 +23,11 @@ public sealed class BeastReadinessTests
         var policy = new BeastReadinessPolicy();
         (bool, int) Forbidden() => throw new InvalidOperationException("Must not read.");
         int reads = 0;
-        (bool, int) Read() { reads++; return (true, 1); }
+        (bool, int) Read()
+        {
+            reads++;
+            return (true, 1);
+        }
         Assert.False(policy.Poll(false, true, Read, 0));
         Assert.False(policy.Poll(true, false, Read, 0));
         Assert.Equal(0, reads);

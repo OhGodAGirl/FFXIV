@@ -15,14 +15,19 @@ public sealed class SemanticDecisionTests
     private static JsonObject NegativeDerived()
     {
         var root = Rich();
-        foreach (var source in root["currentItemPresence"]!.AsObject()) source.Value!["items"] = new JsonArray();
+        foreach (var source in root["currentItemPresence"]!.AsObject())
+            source.Value!["items"] = new JsonArray();
         foreach (var key in new[] { "armoires", "glamour_dresser" })
-        { Item(root, key)["owned"] = false; Facts(root, key)[0]!["state"] = "Absent"; }
+        {
+            Item(root, key)["owned"] = false;
+            Facts(root, key)[0]!["state"] = "Absent";
+        }
         Item(root, "outfits")["owned"] = false;
         Item(root, "outfits")["ownershipEvidence"]!["facts"] = new JsonArray(new uint[] { 2642, 2965, 3747 }.SelectMany(id => CollectionDataSemanticValidator.PresenceKeys.Select(source => (JsonNode?)Absent(source, id))).ToArray());
         Item(root, "relics")["owned"] = false;
         Item(root, "relics")["ownershipEvidence"]!["facts"] = new JsonArray(CollectionDataSemanticValidator.PresenceKeys.Select(source => (JsonNode?)Absent(source, 1675)).Append(Absent("achievements", 129)).ToArray());
-        Item(root, "achievements")["owned"] = false; Facts(root, "achievements")[0]!["state"] = "Absent";
+        Item(root, "achievements")["owned"] = false;
+        Facts(root, "achievements")[0]!["state"] = "Absent";
         return root;
     }
 
@@ -42,7 +47,8 @@ public sealed class SemanticDecisionTests
             n => Facts(n, "outfits")[0]!["state"] = "Present",
         })
         {
-            var root = negative.DeepClone().AsObject(); edit(root);
+            var root = negative.DeepClone().AsObject();
+            edit(root);
             Assert.False(CollectionDataSemanticValidator.ValidateRich(root.ToJsonString()).Success);
         }
     }
@@ -80,7 +86,8 @@ public sealed class SemanticDecisionTests
             n => Item(n, "mounts")["reportedEvidence"] = new JsonArray(new JsonObject { ["itemId"] = 1, ["reporter"] = " invalid ", ["reportedAtUtc"] = "2026-09-07T00:00:00Z" }),
         })
         {
-            var root = Rich(); edit(root);
+            var root = Rich();
+            edit(root);
             using var document = JsonDocument.Parse(root.ToJsonString());
             Assert.False(CollectionDataSemanticValidator.ValidateRich(document.RootElement));
         }
@@ -144,7 +151,8 @@ public sealed class SemanticDecisionTests
             n => n["limits"]!["globalReportRate"]!["acceptedPerMinute"] = 59,
             n => n["limits"]!["reporterReportRate"]!["acceptedPerMinute"] = 29,
             n => n["limits"]!["reporterReportRate"]!["burst"] = 9,
-        }) Assert.False(CollectionDataSemanticValidator.ValidateCapabilities(ConsumerContractTests.Edit(payload, edit)).Success);
+        })
+            Assert.False(CollectionDataSemanticValidator.ValidateCapabilities(ConsumerContractTests.Edit(payload, edit)).Success);
     }
 
     [Fact]
@@ -163,7 +171,8 @@ public sealed class SemanticDecisionTests
             n => n["sourceCapabilities"]!["mounts"]!["capabilityState"] = "UnavailablePendingValidation",
             n => { n["sourceHealth"]!["mounts"]!["capabilityState"] = "UnavailablePendingValidation"; n["sourceCapabilities"]!["mounts"]!["capabilityState"] = "UnavailablePendingValidation"; },
             n => n["unlocks"]!["mounts"]!["unlockedIds"] = new JsonArray(2, 1),
-        }) Assert.False(CollectionDataSemanticValidator.ValidateSnapshot(ConsumerContractTests.Edit(payload, edit), "12345678901234567").Success);
+        })
+            Assert.False(CollectionDataSemanticValidator.ValidateSnapshot(ConsumerContractTests.Edit(payload, edit), "12345678901234567").Success);
         var missing = ConsumerContractTests.Edit(payload, n =>
         {
             n["unlocks"]!.AsObject().Remove("mounts");
@@ -184,15 +193,18 @@ public sealed class SemanticDecisionTests
             n => n["contentId"] = "18446744073709551616",
             n => n["changedDataTypes"] = new JsonArray("Unlocks", "CurrentItemPresence"),
             n => n["changedSources"] = new JsonArray("mounts", "inventory"),
-        }) Assert.False(CollectionDataSemanticValidator.ValidateChanged(ConsumerContractTests.Edit(valid, edit)).Success);
+        })
+            Assert.False(CollectionDataSemanticValidator.ValidateChanged(ConsumerContractTests.Edit(valid, edit)).Success);
     }
 
     [Fact]
     public void RelicWithoutAchievementUsesPhysicalAbsenceOnlyAndRejectsInventedAchievement()
     {
-        var root = NegativeDerived(); Item(root, "relics")["id"] = 2327;
+        var root = NegativeDerived();
+        Item(root, "relics")["id"] = 2327;
         Facts(root, "relics").RemoveAt(7);
-        foreach (var fact in Facts(root, "relics")) fact!["subjectId"] = 2327;
+        foreach (var fact in Facts(root, "relics"))
+            fact!["subjectId"] = 2327;
         Assert.True(CollectionDataSemanticValidator.ValidateRich(root.ToJsonString()).Success);
         Facts(root, "relics").Add(Absent("achievements", 129));
         Assert.False(CollectionDataSemanticValidator.ValidateRich(root.ToJsonString()).Success);

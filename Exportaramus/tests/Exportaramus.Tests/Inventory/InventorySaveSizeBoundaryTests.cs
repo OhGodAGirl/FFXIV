@@ -22,12 +22,18 @@ public sealed class InventorySaveSizeBoundaryTests : IDisposable
         var metadata = (JsonTypeInfo<InventoryCacheDocument>)context.GetTypeInfo(typeof(InventoryCacheDocument))!;
         var now = new DateTimeOffset(2026, 9, 13, 0, 0, 0, TimeSpan.Zero);
         var first = new InventoryLocationSnapshot(new(InventoryLocationKind.Inventory), "A", InventoryObservationState.Observed, now, now, []);
-        var second = first with { Key = new(InventoryLocationKind.ArmoryChest) };
+        var second = first with
+        {
+            Key = new(InventoryLocationKind.ArmoryChest)
+        };
         var empty = new InventorySnapshot(1, 1, false, [first, second]);
         byte[] Serialize(InventorySnapshot snapshot) => JsonSerializer.SerializeToUtf8Bytes(new InventoryCacheDocument("1.0", snapshot), metadata);
 
         var emptySize = Serialize(empty).Length;
-        var oneSize = Serialize(empty with { Locations = [first with { Items = [new(100000, 1, 0)] }, second] }).Length;
+        var oneSize = Serialize(empty with
+        {
+            Locations = [first with { Items = [new(100000, 1, 0)] }, second]
+        }).Length;
         var itemWithSeparatorSize = oneSize - emptySize + 1;
         Assert.InRange(itemWithSeparatorSize, 2, 128);
         var itemCount = (InventoryFileCache.MaximumBytes - emptySize + 2) / itemWithSeparatorSize;
@@ -72,6 +78,7 @@ public sealed class InventorySaveSizeBoundaryTests : IDisposable
         var target = Path.GetFullPath(directory);
         if (!target.StartsWith(root, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The test directory must remain inside its scratch root.");
-        if (Directory.Exists(target)) Directory.Delete(target, true);
+        if (Directory.Exists(target))
+            Directory.Delete(target, true);
     }
 }

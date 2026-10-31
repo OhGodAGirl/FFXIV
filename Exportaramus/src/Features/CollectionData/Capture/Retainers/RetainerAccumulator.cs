@@ -9,7 +9,12 @@ public sealed class RetainerAccumulator
     private ImmutableHashSet<ulong> expected = [];
     private readonly Dictionary<ulong, ImmutableArray<PresenceItem>> observations = [];
 
-    public void Reset() { character = 0; expected = []; observations.Clear(); }
+    public void Reset()
+    {
+        character = 0;
+        expected = [];
+        observations.Clear();
+    }
 
     public CurrentItemPresenceState Observe(ulong contentId, ImmutableArray<ulong> expectedIds,
         ulong activeRetainerId, CurrentItemPresenceState? activeObservation, long generation, DateTimeOffset now)
@@ -23,7 +28,9 @@ public sealed class RetainerAccumulator
         var next = expectedIds.ToImmutableHashSet();
         if (character != contentId || !expected.SetEquals(next))
         {
-            observations.Clear(); expected = next; character = contentId;
+            observations.Clear();
+            expected = next;
+            character = contentId;
         }
         if (expected.Contains(activeRetainerId) && activeObservation is { Health.IsUsable: true, Health.SourceStatus: SourceStatus.Fresh })
             observations[activeRetainerId] = activeObservation.Items;

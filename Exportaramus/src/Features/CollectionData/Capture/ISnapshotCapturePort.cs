@@ -1,10 +1,13 @@
-using Exportaramus.Features.CollectionData.Catalog;
 using System.Collections.Immutable;
+using Exportaramus.Features.CollectionData.Catalog;
 namespace Exportaramus.Features.CollectionData.Capture;
 
 public interface ISnapshotCapturePort : IDisposable
 {
-    CollectionCatalog? Catalog { get; }
+    CollectionCatalog? Catalog
+    {
+        get;
+    }
     Task ShutdownTask => Task.CompletedTask;
     ImmutableHashSet<string> TrustedSourceKeys => ImmutableHashSet<string>.Empty;
     bool PrepareCatalog();

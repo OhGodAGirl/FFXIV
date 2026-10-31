@@ -17,7 +17,8 @@ public sealed class InventoryBoundaryCoverageTests
     [Fact]
     public void NamesAndKeysRejectMalformedValues()
     {
-        foreach (var name in new string?[] { null, "", new('x', 65), "bad\nname" }) Assert.False(InventoryPolicy.ValidName(name));
+        foreach (var name in new string?[] { null, "", new('x', 65), "bad\nname" })
+            Assert.False(InventoryPolicy.ValidName(name));
         Assert.True(InventoryPolicy.ValidName(new('x', 64)));
         Assert.False(new InventoryLocationKey(InventoryLocationKind.Inventory, 1).IsValid);
         Assert.False(InventoryPolicy.TryNormalize([new(1_000_000, 1, 0)], out _));
@@ -29,20 +30,35 @@ public sealed class InventoryBoundaryCoverageTests
     public void RestorationPreservesLiveIdentityNamesFailuresAndAttemptTimes()
     {
         var saved = new InventorySnapshot(1, 1, true, [Location(Bag), Location(new(InventoryLocationKind.Retainer, 1))]);
-        var failed = Location(Bag, InventoryObservationState.Unknown) with { Name = "Live name", State = InventoryObservationState.ReadFailed, AttemptedAtUtc = Now.AddMinutes(1) };
+        var failed = Location(Bag, InventoryObservationState.Unknown) with
+        {
+            Name = "Live name",
+            State = InventoryObservationState.ReadFailed,
+            AttemptedAtUtc = Now.AddMinutes(1)
+        };
         var current = new InventorySnapshot(1, 2, true, [failed]);
-        Assert.Same(current, InventoryPolicy.Restore(current, saved with { ContentId = 2 }));
+        Assert.Same(current, InventoryPolicy.Restore(current, saved with
+        {
+            ContentId = 2
+        }));
         var restored = InventoryPolicy.Restore(current, saved);
         Assert.Single(restored.Locations);
         Assert.Equal("Live name", restored.Locations[0].Name);
         Assert.Equal(InventoryObservationState.ReadFailed, restored.Locations[0].State);
         Assert.Equal(Now.AddMinutes(1), restored.Locations[0].AttemptedAtUtc);
-        current = current with { RetainerRosterKnown = false, Locations = [failed with { State = InventoryObservationState.Unknown, AttemptedAtUtc = null }] };
+        current = current with
+        {
+            RetainerRosterKnown = false,
+            Locations = [failed with { State = InventoryObservationState.Unknown, AttemptedAtUtc = null }]
+        };
         restored = InventoryPolicy.Restore(current, saved);
         Assert.Equal(2, restored.Locations.Length);
         Assert.Equal(InventoryObservationState.Retained, restored.Locations[0].State);
         Assert.Equal(Now, restored.Locations[0].AttemptedAtUtc);
-        Assert.Equal(InventoryObservationState.Unknown, InventoryPolicy.Restore(current, saved with { Locations = [Location(Bag, InventoryObservationState.Unknown)] }).Locations[0].State);
+        Assert.Equal(InventoryObservationState.Unknown, InventoryPolicy.Restore(current, saved with
+        {
+            Locations = [Location(Bag, InventoryObservationState.Unknown)]
+        }).Locations[0].State);
     }
 
     [Fact]
@@ -59,10 +75,16 @@ public sealed class InventoryBoundaryCoverageTests
         Assert.Equal(JsonValueKind.Null, document.RootElement.GetProperty("locations")[1].GetProperty("items")[0].GetProperty("highQualityQuantity").ValueKind);
         using var item = JsonDocument.Parse(InventoryQuery.Item(snapshot, 100));
         Assert.False(item.RootElement.GetProperty("hasUnknownLocations").GetBoolean());
-        using var unknown = JsonDocument.Parse(InventoryQuery.Item(snapshot with { Locations = snapshot.Locations.Add(Location(new(InventoryLocationKind.ArmoryChest), InventoryObservationState.Unknown)) }, 100));
+        using var unknown = JsonDocument.Parse(InventoryQuery.Item(snapshot with
+        {
+            Locations = snapshot.Locations.Add(Location(new(InventoryLocationKind.ArmoryChest), InventoryObservationState.Unknown))
+        }, 100));
         Assert.True(unknown.RootElement.GetProperty("hasUnknownLocations").GetBoolean());
         Assert.Same(InventoryPresentation.Empty, InventoryPresentation.Prepare(null, null, Now));
-        var view = InventoryPresentation.Prepare(snapshot with { RetainerRosterKnown = false }, null, Now);
+        var view = InventoryPresentation.Prepare(snapshot with
+        {
+            RetainerRosterKnown = false
+        }, null, Now);
         Assert.Equal("Unknown", view.RetainerCount);
         Assert.Null(view.ConfirmedOutfits);
     }

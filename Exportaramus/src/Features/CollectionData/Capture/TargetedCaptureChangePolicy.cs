@@ -10,13 +10,15 @@ public static class TargetedCaptureChangePolicy
         foreach (var key in raw.Unlocks.Keys)
         {
             var value = next.Unlocks[key];
-            if (!prior.Unlocks.TryGetValue(key, out var old) || !SameHealth(old.Health, value.Health) || !old.UnlockedIds.SequenceEqual(value.UnlockedIds)) return true;
+            if (!prior.Unlocks.TryGetValue(key, out var old) || !SameHealth(old.Health, value.Health) || !old.UnlockedIds.SequenceEqual(value.UnlockedIds))
+                return true;
         }
         foreach (var key in raw.CurrentItemPresence.Keys)
         {
             var value = next.CurrentItemPresence[key];
             if (!prior.CurrentItemPresence.TryGetValue(key, out var old) || old.SupportsQuantity != value.SupportsQuantity ||
-                !SameHealth(old.Health, value.Health) || !old.Items.SequenceEqual(value.Items) || !SameEntries(old.DresserEntries, value.DresserEntries)) return true;
+                !SameHealth(old.Health, value.Health) || !old.Items.SequenceEqual(value.Items) || !SameEntries(old.DresserEntries, value.DresserEntries))
+                return true;
         }
         return raw.Unlocks.ContainsKey("quests") && !prior.Quests.SequenceEqual(next.Quests);
     }
@@ -27,13 +29,17 @@ public static class TargetedCaptureChangePolicy
 
     private static bool SameEntries(ImmutableArray<DresserEntry>? left, ImmutableArray<DresserEntry>? right)
     {
-        if (left is null || right is null) return left is null && right is null;
-        if (left.Value.Length != right.Value.Length) return false;
+        if (left is null || right is null)
+            return left is null && right is null;
+        if (left.Value.Length != right.Value.Length)
+            return false;
         for (var i = 0; i < left.Value.Length; i++)
         {
-            var a = left.Value[i]; var b = right.Value[i];
+            var a = left.Value[i];
+            var b = right.Value[i];
             if (a.EntryIndex != b.EntryIndex || a.RawItemId != b.RawItemId || a.BaseItemId != b.BaseItemId || a.OutfitId != b.OutfitId ||
-                !a.Components.SequenceEqual(b.Components)) return false;
+                !a.Components.SequenceEqual(b.Components))
+                return false;
         }
         return true;
     }

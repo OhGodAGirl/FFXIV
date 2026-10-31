@@ -1,0 +1,30 @@
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <Version>0.1.0.0</Version>
+    <AssemblyName>CollectionExample</AssemblyName>
+    <RootNamespace>CollectionExample</RootNamespace>
+    <Name>Collection Example</Name>
+    <Author>Example Developer</Author>
+    <Punchline>Read collections and inventory from Exportaramus.</Punchline>
+    <Description>Development example for the Exportaramus Consumer Integration Guide.</Description>
+    <DalamudApiLevel>15</DalamudApiLevel>
+    <ApplicableVersion>any</ApplicableVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <Nullable>enable</Nullable>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <ConsumerKitPath Condition="'$(ConsumerKitPath)' == ''">../..</ConsumerKitPath>
+    <ConsumerKitProject Condition="'$(ConsumerKitProject)' == ''">$(ConsumerKitPath)/project/ConsumerKit/1.2/Exportaramus.ConsumerKit.V1_2.csproj</ConsumerKitProject>
+    <ConsumerKitBindings Condition="'$(ConsumerKitBindings)' == ''">$(ConsumerKitPath)/src/Contracts/1.2/Consumer/CollectionDataGateBindings.Dalamud.cs</ConsumerKitBindings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Plugin.Dalamud.cs" />
+    <Compile Include="InventoryItemReader.cs" />
+    <Compile Include="$(ConsumerKitBindings)" Condition="Exists('$(ConsumerKitBindings)')" />
+    <ProjectReference Include="$(ConsumerKitProject)" Condition="Exists('$(ConsumerKitProject)')" />
+  </ItemGroup>
+  <Target Name="CheckConsumerKit" BeforeTargets="CollectPackageReferences;PrepareForBuild">
+    <Error Condition="!Exists('$(ConsumerKitProject)')" Text="Consumer Kit 1.2 was not found at '$(ConsumerKitPath)'. Set ConsumerKitPath to the complete kit directory; see README.md beside CollectionExample.csproj." />
+    <Error Condition="!Exists('$(ConsumerKitBindings)')" Text="Consumer Kit 1.2 is incomplete: CollectionDataGateBindings.Dalamud.cs is missing. Restore the complete kit, including source, schemas, and resources." />
+  </Target>
+</Project>

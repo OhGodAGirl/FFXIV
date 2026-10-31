@@ -33,7 +33,10 @@ public sealed class InventoryMutationRegressionTests : IDisposable
         var locations = InventoryPolicy.Order(initial.Locations.Concat(retainers));
         Assert.Equal(Enumerable.Range(1, 10).Select(i => (ulong)i), locations.Where(x => x.Key.Kind == InventoryLocationKind.Retainer).Select(x => x.Key.RetainerId));
         var cache = new InventoryFileCache(directory);
-        await cache.SaveAsync(initial with { Locations = locations }, default);
+        await cache.SaveAsync(initial with
+        {
+            Locations = locations
+        }, default);
         Assert.Equal(17, (await cache.LoadAsync(1, default))!.Locations.Length);
     }
 
@@ -75,7 +78,10 @@ public sealed class InventoryMutationRegressionTests : IDisposable
         Assert.Equal("1.0", root["schemaVersion"]!.GetValue<string>());
         Assert.Equal(42, root["revision"]!.GetValue<int>());
         Assert.True(root["retainerRosterKnown"]!.GetValue<bool>());
-        Assert.False(JsonNode.Parse(InventoryQuery.Snapshot(snapshot with { RetainerRosterKnown = false }))!["retainerRosterKnown"]!.GetValue<bool>());
+        Assert.False(JsonNode.Parse(InventoryQuery.Snapshot(snapshot with
+        {
+            RetainerRosterKnown = false
+        }))!["retainerRosterKnown"]!.GetValue<bool>());
         Assert.Equal(3, root["locations"]![0]!["items"]![0]!["highQualityQuantity"]!.GetValue<int>());
         Assert.Null(root["locations"]![1]!["items"]![0]!["normalQuantity"]);
         var item = JsonNode.Parse(InventoryQuery.Item(snapshot, 100))!;
@@ -84,7 +90,10 @@ public sealed class InventoryMutationRegressionTests : IDisposable
         Assert.Equal("LastObservedQuantifiedLocationsOnly", item["quantityMeaning"]!.GetValue<string>());
         Assert.Null(item["locations"]![1]!["highQualityQuantity"]);
         Assert.True(item["hasRetainedLocations"]!.GetValue<bool>());
-        Assert.False(JsonNode.Parse(InventoryQuery.Item(snapshot with { Locations = [bag] }, 100))!["hasRetainedLocations"]!.GetValue<bool>());
+        Assert.False(JsonNode.Parse(InventoryQuery.Item(snapshot with
+        {
+            Locations = [bag]
+        }, 100))!["hasRetainedLocations"]!.GetValue<bool>());
     }
 
     [Fact]
@@ -198,7 +207,10 @@ public sealed class InventoryMutationRegressionTests : IDisposable
         public bool IsSafe(ulong id) => Safe;
         public bool OpenBell() => true;
         public bool TryReadRoster(out ImmutableArray<InventoryRetainer> roster)
-        { roster = Enumerable.Range(1, 10).Select(i => new InventoryRetainer((ulong)i, "Retainer")).ToImmutableArray(); return true; }
+        {
+            roster = Enumerable.Range(1, 10).Select(i => new InventoryRetainer((ulong)i, "Retainer")).ToImmutableArray();
+            return true;
+        }
         public bool SelectRetainer(ulong id) => true;
         public bool OpenInventory(ulong id) => true;
         public bool CaptureInventory(ulong character, ulong id) => true;
@@ -207,5 +219,9 @@ public sealed class InventoryMutationRegressionTests : IDisposable
         public bool CloseOverviewAndInventory() => true;
     }
 
-    public void Dispose() { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    public void Dispose()
+    {
+        if (Directory.Exists(directory))
+            Directory.Delete(directory, true);
+    }
 }

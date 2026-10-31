@@ -1,6 +1,6 @@
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Security.Cryptography;
 namespace Exportaramus.Shared.Serialization;
 
 public static class JsonOutput

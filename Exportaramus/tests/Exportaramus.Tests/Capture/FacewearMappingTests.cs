@@ -47,7 +47,8 @@ public sealed class FacewearMappingTests
         using var operation = Operation(reader, version);
         var completed = false;
         var maximumSteps = 1 + 1 + CollectionReadOperation.PhysicalSources.Length + 1;
-        for (var step = 0; step < maximumSteps && !completed; step++) completed = operation.Advance(1);
+        for (var step = 0; step < maximumSteps && !completed; step++)
+            completed = operation.Advance(1);
         Assert.True(completed);
         var state = operation.Result!.Unlocks["facewear"];
         Assert.Empty(state.UnlockedIds);
@@ -77,7 +78,11 @@ public sealed class FacewearMappingTests
         public int Reads;
         public bool IdentityMatches(ulong contentId) => Identity && contentId == 123;
         public bool IsAvailable(string key, string version) => ReaderCompatibility.SourcesFor(version).Contains(key);
-        public bool ReadUnlock(string key, CatalogItem row) { Reads++; return false; }
+        public bool ReadUnlock(string key, CatalogItem row)
+        {
+            Reads++;
+            return false;
+        }
         public QuestState ReadQuest(uint id, bool completed) => throw new InvalidOperationException();
         public CurrentItemPresenceState ReadPresence(string source, CollectionCatalog catalog, ulong contentId, long generation, DateTimeOffset now) =>
             CaptureReadPolicy.FailedPresence(true, generation, now, ReasonCode.IncompleteContainerSet);

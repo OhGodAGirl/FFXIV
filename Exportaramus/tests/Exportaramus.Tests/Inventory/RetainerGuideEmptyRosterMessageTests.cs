@@ -26,17 +26,28 @@ public sealed class RetainerGuideEmptyRosterMessageTests
 
     private sealed class EmptyRosterPort : IRetainerGuidePort
     {
-        public int CloseRequests { get; private set; }
+        public int CloseRequests
+        {
+            get; private set;
+        }
         public bool ListReady => true;
         public bool InventoryVisible => false;
         public bool IsSafe(ulong contentId) => contentId == 1;
         public bool OpenBell() => throw new InvalidOperationException("The roster is already visible.");
-        public bool TryReadRoster(out ImmutableArray<InventoryRetainer> roster) { roster = []; return true; }
+        public bool TryReadRoster(out ImmutableArray<InventoryRetainer> roster)
+        {
+            roster = [];
+            return true;
+        }
         public bool SelectRetainer(ulong retainerId) => throw new InvalidOperationException("The roster is empty.");
         public bool OpenInventory(ulong retainerId) => throw new InvalidOperationException("The roster is empty.");
         public bool CaptureInventory(ulong contentId, ulong retainerId) => throw new InvalidOperationException("The roster is empty.");
         public bool CloseInventory(ulong retainerId) => throw new InvalidOperationException("The roster is empty.");
         public bool QuitRetainer(ulong retainerId) => throw new InvalidOperationException("The roster is empty.");
-        public bool CloseOverviewAndInventory() { CloseRequests++; return false; }
+        public bool CloseOverviewAndInventory()
+        {
+            CloseRequests++;
+            return false;
+        }
     }
 }

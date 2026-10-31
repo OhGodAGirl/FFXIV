@@ -41,12 +41,26 @@ public sealed class CaptureProgressBoundaryTests
     private sealed class Reader : ICollectionReader
     {
         public bool Identity { get; init; } = true;
-        public int UnlockReads { get; private set; }
-        public int PresenceReads { get; private set; }
-        public byte[]? Allocation { get; private set; }
+        public int UnlockReads
+        {
+            get; private set;
+        }
+        public int PresenceReads
+        {
+            get; private set;
+        }
+        public byte[]? Allocation
+        {
+            get; private set;
+        }
         public bool IdentityMatches(ulong contentId) => Identity;
         public bool IsAvailable(string key, string version) => true;
-        public bool ReadUnlock(string key, CatalogItem row) { UnlockReads++; Allocation = new byte[4096]; return true; }
+        public bool ReadUnlock(string key, CatalogItem row)
+        {
+            UnlockReads++;
+            Allocation = new byte[4096];
+            return true;
+        }
         public QuestState ReadQuest(uint id, bool completed) => new(id, QuestStatus.Completed, 255);
         public CurrentItemPresenceState ReadPresence(string source, CollectionCatalog catalog, ulong contentId, long generation, DateTimeOffset now)
         {

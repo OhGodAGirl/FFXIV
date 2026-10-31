@@ -35,7 +35,8 @@ public static class SnapshotBundlePreparation
 
     private static ImmutableDictionary<string, int> ConfirmedPartialCounts(AcceptedSnapshotBundle bundle)
     {
-        if (bundle.Data.Collections.ContainsKey("outfits")) return ImmutableDictionary<string, int>.Empty;
+        if (bundle.Data.Collections.ContainsKey("outfits"))
+            return ImmutableDictionary<string, int>.Empty;
         var available = bundle.Data.State.CurrentItemPresence.Values.Where(source => source.Health.IsUsable).ToArray();
         if (available.Length == 0 || !bundle.Data.Catalog.Collections.TryGetValue("outfits", out var outfits) || outfits.Items.IsDefaultOrEmpty)
             return ImmutableDictionary<string, int>.Empty;

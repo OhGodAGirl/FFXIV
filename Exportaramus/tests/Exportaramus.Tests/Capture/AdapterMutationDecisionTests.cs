@@ -25,7 +25,8 @@ public sealed class AdapterMutationDecisionTests
         Assert.Equal(1, reader.UnlockReads);
         bool completed = false;
         var maximumSlices = (count + 1 + CollectionReadOperation.PhysicalSources.Length + 2047) / 2048 + 1;
-        for (var slice = 0; slice < maximumSlices && !completed; slice++) completed = operation.Advance(2048);
+        for (var slice = 0; slice < maximumSlices && !completed; slice++)
+            completed = operation.Advance(2048);
         Assert.True(completed, "Capture must finish within its catalog and physical-source work budget.");
 
         var source = operation.Result!.Unlocks["mounts"];
@@ -44,8 +45,16 @@ public sealed class AdapterMutationDecisionTests
         {
             var result = accumulator.Observe(1, expected, expected[index], Presence(), 1, Now);
             Assert.True(result.SupportsQuantity);
-            if (index < 9) { Assert.Empty(result.Items); Assert.Equal(ReasonCode.IncompleteRetainerSet, result.Health.ReasonCode); }
-            else { Assert.Equal(new PresenceItem(100, 10), Assert.Single(result.Items)); Assert.True(result.Health.IsUsable); }
+            if (index < 9)
+            {
+                Assert.Empty(result.Items);
+                Assert.Equal(ReasonCode.IncompleteRetainerSet, result.Health.ReasonCode);
+            }
+            else
+            {
+                Assert.Equal(new PresenceItem(100, 10), Assert.Single(result.Items));
+                Assert.True(result.Health.IsUsable);
+            }
         }
     }
 
@@ -56,13 +65,16 @@ public sealed class AdapterMutationDecisionTests
         Assert.True(accumulator.Observe(1, [1], 1, Presence(), 1, Now).Health.IsUsable);
 
         var firstInvalid = accumulator.Observe(1, [1, 0], 1, Presence(), 2, Now);
-        Assert.Empty(firstInvalid.Items); Assert.Equal(ReasonCode.IncompleteRetainerSet, firstInvalid.Health.ReasonCode);
+        Assert.Empty(firstInvalid.Items);
+        Assert.Equal(ReasonCode.IncompleteRetainerSet, firstInvalid.Health.ReasonCode);
         var invalid = accumulator.Observe(1, [1, 0], 0, Presence(), 2, Now);
 
-        Assert.Empty(invalid.Items); Assert.Equal(ReasonCode.IncompleteRetainerSet, invalid.Health.ReasonCode);
+        Assert.Empty(invalid.Items);
+        Assert.Equal(ReasonCode.IncompleteRetainerSet, invalid.Health.ReasonCode);
         Assert.True(invalid.SupportsQuantity);
         var next = accumulator.Observe(1, [1], 0, null, 3, Now);
-        Assert.Empty(next.Items); Assert.Equal(ReasonCode.IncompleteRetainerSet, next.Health.ReasonCode);
+        Assert.Empty(next.Items);
+        Assert.Equal(ReasonCode.IncompleteRetainerSet, next.Health.ReasonCode);
     }
 
     [Theory]
@@ -80,10 +92,17 @@ public sealed class AdapterMutationDecisionTests
 
     private sealed class Reader : ICollectionReader
     {
-        public int UnlockReads { get; private set; }
+        public int UnlockReads
+        {
+            get; private set;
+        }
         public bool IdentityMatches(ulong contentId) => true;
         public bool IsAvailable(string key, string version) => true;
-        public bool ReadUnlock(string key, CatalogItem row) { UnlockReads++; return true; }
+        public bool ReadUnlock(string key, CatalogItem row)
+        {
+            UnlockReads++;
+            return true;
+        }
         public QuestState ReadQuest(uint id, bool complete) => new(id, QuestStatus.Completed, null);
         public CurrentItemPresenceState ReadPresence(string source, CollectionCatalog catalog, ulong contentId, long generation, DateTimeOffset now) => Presence();
     }

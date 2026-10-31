@@ -5,7 +5,10 @@ namespace Exportaramus.Features.Diagnostics;
 public sealed record DiagnosticPipeline
 {
     public DiagnosticCatalog CatalogCache { get; init; } = new(null, "Empty", 0);
-    public long AcceptedCaptureGeneration { get; init; }
+    public long AcceptedCaptureGeneration
+    {
+        get; init;
+    }
     public ImmutableDictionary<string, string?> Fingerprints { get; init; } = ImmutableDictionary<string, string?>.Empty;
     public DiagnosticSerializers Serializers { get; init; } = new("NotBuilt", "NotBuilt", "NotBuilt");
     public ImmutableArray<DiagnosticOmission> Omissions { get; init; } = [];

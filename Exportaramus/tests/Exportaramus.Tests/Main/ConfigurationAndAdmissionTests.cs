@@ -21,10 +21,12 @@ public sealed class ConfigurationAndAdmissionTests
     {
         Assert.Equal(expectedBound, capacity);
         var queue = new Queue<int>();
-        for (var i = 0; i < expectedBound; i++) Assert.True(IntentAdmissionPolicy.TryEnqueue(queue, i, capacity));
+        for (var i = 0; i < expectedBound; i++)
+            Assert.True(IntentAdmissionPolicy.TryEnqueue(queue, i, capacity));
         Assert.False(IntentAdmissionPolicy.TryEnqueue(queue, 999, capacity));
         Assert.Equal(Enumerable.Range(0, expectedBound), queue);
-        Assert.Equal(0, queue.Dequeue()); Assert.True(IntentAdmissionPolicy.TryEnqueue(queue, expectedBound, capacity));
+        Assert.Equal(0, queue.Dequeue());
+        Assert.True(IntentAdmissionPolicy.TryEnqueue(queue, expectedBound, capacity));
         Assert.Equal(Enumerable.Range(1, expectedBound), queue);
     }
 }

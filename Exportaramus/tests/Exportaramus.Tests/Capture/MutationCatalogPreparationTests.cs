@@ -40,8 +40,14 @@ public sealed class MutationCatalogPreparationTests
 
     private sealed class IncrementalBuilder : ICatalogProjectionBuilder
     {
-        public int AdvanceCount { get; private set; }
-        public int DisposeCount { get; private set; }
+        public int AdvanceCount
+        {
+            get; private set;
+        }
+        public int DisposeCount
+        {
+            get; private set;
+        }
         public CatalogProjection? Projection { get; } = new("English", "build", [], [], []);
         public bool Advance(int maximumRows = 256) => ++AdvanceCount == 3;
         public void Dispose() => DisposeCount++;

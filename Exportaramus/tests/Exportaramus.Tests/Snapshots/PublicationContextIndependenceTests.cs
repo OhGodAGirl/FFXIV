@@ -16,7 +16,14 @@ public sealed class PublicationContextIndependenceTests
         var storage = new Exportaramus.Features.Snapshots.AtomicSnapshotStorage(root, files);
         var publisher = new CollectionDataPublisher(storage, null);
         var data = SnapshotFixture.Create();
-        if (mode == "lightweight") data = data with { State = data.State with { CaptureType = CaptureType.Lightweight } };
+        if (mode == "lightweight")
+            data = data with
+            {
+                State = data.State with
+                {
+                    CaptureType = CaptureType.Lightweight
+                }
+            };
         var publication = mode == "storage" ? null : publisher.Prepare(data, "Fixture", 1, null, false, false, default);
         var context = new HeldContext();
         var previous = SynchronizationContext.Current;
@@ -40,7 +47,8 @@ public sealed class PublicationContextIndependenceTests
         {
             context.Drain();
             await operation.WaitAsync(TimeSpan.FromSeconds(10));
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            if (Directory.Exists(root))
+                Directory.Delete(root, true);
         }
     }
 
@@ -48,8 +56,16 @@ public sealed class PublicationContextIndependenceTests
     {
         private readonly ConcurrentQueue<(SendOrPostCallback Callback, object? State)> callbacks = new();
         public TaskCompletionSource Posted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        public override void Post(SendOrPostCallback callback, object? state) { callbacks.Enqueue((callback, state)); Posted.TrySetResult(); }
-        public void Drain() { while (callbacks.TryDequeue(out var call)) call.Callback(call.State); }
+        public override void Post(SendOrPostCallback callback, object? state)
+        {
+            callbacks.Enqueue((callback, state));
+            Posted.TrySetResult();
+        }
+        public void Drain()
+        {
+            while (callbacks.TryDequeue(out var call))
+                call.Callback(call.State);
+        }
     }
 
     private sealed class GatedFiles : Exportaramus.Features.Snapshots.IAtomicFileOperations
@@ -67,6 +83,9 @@ public sealed class PublicationContextIndependenceTests
         : FileStream(path, mode, FileAccess.Write, FileShare.None, bufferSize, options)
     {
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token = default)
-        { await gate.ConfigureAwait(false); await base.WriteAsync(buffer, token).ConfigureAwait(false); }
+        {
+            await gate.ConfigureAwait(false);
+            await base.WriteAsync(buffer, token).ConfigureAwait(false);
+        }
     }
 }

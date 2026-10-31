@@ -16,7 +16,8 @@ public sealed class CollectionDataV11Tests
         var folder = Path.Combine(Exportaramus.Tests.Contracts.ConsumerContractTests.Root, "tests/fixtures/Contracts/1.1/fixtures");
         foreach (var path in Directory.EnumerateFiles(folder, "*.json", SearchOption.AllDirectories))
         {
-            var payload = File.ReadAllText(path); var name = Path.GetFileName(path);
+            var payload = File.ReadAllText(path);
+            var name = Path.GetFileName(path);
             var accepted = name.StartsWith("capabilities", StringComparison.Ordinal) ? V11.ValidateCapabilities(payload).Success :
                 name.StartsWith("snapshot-changed", StringComparison.Ordinal) ? V11.ValidateChanged(payload).Success :
                 name.StartsWith("snapshot-withdrawn", StringComparison.Ordinal) ? V11.ValidateWithdrawn(payload).Success :
@@ -34,7 +35,10 @@ public sealed class CollectionDataV11Tests
         };
         return CollectionDataAssembler.Assemble(data.Catalog, data.State with
         {
-            Unlocks = data.State.Unlocks.SetItem("facewear", data.State.Unlocks["facewear"] with { UnlockedIds = [59, 61] }),
+            Unlocks = data.State.Unlocks.SetItem("facewear", data.State.Unlocks["facewear"] with
+            {
+                UnlockedIds = [59, 61]
+            }),
             CurrentItemPresence = data.State.CurrentItemPresence.SetItem("glamourDresser", dresser),
         });
     }
@@ -58,7 +62,9 @@ public sealed class CollectionDataV11Tests
     [Fact]
     public void CapabilitiesIdentifyPinnedVersionAndEachGateFamily()
     {
-        var data = Data(); var legacy = CapabilityDocumentWriter.Build(data, true); var canonical = CapabilityDocumentWriter.BuildV11(data, true);
+        var data = Data();
+        var legacy = CapabilityDocumentWriter.Build(data, true);
+        var canonical = CapabilityDocumentWriter.BuildV11(data, true);
         Assert.True(V10.ValidateCapabilities(legacy).Success);
         var result = V11.ValidateCapabilities(canonical);
         Assert.True(result.Success, result.Code.ToString());
@@ -74,18 +80,31 @@ public sealed class CollectionDataV11Tests
     [InlineData(SourceStatus.Fresh, Completeness.Partial, false)]
     public void EmptyFacewearOnlyBecomesEvidenceWhenHealthIsUsable(SourceStatus status, Completeness completeness, bool included)
     {
-        var data = Data(); var unlock = data.State.Unlocks["facewear"];
-        var health = SnapshotFixture.Health(DataType.PermanentUnlock, status) with { Completeness = completeness };
-        data = CollectionDataAssembler.Assemble(data.Catalog, data.State with { Unlocks = data.State.Unlocks.SetItem("facewear", unlock with { UnlockedIds = [], Health = health }) });
+        var data = Data();
+        var unlock = data.State.Unlocks["facewear"];
+        var health = SnapshotFixture.Health(DataType.PermanentUnlock, status) with
+        {
+            Completeness = completeness
+        };
+        data = CollectionDataAssembler.Assemble(data.Catalog, data.State with
+        {
+            Unlocks = data.State.Unlocks.SetItem("facewear", unlock with
+            {
+                UnlockedIds = [],
+                Health = health
+            })
+        });
         var result = V11.ValidateSnapshot(CollectionDataSerializer.CompactV11(data, 1), "123");
         Assert.True(result.Success, result.Code.ToString());
         Assert.Equal(included, result.Value!.Unlocks.ContainsKey("facewear"));
-        if (included) Assert.Empty(result.Value.Unlocks["facewear"].UnlockedIds);
+        if (included)
+            Assert.Empty(result.Value.Unlocks["facewear"].UnlockedIds);
     }
     [Fact]
     public void RestorationPreservesCanonicalEvidenceAsStaleAndLegacyHasUnknownCompositionAndFacewear()
     {
-        var data = Data(); var session = Guid.NewGuid();
+        var data = Data();
+        var session = Guid.NewGuid();
         var restored = CollectionStateReader.Read(CollectionDataSerializer.CompactV11(data, 3), 123, session, SnapshotFixture.Now);
         Assert.Equal<uint>([59u, 61u], restored.Unlocks["facewear"].UnlockedIds);
         Assert.Equal(SourceStatus.Stale, restored.Unlocks["facewear"].Health.SourceStatus);
@@ -100,12 +119,19 @@ public sealed class CollectionDataV11Tests
     [InlineData(true)]
     public void PhysicalMultiplicityAndPartitionPublishAndNotifyWithoutChangingAggregate(bool partition)
     {
-        var data = Data(); var source = data.State.CurrentItemPresence["glamourDresser"];
+        var data = Data();
+        var source = data.State.CurrentItemPresence["glamourDresser"];
         var entries = source.DresserEntries!.Value;
-        var changedEntries = partition ? entries.SetItem(1, entries[1] with { Components = [new(3, 2642)] }) : entries.Add(new(5, 100, 100, null, [new(0, 100)]));
+        var changedEntries = partition ? entries.SetItem(1, entries[1] with
+        {
+            Components = [new(3, 2642)]
+        }) : entries.Add(new(5, 100, 100, null, [new(0, 100)]));
         var next = CollectionDataAssembler.Assemble(data.Catalog, data.State with
         {
-            CurrentItemPresence = data.State.CurrentItemPresence.SetItem("glamourDresser", source with { DresserEntries = changedEntries }),
+            CurrentItemPresence = data.State.CurrentItemPresence.SetItem("glamourDresser", source with
+            {
+                DresserEntries = changedEntries
+            }),
         });
         Assert.Equal(source.Items, next.State.CurrentItemPresence["glamourDresser"].Items);
         Assert.NotEqual(CollectionFingerprint.Sources(data)["glamourDresser"], CollectionFingerprint.Sources(next)["glamourDresser"]);
@@ -117,7 +143,8 @@ public sealed class CollectionDataV11Tests
         Assert.True(prepared.Changed);
         Assert.NotEqual(previous.CompactJsonV11, prepared.Bundle.CompactJsonV11);
         Assert.True(V11.ValidateSnapshot(prepared.Bundle.CompactJsonV11, "123").Success);
-        var notices = new ChangedNoticeCoalescer(); notices.Add(prepared.Bundle, previous, []);
+        var notices = new ChangedNoticeCoalescer();
+        notices.Add(prepared.Bundle, previous, []);
         var notice = V11.ValidateChanged(notices.Take(true)!);
         Assert.True(notice.Success, notice.Code.ToString());
         Assert.Contains("glamourDresser", notice.Value!.ChangedSources);
@@ -127,14 +154,21 @@ public sealed class CollectionDataV11Tests
     public void FacewearOnlyChangeNotifiesOnlyCanonicalFamily()
     {
         var data = Data();
-        var next = CollectionDataAssembler.Assemble(data.Catalog, data.State with { Unlocks = data.State.Unlocks.SetItem("facewear", data.State.Unlocks["facewear"] with { UnlockedIds = [59] }) });
+        var next = CollectionDataAssembler.Assemble(data.Catalog, data.State with
+        {
+            Unlocks = data.State.Unlocks.SetItem("facewear", data.State.Unlocks["facewear"] with
+            {
+                UnlockedIds = [59]
+            })
+        });
         AcceptedSnapshotBundle Bundle(CollectionData value, long revision)
         {
             var prints = CollectionFingerprint.Sources(value);
             return SnapshotBundlePreparation.Prepare(new(value, revision, CollectionDataSerializer.Compact(value, revision), null, CollectionFingerprint.Combined(prints), prints,
                 PreparedFFXIVCollectExport.Unavailable("test"), 0, null), null, true);
         }
-        var coalescer = new ChangedNoticeCoalescer(); coalescer.Add(Bundle(next, 2), Bundle(data, 1), []);
+        var coalescer = new ChangedNoticeCoalescer();
+        coalescer.Add(Bundle(next, 2), Bundle(data, 1), []);
         var notice = coalescer.Take(true)!;
         Assert.True(V11.ValidateChanged(notice).Success);
         Assert.Null(CollectionDataLegacyProjection.Notice(notice));
@@ -148,27 +182,43 @@ public sealed class CollectionDataV11Tests
     public void InvalidPhysicalEvidenceFailsClosed(string mutation)
     {
         var root = JsonNode.Parse(CollectionDataSerializer.CompactV11(Data(), 3))!;
-        var dresser = root["currentItemPresence"]!["glamourDresser"]!; var entries = dresser["dresserEntries"]!.AsArray();
+        var dresser = root["currentItemPresence"]!["glamourDresser"]!;
+        var entries = dresser["dresserEntries"]!.AsArray();
         switch (mutation)
         {
-            case "duplicateEntry": entries[1]!["entryIndex"] = 0; break;
-            case "aggregateMismatch": entries[1]!["components"]![1]!["itemId"] = 999; break;
-            case "wrongBase": entries[1]!["baseItemId"] = 901; break;
-            case "wrongSlot": entries[1]!["components"]![1]!["slotIndex"] = 11; break;
-            case "wrongSource": root["currentItemPresence"]!["inventory"]!["dresserEntries"] = entries.DeepClone(); break;
+            case "duplicateEntry":
+                entries[1]!["entryIndex"] = 0;
+                break;
+            case "aggregateMismatch":
+                entries[1]!["components"]![1]!["itemId"] = 999;
+                break;
+            case "wrongBase":
+                entries[1]!["baseItemId"] = 901;
+                break;
+            case "wrongSlot":
+                entries[1]!["components"]![1]!["slotIndex"] = 11;
+                break;
+            case "wrongSource":
+                root["currentItemPresence"]!["inventory"]!["dresserEntries"] = entries.DeepClone();
+                break;
         }
         Assert.False(V11.ValidateSnapshot(root.ToJsonString(), "123").Success);
     }
     [Fact]
     public void AcceptedPublicationWithdrawsBothVersionsTogether()
     {
-        var data = Data(); var prints = CollectionFingerprint.Sources(data);
+        var data = Data();
+        var prints = CollectionFingerprint.Sources(data);
         var bundle = SnapshotBundlePreparation.Prepare(new(data, 3, CollectionDataSerializer.Compact(data, 3), null, CollectionFingerprint.Combined(prints), prints,
             PreparedFFXIVCollectExport.Unavailable("test"), 0, null), null, true);
-        var store = new CollectionDataPublicationStore(); store.Accept(bundle); store.SetCapabilities(bundle.CapabilitiesJson, bundle.CapabilitiesJsonV11);
+        var store = new CollectionDataPublicationStore();
+        store.Accept(bundle);
+        store.SetCapabilities(bundle.CapabilitiesJson, bundle.CapabilitiesJsonV11);
         Assert.True(V10.ValidateSnapshot(store.GetSnapshot(), "123").Success);
         Assert.True(V11.ValidateSnapshot(store.GetSnapshotV11(), "123").Success);
-        store.Withdraw(); Assert.Empty(store.GetSnapshot()); Assert.Empty(store.GetSnapshotV11());
+        store.Withdraw();
+        Assert.Empty(store.GetSnapshot());
+        Assert.Empty(store.GetSnapshotV11());
         Assert.False(V11.ValidateCapabilities(store.GetCapabilitiesV11()).Value!.ReportedOwnershipEvidence.Available);
     }
 }

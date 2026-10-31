@@ -34,7 +34,11 @@ public sealed class RetainerGuideChangedRosterMessageTests
         public bool ListReady => true;
         public bool InventoryVisible => false;
         public bool IsSafe(ulong contentId) => contentId == 1;
-        public bool TryReadRoster(out ImmutableArray<InventoryRetainer> roster) { roster = Roster; return true; }
+        public bool TryReadRoster(out ImmutableArray<InventoryRetainer> roster)
+        {
+            roster = Roster;
+            return true;
+        }
         public bool OpenBell() => Record("OpenBell");
         public bool SelectRetainer(ulong retainerId) => Record("SelectRetainer");
         public bool OpenInventory(ulong retainerId) => Record("OpenInventory");
@@ -42,6 +46,10 @@ public sealed class RetainerGuideChangedRosterMessageTests
         public bool CloseInventory(ulong retainerId) => Record("CloseInventory");
         public bool QuitRetainer(ulong retainerId) => Record("QuitRetainer");
         public bool CloseOverviewAndInventory() => Record("CloseOverviewAndInventory");
-        private bool Record(string action) { Actions.Add(action); return false; }
+        private bool Record(string action)
+        {
+            Actions.Add(action);
+            return false;
+        }
     }
 }

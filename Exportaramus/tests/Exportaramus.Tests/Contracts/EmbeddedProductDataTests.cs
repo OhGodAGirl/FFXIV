@@ -21,7 +21,8 @@ public sealed class EmbeddedProductDataTests
     public void EmbeddedDerivedRelationshipsMatchPinnedPublicRowsAndNullableAchievements()
     {
         var derived = EmbeddedProductData.Derived();
-        Assert.Equal(1088, derived.Outfits.Length); Assert.Equal(2251, derived.Relics.Length);
+        Assert.Equal(1088, derived.Outfits.Length);
+        Assert.Equal(2251, derived.Relics.Length);
         Assert.Equal(new uint[] { 2642, 2965, 3747 }, derived.Outfits.Single(i => i.Id == 45094).RequiredItemIds.ToArray());
         Assert.Equal(129u, derived.Relics.Single(i => i.Id == 1675).AchievementId);
         Assert.Equal(864, derived.Relics.Count(i => i.AchievementId is not null));
@@ -45,17 +46,21 @@ public sealed class EmbeddedProductDataTests
     {
         Assert.True(EmbeddedProductData.TryDerived(out var derived, out var derivedError));
         Assert.True(EmbeddedProductData.TryDerived(out _, out _));
-        Assert.NotNull(derived); Assert.Null(derivedError);
+        Assert.NotNull(derived);
+        Assert.Null(derivedError);
         Assert.True(EmbeddedProductData.TryDiagnosticContract(out var metadata, out var metadataError));
         Assert.True(EmbeddedProductData.TryDiagnosticContract(out _, out _));
-        Assert.NotNull(metadata); Assert.Null(metadataError);
+        Assert.NotNull(metadata);
+        Assert.Null(metadataError);
         var contract = EmbeddedProductData.Read("ffxiv-collect-contract.json");
         var mapping = EmbeddedProductData.Read("identifier-mappings.json");
         var recognized = EmbeddedProductData.Read("recognized-ids.json");
         Assert.False(EmbeddedProductData.TryDerived(contract, mapping, recognized, [], out derived, out derivedError));
-        Assert.Null(derived); Assert.Equal("Derived collection mappings are invalid.", derivedError);
+        Assert.Null(derived);
+        Assert.Equal("Derived collection mappings are invalid.", derivedError);
         Assert.False(EmbeddedProductData.TryDiagnosticContract([], mapping, out metadata, out metadataError));
-        Assert.Null(metadata); Assert.Equal("FFXIV Collect diagnostic metadata is invalid.", metadataError);
+        Assert.Null(metadata);
+        Assert.Equal("FFXIV Collect diagnostic metadata is invalid.", metadataError);
     }
 
     [Theory]
@@ -66,10 +71,13 @@ public sealed class EmbeddedProductDataTests
     public void DiagnosticMetadataRejectsUnverifiableOrIncompatibleFields(string property, string replacement)
     {
         var root = JsonNode.Parse(EmbeddedProductData.Read("ffxiv-collect-contract.json"))!;
-        if (property == "mappingHash") root["artifacts"]!["identifierMappingsSha256"] = replacement;
-        else root[property] = replacement;
+        if (property == "mappingHash")
+            root["artifacts"]!["identifierMappingsSha256"] = replacement;
+        else
+            root[property] = replacement;
         Assert.False(EmbeddedProductData.TryDiagnosticContract(Encoding.UTF8.GetBytes(root.ToJsonString()), EmbeddedProductData.Read("identifier-mappings.json"), out var metadata, out var error));
-        Assert.Null(metadata); Assert.Equal("FFXIV Collect diagnostic metadata is invalid.", error);
+        Assert.Null(metadata);
+        Assert.Equal("FFXIV Collect diagnostic metadata is invalid.", error);
     }
 }
 

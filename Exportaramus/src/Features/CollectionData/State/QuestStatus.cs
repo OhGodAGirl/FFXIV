@@ -1,3 +1,6 @@
 namespace Exportaramus.Features.CollectionData.State;
 
-public enum QuestStatus { NotStarted, InProgress, Completed }
+public enum QuestStatus
+{
+    NotStarted, InProgress, Completed
+}

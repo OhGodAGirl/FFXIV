@@ -24,13 +24,17 @@ public sealed class MutationCollectTests
             var catalog = Recognized["catalogs"]!.AsArray().Single(c => c!["key"]!.GetValue<string>() == key)!;
             var ids = catalog["ids"]!.AsArray().Select(id => id!.GetValue<uint>()).ToArray();
             var hash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join(',', ids))));
-            catalog["idsSha256"] = hash; catalog["count"] = ids.Length;
+            catalog["idsSha256"] = hash;
+            catalog["count"] = ids.Length;
             var manifest = Contract["catalogs"]!.AsArray().Single(c => c!["key"]!.GetValue<string>() == key)!;
-            manifest["idsSha256"] = hash; manifest["count"] = ids.Length;
+            manifest["idsSha256"] = hash;
+            manifest["count"] = ids.Length;
         }
         public FFXIVCollectContract Load()
         {
-            var mapping = Bytes(Mapping); var recognized = Bytes(Recognized); var derived = Bytes(Derived);
+            var mapping = Bytes(Mapping);
+            var recognized = Bytes(Recognized);
+            var derived = Bytes(Derived);
             Contract["artifacts"]!["identifierMappingsSha256"] = Convert.ToHexStringLower(SHA256.HashData(mapping));
             Contract["artifacts"]!["recognizedIdsSha256"] = Convert.ToHexStringLower(SHA256.HashData(recognized));
             Contract["artifacts"]!["derivedInputsSha256"] = Convert.ToHexStringLower(SHA256.HashData(derived));
@@ -53,12 +57,15 @@ public sealed class MutationCollectTests
     {
         foreach (var length in new[] { 128, 129 })
         {
-            var documents = new Documents(); var version = new string('v', length);
+            var documents = new Documents();
+            var version = new string('v', length);
             documents.Contract["validatedGameDataVersion"] = version;
             documents.Mapping["validatedGameDataVersion"] = version;
             documents.Derived["validatedGameDataVersion"] = version;
-            if (length == 128) Assert.Equal(version, documents.Load().GameDataVersion);
-            else Assert.False(string.IsNullOrWhiteSpace(Assert.Throws<InvalidDataException>(() => documents.Load()).Message));
+            if (length == 128)
+                Assert.Equal(version, documents.Load().GameDataVersion);
+            else
+                Assert.False(string.IsNullOrWhiteSpace(Assert.Throws<InvalidDataException>(() => documents.Load()).Message));
         }
     }
 
@@ -101,9 +108,16 @@ public sealed class MutationCollectTests
         var documents = new Documents();
         var catalog = documents.Recognized["catalogs"]!.AsArray().Single(c => c!["key"]!.GetValue<string>() == "bardings")!;
         var ids = catalog["ids"]!.AsArray();
-        if (defect == "zero") ids[0] = 0u;
-        else if (defect == "duplicate") ids[1] = ids[0]!.DeepClone();
-        else { var first = ids[0]!.GetValue<uint>(); ids[0] = ids[1]!.GetValue<uint>(); ids[1] = first; }
+        if (defect == "zero")
+            ids[0] = 0u;
+        else if (defect == "duplicate")
+            ids[1] = ids[0]!.DeepClone();
+        else
+        {
+            var first = ids[0]!.GetValue<uint>();
+            ids[0] = ids[1]!.GetValue<uint>();
+            ids[1] = first;
+        }
         documents.SealCatalog("bardings");
         Assert.False(string.IsNullOrWhiteSpace(Assert.Throws<InvalidDataException>(() => documents.Load()).Message));
     }
@@ -119,7 +133,8 @@ public sealed class MutationCollectTests
     [Fact]
     public void OneUnsafeStaleFactOmitsTheWholeCollectionEvenBesideAcceptableFacts()
     {
-        var contract = FFXIVCollectContract.LoadEmbedded(); var data = ProductCollectTests.CompleteProjection(contract);
+        var contract = FFXIVCollectContract.LoadEmbedded();
+        var data = ProductCollectTests.CompleteProjection(contract);
         var collection = data.Collections["outfits"];
         var first = collection.Items[0];
         var mixed = first with
@@ -131,8 +146,16 @@ public sealed class MutationCollectTests
             new(DataType.CurrentItemPresence, "inventory", 100, "Present", SourceStatus.Stale)]
             }
         };
-        var output = FFXIVCollectImportSerializer.Serialize(data with { Collections = data.Collections.SetItem("outfits", collection with { Items = collection.Items.SetItem(0, mixed) }) }, contract);
-        Assert.True(output.CanCopy); Assert.Contains("outfits", output.OmittedKeys);
-        using var document = JsonDocument.Parse(output.Json!); Assert.False(document.RootElement.TryGetProperty("outfits", out _));
+        var output = FFXIVCollectImportSerializer.Serialize(data with
+        {
+            Collections = data.Collections.SetItem("outfits", collection with
+            {
+                Items = collection.Items.SetItem(0, mixed)
+            })
+        }, contract);
+        Assert.True(output.CanCopy);
+        Assert.Contains("outfits", output.OmittedKeys);
+        using var document = JsonDocument.Parse(output.Json!);
+        Assert.False(document.RootElement.TryGetProperty("outfits", out _));
     }
 }

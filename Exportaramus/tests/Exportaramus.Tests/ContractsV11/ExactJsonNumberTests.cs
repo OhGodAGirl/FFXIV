@@ -31,11 +31,11 @@ public sealed class ExactJsonNumberTests
     [InlineData("16.0000000000000000000000000000001", false)]
     public void ApprovedDiagnosticsBoundsCompareExactValues(string number, bool expected)
     {
-        var path = Path.Combine(ConsumerContractTests.Root, "tests", "fixtures", "Diagnostics", "1.0", "fixtures", "valid", "diagnostics-valid-ready.json");
+        var path = Path.Combine(ConsumerContractTests.Root, "tests", "fixtures", "Diagnostics", "1.1", "fixtures", "valid", "diagnostics-valid-ready.json");
         var root = JsonNode.Parse(File.ReadAllText(path))!;
         root["ui"]!["uiScale"] = JsonNode.Parse(number);
         using var input = JsonDocument.Parse(root.ToJsonString());
-        Assert.Equal(expected, new ContractSchemaRegistry([File.ReadAllBytes(Path.Combine(ConsumerContractTests.Root, "data/Contracts/1.1/schemas/collection-data.schema.json")), File.ReadAllBytes(Path.Combine(ConsumerContractTests.Root, "data/Diagnostics/1.0/exportaramus-diagnostics.schema.json"))]).Validate(input.RootElement, "exportaramus-diagnostics.schema.json"));
+        Assert.Equal(expected, new ContractSchemaRegistry([File.ReadAllBytes(Path.Combine(ConsumerContractTests.Root, "data/Contracts/1.1/schemas/collection-data.schema.json")), File.ReadAllBytes(Path.Combine(ConsumerContractTests.Root, "data/Diagnostics/1.1/exportaramus-diagnostics-v1.1.schema.json"))]).Validate(input.RootElement, "exportaramus-diagnostics-v1.1.schema.json"));
     }
 
     [Fact]
@@ -101,7 +101,8 @@ public sealed class ExactJsonNumberTests
             for (var exponent = -6; exponent <= 6; exponent++)
             {
                 var factor = 1m;
-                for (var i = 0; i < Math.Abs(exponent); i++) factor *= 10;
+                for (var i = 0; i < Math.Abs(exponent); i++)
+                    factor *= 10;
                 var number = exponent < 0 ? coefficient / factor : coefficient * factor;
                 var actual = (coefficient * 10).ToString(System.Globalization.CultureInfo.InvariantCulture) + "e" + (exponent - 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
                 var expected = number.ToString(System.Globalization.CultureInfo.InvariantCulture);

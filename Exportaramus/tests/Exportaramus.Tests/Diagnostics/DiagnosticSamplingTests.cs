@@ -14,13 +14,22 @@ public sealed class DiagnosticSamplingTests
     public void ObservedGeometryAndReadinessReplaceDefaultsWithoutMakingUnobservedSectionsComplete()
     {
         var ui = Assert.IsType<DiagnosticUi>(DiagnosticSamplingPolicy.PrepareUi(Observed));
-        Assert.Equal(new(-25, 30), ui.WindowPosition); Assert.Equal(new(760, 560), ui.WindowSize);
-        Assert.Equal(740, ui.ContentWidth); Assert.Equal(1.5, ui.UiScale); Assert.True(ui.WideActions);
-        Assert.Equal(3, ui.CollectionColumnCount); Assert.True(ui.FontReady); Assert.Equal(8, ui.PushedStyleVarCount);
-        Assert.Equal(31, ui.PushedColorCount); Assert.True(ui.ReduceMotion); Assert.Equal(42, ui.ViewStateRevision);
+        Assert.Equal(new(-25, 30), ui.WindowPosition);
+        Assert.Equal(new(760, 560), ui.WindowSize);
+        Assert.Equal(740, ui.ContentWidth);
+        Assert.Equal(1.5, ui.UiScale);
+        Assert.True(ui.WideActions);
+        Assert.Equal(3, ui.CollectionColumnCount);
+        Assert.True(ui.FontReady);
+        Assert.Equal(8, ui.PushedStyleVarCount);
+        Assert.Equal(31, ui.PushedColorCount);
+        Assert.True(ui.ReduceMotion);
+        Assert.Equal(42, ui.ViewStateRevision);
         var input = MainSnapshotPresenter.DiagnosticInput(null, "0.1.0.0", "10.0.0", Guid.Empty, false, false, 0, new(0, 0, 0), new(), SnapshotFixture.Now);
         var result = DiagnosticRuntimeEnricher.Apply(input, new(), new(), new(), new(), ImmutableDictionary<string, double>.Empty, false, ui);
-        Assert.Same(ui, result.Ui); Assert.DoesNotContain("ui", result.IncompleteSections); Assert.Contains("runtime", result.IncompleteSections);
+        Assert.Same(ui, result.Ui);
+        Assert.DoesNotContain("ui", result.IncompleteSections);
+        Assert.Contains("runtime", result.IncompleteSections);
         DiagnosticReportSerializer.Prepare(DiagnosticReportPreparer.Prepare(result, SnapshotFixture.Now));
         Assert.Null(DiagnosticSamplingPolicy.PrepareUi(null));
     }
@@ -43,11 +52,28 @@ public sealed class DiagnosticSamplingTests
             Revision = 9007199254740991
         };
         var ui = Assert.IsType<DiagnosticUi>(DiagnosticSamplingPolicy.PrepareUi(value));
-        Assert.False(ui.FontReady); Assert.False(ui.ReduceMotion); Assert.False(ui.WideActions); Assert.Equal(1, ui.CollectionColumnCount);
-        Assert.Equal(-100000, ui.WindowPosition.X); Assert.Equal(100000, ui.WindowPosition.Y); Assert.Equal(100000, ui.WindowSize.X);
-        Assert.Equal(100000, ui.WindowSize.Y); Assert.Equal(0, ui.ContentWidth); Assert.Equal(16, ui.UiScale);
-        Assert.Equal(64, ui.PushedStyleVarCount); Assert.Equal(128, ui.PushedColorCount); Assert.Equal(9007199254740991, ui.ViewStateRevision);
-        Assert.NotNull(DiagnosticSamplingPolicy.PrepareUi(Observed with { X = 100000, Y = -100000, ContentWidth = 3600000, StyleVariables = 0, Colors = 0, Revision = 0 }));
+        Assert.False(ui.FontReady);
+        Assert.False(ui.ReduceMotion);
+        Assert.False(ui.WideActions);
+        Assert.Equal(1, ui.CollectionColumnCount);
+        Assert.Equal(-100000, ui.WindowPosition.X);
+        Assert.Equal(100000, ui.WindowPosition.Y);
+        Assert.Equal(100000, ui.WindowSize.X);
+        Assert.Equal(100000, ui.WindowSize.Y);
+        Assert.Equal(0, ui.ContentWidth);
+        Assert.Equal(16, ui.UiScale);
+        Assert.Equal(64, ui.PushedStyleVarCount);
+        Assert.Equal(128, ui.PushedColorCount);
+        Assert.Equal(9007199254740991, ui.ViewStateRevision);
+        Assert.NotNull(DiagnosticSamplingPolicy.PrepareUi(Observed with
+        {
+            X = 100000,
+            Y = -100000,
+            ContentWidth = 3600000,
+            StyleVariables = 0,
+            Colors = 0,
+            Revision = 0
+        }));
     }
 
     [Theory]

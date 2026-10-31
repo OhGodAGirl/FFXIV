@@ -12,15 +12,20 @@ public static class MainSnapshotPresenter
     private static bool IsComplete(AcceptedSnapshotBundle bundle)
     {
         // Capture success and reader coverage are separate. Omitted/closed windows do not undo a successful read.
-        if (bundle.Data.State.CaptureType == CaptureType.Restored || bundle.Data.Collections.Count == 0) return false;
+        if (bundle.Data.State.CaptureType == CaptureType.Restored || bundle.Data.Collections.Count == 0)
+            return false;
         foreach (var definition in MainPresenter.Collections)
         {
-            if (!bundle.Data.SourceHealth.TryGetValue(definition.Key, out var health)) continue;
+            if (!bundle.Data.SourceHealth.TryGetValue(definition.Key, out var health))
+                continue;
             if (health.ReasonCode is ReasonCode.CaptureFailed or ReasonCode.MappingValidationFailed or ReasonCode.QuantityOverflow or ReasonCode.OutputSizeLimitExceeded)
                 return false;
-            if (health.CapabilityState == CapabilityState.UnavailablePendingValidation || !health.IsUsable) continue;
-            if (!bundle.Data.Collections.ContainsKey(definition.Key) || health.CapabilityState == CapabilityState.Degraded) return false;
-            if (health.SourceStatus == SourceStatus.Stale && !RetainedClosedWindow(health)) return false;
+            if (health.CapabilityState == CapabilityState.UnavailablePendingValidation || !health.IsUsable)
+                continue;
+            if (!bundle.Data.Collections.ContainsKey(definition.Key) || health.CapabilityState == CapabilityState.Degraded)
+                return false;
+            if (health.SourceStatus == SourceStatus.Stale && !RetainedClosedWindow(health))
+                return false;
         }
         return true;
     }
@@ -51,7 +56,12 @@ public static class MainSnapshotPresenter
                 rows.Add(definition.Key, new(bundle.CollectionOwnedCounts.TryGetValue(definition.Key, out var count) ? count : null,
                     collection.Health.SourceStatus == SourceStatus.Stale && !RetainedClosedWindow(collection.Health),
                     bundle.CollectionDeltas.TryGetValue(definition.Key, out var delta) ? delta : null,
-                    collection.OwnershipKind switch { DataType.PermanentUnlock => RowEvidenceKind.PermanentUnlock, DataType.CurrentItemPresence => RowEvidenceKind.CurrentItemPresence, _ => RowEvidenceKind.Derived }, Detail: collection.Health.SourceStatus == SourceStatus.Stale
+                    collection.OwnershipKind switch
+                    {
+                        DataType.PermanentUnlock => RowEvidenceKind.PermanentUnlock,
+                        DataType.CurrentItemPresence => RowEvidenceKind.CurrentItemPresence,
+                        _ => RowEvidenceKind.Derived
+                    }, Detail: collection.Health.SourceStatus == SourceStatus.Stale
                         ? RetainedClosedWindow(collection.Health) ? "Captured " + MainPresenter.RelativeTime(collection.Health.ObservedAtUtc, now).ToLowerInvariant() + "; window now closed. Last observed count retained." : "Last-known count retained. " + collection.Health.Reason
                         : "Captured " + MainPresenter.RelativeTime(collection.Health.ObservedAtUtc, now).ToLowerInvariant() + ". Complete read; zero means no owned entries."));
             }
@@ -67,14 +77,23 @@ public static class MainSnapshotPresenter
             MainStatus.Error => "Refresh Failed",
             _ => "Some Data Unavailable",
         };
-        var healthTone = status switch { MainStatus.Current => UiTone.Success, MainStatus.Error => UiTone.Error, MainStatus.Partial => UiTone.Warning, MainStatus.Synchronizing => UiTone.Working, _ => UiTone.Muted };
+        var healthTone = status switch
+        {
+            MainStatus.Current => UiTone.Success,
+            MainStatus.Error => UiTone.Error,
+            MainStatus.Partial => UiTone.Warning,
+            MainStatus.Synchronizing => UiTone.Working,
+            _ => UiTone.Muted
+        };
         var observed = bundle is null ? "Not observed" : bundle.Data.State.CaptureType == CaptureType.Restored ? "Restored snapshot" : now - bundle.Data.State.CapturedAtUtc < TimeSpan.FromMinutes(1) ? "Observed just now" : "Snapshot retained";
         var observationsTone = bundle is null ? UiTone.Muted : bundle.Data.State.CaptureType == CaptureType.Restored ? UiTone.Warning : UiTone.Success;
         return MainPresenter.Prepare(new(bundle?.Revision ?? 0, status, hasCharacter, bundle is not null, reduceMotion, bundle?.Export.CanCopy == true,
             bundle?.HistoryCount ?? 0, bundle?.Data.State.CapturedAtUtc, bundle?.LatestHistoryUtc, synchronizationError ?? bundle?.Export.Error ?? "",
             headline, healthTone, [new(observed, observationsTone), new(collectorError ? "Collector errors" : pendingValidation ? "Reader unavailable" : "No collector errors",
                 collectorError ? UiTone.Error : pendingValidation ? UiTone.Warning : UiTone.Success), new(ipcAvailable ? "IPC available" : "IPC unavailable", ipcAvailable ? UiTone.Success : UiTone.Warning)], rows.ToImmutable(), guided), now) with
-        { HealthTooltip = PrepareHealthTooltip(bundle, observed, collectorError, ipcAvailable) };
+        {
+            HealthTooltip = PrepareHealthTooltip(bundle, observed, collectorError, ipcAvailable)
+        };
     }
 
     private static readonly ImmutableDictionary<string, string> SourceLabels = MainPresenter.Collections
@@ -121,21 +140,49 @@ public static class MainSnapshotPresenter
             pair.Value.ObservedAtUtc is { } observed ? Math.Max(0, (now - observed).TotalSeconds) : null, 0, pair.Value.ReasonCode.ToString())).ToImmutableArray();
         var omissions = bundle is null ? [] : bundle.Data.SourceHealth.Where(pair => !pair.Value.IsUsable).OrderBy(pair => pair.Key, StringComparer.Ordinal)
             .Select(pair => new DiagnosticOmission(pair.Key, pair.Value.ReasonCode.ToString())).ToImmutableArray();
-        return new(new() { PluginVersion = pluginVersion, AssemblyInformationalVersion = pluginVersion },
-            new() { DotnetRuntimeVersion = runtimeVersion, GameDataVersion = bundle?.Data.Catalog.GameDataVersion ?? "Unavailable", FfxivClientVersion = bundle?.Data.Catalog.GameDataVersion ?? "Unavailable", ClientLanguage = bundle?.Data.Catalog.ClientLanguage ?? "English" },
-            new() { State = "Running", ProviderSessionId = session, Revision = bundle?.Revision ?? 0, Registrations = new(true, true, true, true, true, true, true, true) },
-            new() { ControllerState = busy ? "Capturing" : "Idle", CaptureType = bundle?.Data.State.CaptureType.ToString(), CaptureGeneration = bundle?.Data.State.CaptureGeneration ?? 0 },
+        return new(new()
+        {
+            PluginVersion = pluginVersion,
+            AssemblyInformationalVersion = pluginVersion
+        },
+            new()
+            {
+                DotnetRuntimeVersion = runtimeVersion,
+                GameDataVersion = bundle?.Data.Catalog.GameDataVersion ?? "Unavailable",
+                FfxivClientVersion = bundle?.Data.Catalog.GameDataVersion ?? "Unavailable",
+                ClientLanguage = bundle?.Data.Catalog.ClientLanguage ?? "English"
+            },
+            new()
+            {
+                State = "Running",
+                ProviderSessionId = session,
+                Revision = bundle?.Revision ?? 0,
+                Registrations = new(true, true, true, true, true, true, true, true)
+            },
+            new()
+            {
+                ControllerState = busy ? "Capturing" : "Idle",
+                CaptureType = bundle?.Data.State.CaptureType.ToString(),
+                CaptureGeneration = bundle?.Data.State.CaptureGeneration ?? 0
+            },
             new()
             {
                 AcceptedCaptureGeneration = bundle?.Data.State.CaptureGeneration ?? 0,
                 CatalogCache = new(null, bundle is null ? "Empty" : "Ready", 0),
                 Fingerprints = bundle?.SourceFingerprints.ToImmutableDictionary(x => "source." + x.Key, x => (string?)x.Value, StringComparer.Ordinal) ?? ImmutableDictionary<string, string?>.Empty,
-                FfxivCollect = contractEvidence with { IncludedKeyCount = bundle?.Export.IncludedKeys.Length ?? 0, OmittedKeyCount = bundle?.Export.OmittedKeys.Length ?? 16 },
+                FfxivCollect = contractEvidence with
+                {
+                    IncludedKeyCount = bundle?.Export.IncludedKeys.Length ?? 0,
+                    OmittedKeyCount = bundle?.Export.OmittedKeys.Length ?? 16
+                },
                 Serializers = new(bundle is null ? "NotBuilt" : "Ready", bundle?.RichJson is null ? "NotBuilt" : "Ready", bundle?.Export.CanCopy == true ? "Ready" : "Unavailable"),
                 OutputBytes = new(bundle?.CompactBytes ?? 0, bundle?.RichBytes ?? 0, bundle?.ExportBytes ?? 0),
                 Omissions = omissions
             },
-            sources, new() { HistoryFileCount = bundle?.HistoryCount ?? 0 },
+            sources, new()
+            {
+                HistoryFileCount = bundle?.HistoryCount ?? 0
+            },
             new()
             {
                 GatesRegistered = new(true, true, true, true, true),
@@ -143,6 +190,10 @@ public static class MainSnapshotPresenter
                 ReportCounters = reportCounters,
                 PayloadBytes = new(bundle?.CapabilitiesBytes ?? 0, bundle?.CompactBytes ?? 0, 0)
             },
-            new() { ReduceMotion = reduceMotion, ViewStateRevision = bundle?.Revision ?? 0 }, ["storage", "ui"]);
+            new()
+            {
+                ReduceMotion = reduceMotion,
+                ViewStateRevision = bundle?.Revision ?? 0
+            }, ["storage", "ui"]);
     }
 }

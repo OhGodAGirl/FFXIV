@@ -40,9 +40,12 @@ public sealed class DiagnosticOutputBoundaryTests(ITestOutputHelper output)
         for (var failure = 0; failure < exact.RecentFailures.Length; failure++)
             Assert.Equal(exact.RecentFailures[failure].Frames, accepted.Model.RecentFailures[failure].Frames);
         var over = DiagnosticAtCanonicalSize(DiagnosticReportSerializer.MaximumUtf8Bytes + 1);
-        var overDocument = JsonSerializer.SerializeToElement(over with { FingerprintSha256 = new string('0', 64) },
+        var overDocument = JsonSerializer.SerializeToElement(over with
+        {
+            FingerprintSha256 = new string('0', 64)
+        },
             new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-        Assert.True(ContractSchemaRegistry.Default.Validate(overDocument, "exportaramus-diagnostics.schema.json"));
+        Assert.True(ContractSchemaRegistry.Default.Validate(overDocument, "exportaramus-diagnostics-v1.1.schema.json"));
         Assert.Equal(DiagnosticReportSerializer.MaximumUtf8Bytes + 1, DiagnosticReportSerializer.Canonical(overDocument, false).Length);
         var error = Assert.Throws<InvalidDataException>(() => DiagnosticReportSerializer.Prepare(over));
         Assert.Equal("DiagnosticOutputSizeLimitExceeded", error.Message);
@@ -81,7 +84,10 @@ public sealed class DiagnosticOutputBoundaryTests(ITestOutputHelper output)
         {
             Frames = Enumerable.Range(0, 32).Select(_ => new DiagnosticFrame("A", "B", "C", "Source.cs", 1)).ToImmutableArray()
         }).ToArray();
-        var report = Report with { RecentFailures = failures.ToImmutableArray() };
+        var report = Report with
+        {
+            RecentFailures = failures.ToImmutableArray()
+        };
         // Measure the actual accepted serializer output once. Expanding unescaped ASCII within
         // schema-valid frame fields changes its canonical byte size one-for-one; hashes stay 64 bytes.
         var baseline = DiagnosticReportSerializer.Prepare(report).Utf8Bytes;
@@ -92,9 +98,12 @@ public sealed class DiagnosticOutputBoundaryTests(ITestOutputHelper output)
             var frames = failures[item].Frames.ToArray();
             for (var frame = 0; frame < frames.Length; frame++)
             {
-                var assembly = Math.Min(255, remaining); remaining -= assembly;
-                var type = Math.Min(255, remaining); remaining -= type;
-                var method = Math.Min(255, remaining); remaining -= method;
+                var assembly = Math.Min(255, remaining);
+                remaining -= assembly;
+                var type = Math.Min(255, remaining);
+                remaining -= type;
+                var method = Math.Min(255, remaining);
+                remaining -= method;
                 frames[frame] = frames[frame] with
                 {
                     Assembly = new string('A', 1 + assembly),
@@ -102,10 +111,16 @@ public sealed class DiagnosticOutputBoundaryTests(ITestOutputHelper output)
                     Method = new string('C', 1 + method)
                 };
             }
-            failures[item] = failures[item] with { Frames = frames.ToImmutableArray() };
+            failures[item] = failures[item] with
+            {
+                Frames = frames.ToImmutableArray()
+            };
         }
         Assert.Equal(0, remaining);
-        return report with { RecentFailures = failures.ToImmutableArray() };
+        return report with
+        {
+            RecentFailures = failures.ToImmutableArray()
+        };
     }
 
 }
