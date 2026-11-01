@@ -154,7 +154,7 @@ def selected_mutants(report, mapping, paths, requested_ids, repair_mode=False):
                 raise ValueError('Report IDs must be globally unique numeric strings.')
             seen.add(key)
             eligible = (mutant['status'] == 'CompileError' or mutant['status'] == 'Ignored' and mutant.get('statusReason') == BLOCK_REASON
-                        or repair_mode and mutant['status'] in ('Survived', 'Timeout'))
+                        or repair_mode and mutant['status'] in ('Survived', 'Timeout', 'NoCoverage'))
             if not eligible or requested_ids is not None and key not in requested_ids:
                 continue
             if report_path not in mapping:

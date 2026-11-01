@@ -320,6 +320,12 @@ def validate_environment(review, summary, summary_path, stage, approved):
             'Launcher deadlines differ from the reviewed policy.')
 
 
+def execution_eligible(mutant):
+    from mutation_review import BLOCK_REASON
+    return (mutant['status'] in ('Survived', 'Timeout', 'NoCoverage', 'CompileError')
+            or mutant['status'] == 'Ignored' and mutant.get('statusReason') == BLOCK_REASON)
+
+
 def stage_child(request):
     stage = request['stage']
     root = Path(stage['root']).resolve()
@@ -343,8 +349,7 @@ def stage_child(request):
         mutant = next((m for m in report['files'][entry['file']]['mutants'] if m['id'] == entry['id']), None)
         require(mutant is not None, 'Exact original mutation is absent.')
         exact_mutation(entry, mutant)
-        require(mutant['status'] in ('Survived', 'Timeout', 'CompileError')
-                or mutant['status'] == 'Ignored' and mutant.get('statusReason') == review_module.BLOCK_REASON,
+        require(execution_eligible(mutant),
                 'This raw status is not eligible for supplemental execution.')
         summary, result, result_path = verify_summary(entry, repair, review_module, root, checked_snapshots, summary_cache)
         summary_path = Path(entry['independentExecution']['summary']).resolve()
@@ -369,7 +374,7 @@ def stage_child(request):
             failures = validate_causality(causal, entry, result, result_path, stage['id'], root, repair['repairedPaths'], summary.get('suiteBinding', {}).get('target', 'provider'), summary.get('suiteBinding'))
             findings.append({'file': entry['file'], 'id': entry['id'], 'classification': entry['classification'], 'failedRows': failures})
         else:
-            require(entry['classification'] == 'IndividuallyNonViable' and mutant['status'] in ('CompileError', 'Ignored', 'Survived', 'Timeout'),
+            require(entry['classification'] == 'IndividuallyNonViable' and mutant['status'] in ('CompileError', 'Ignored', 'Survived', 'Timeout', 'NoCoverage'),
                     'Unsupported actual compiler-rejection disposition.')
             diagnostics = validate_nonviability(result, root)
             findings.append({'file': entry['file'], 'id': entry['id'], 'classification': entry['classification'], 'compilerDiagnosticCodes': diagnostics})

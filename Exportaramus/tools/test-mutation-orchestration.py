@@ -228,6 +228,20 @@ class LedgerChecks(unittest.TestCase):
         self.entry['classification'] = 'IndividuallyNonViable'
         self.assertEqual(({('src/a.cs', '7')}, set(), []), self.resolve())
 
+    def test_uncovered_kill_requires_repair_and_exact_execution_validation(self):
+        self.mutant['status'] = self.entry['status'] = 'NoCoverage'
+        self.entry['classification'] = 'IndependentlyKilled'
+        self.assertTrue(self.resolve()[2])
+        with patch.object(review, 'independently_killed', return_value=False) as check:
+            result = review.reconcile(self.ledger, self.before, 'report', self.scope, self.report, self.root, repair={'bound': True})
+            self.assertFalse(result[0])
+            check.assert_called_once()
+        with patch.object(review, 'independently_killed', return_value=True):
+            result = review.reconcile(self.ledger, self.before, 'report', self.scope, self.report, self.root, repair={'bound': True})
+            self.assertEqual({('src/a.cs', '7')}, result[0])
+        self.entry['classification'] = 'Equivalent'
+        self.assertTrue(self.resolve()[2])
+
     def test_timeouts_uncovered_and_runtime_errors_cannot_be_waived(self):
         for status in ('Timeout', 'NoCoverage', 'RuntimeError', 'Pending', 'Killed'):
             self.mutant['status'] = self.entry['status'] = status

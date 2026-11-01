@@ -76,11 +76,11 @@ class ProofChecks(unittest.TestCase):
         f.save_independent()
         return existing.review.reconcile(f.ledger,f.before,'report',f.scope,f.report,f.root,self.repair if repair else None)
 
-    def test_bound_normal_failure_resolves_survived_and_timeout_only_in_bridge(self):
-        for status in ('Survived','Timeout'):
+    def test_bound_normal_failure_resolves_replay_statuses_only_in_bridge(self):
+        for status in ('Survived','Timeout','NoCoverage'):
             self.assertFalse(self.resolve(status)[2])
             self.assertTrue(self.resolve(status,False)[2])
-        for status in ('NoCoverage','RuntimeError','Pending'):
+        for status in ('RuntimeError','Pending'):
             self.assertTrue(self.resolve(status)[2])
 
     def test_changed_binding_or_incomplete_execution_fails(self):
@@ -89,6 +89,7 @@ class ProofChecks(unittest.TestCase):
             self.fixture.independent=copy.deepcopy(pristine)
             mutate(self.fixture.independent)
             self.assertTrue(self.resolve()[2])
+            self.assertTrue(self.resolve('NoCoverage')[2])
 
     def test_same_count_different_cases_fails(self):
         execution=self.fixture.independent['results'][0]['tests']

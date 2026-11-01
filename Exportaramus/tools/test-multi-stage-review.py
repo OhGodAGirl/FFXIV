@@ -32,6 +32,13 @@ class StageChecks(unittest.TestCase):
                         dict(id='repair02', root=str(self.parent / 'repair02/source'), parent=None),
                         dict(id='repair03', root=str(self.root), parent='repair02')])
 
+    def test_uncovered_execution_is_eligible_but_labels_are_not_proof(self):
+        self.assertTrue(stage.execution_eligible({'status': 'NoCoverage'}))
+        for status in ('Killed', 'Pending', 'RuntimeError'):
+            self.assertFalse(stage.execution_eligible({'status': status}))
+        self.assertFalse(stage.execution_eligible({'status': 'Ignored', 'statusReason': 'excluded'}))
+        self.assertTrue(stage.execution_eligible({'status': 'Ignored', 'statusReason': legacy.BLOCK_REASON}))
+
     def test_ordered_sibling_stages_are_supported(self):
         self.assertEqual(2, len(stage.stage_shape(self.manifest(), self.root)))
 
@@ -105,7 +112,7 @@ class StageChecks(unittest.TestCase):
     def test_v1_allowlist_remains_unchanged(self):
         self.assertEqual(6, len(bridge.BRIDGE_TOOL_FILES))
         self.assertNotIn('tools/multi_stage_review.py', bridge.BRIDGE_TOOL_FILES)
-        self.assertEqual({'tools/multi_stage_review.py', 'tools/test-multi-stage-review.py', 'tools/suite_binding.py', 'tools/test-suite-binding.py'},
+        self.assertEqual({'tools/multi_stage_review.py', 'tools/test-multi-stage-review.py', 'tools/suite_binding.py', 'tools/test-suite-binding.py', 'tools/test-individual-mutation.py', 'tools/test-mutation-orchestration.py'},
                          bridge.STAGED_BRIDGE_TOOL_FILES - bridge.BRIDGE_TOOL_FILES)
 
     def test_exact_mutation_rejects_changed_raw_fields(self):

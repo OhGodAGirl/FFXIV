@@ -166,7 +166,7 @@ def reconcile(ledger, before, report_hash, scope, report, root, repair=None):
                        or kind == 'RedundantBlock' and status == 'Ignored' and mutant.get('statusReason') == BLOCK_REASON
                        or kind == 'ExistingPlatformBinding' and status == 'Ignored' and key[0] == PLATFORM and mutant.get('statusReason') == PLATFORM_REASON)
             if kind == 'IndependentlyKilled' and (status == 'CompileError' or status == 'Ignored' and mutant.get('statusReason') == BLOCK_REASON
-                    or repair is not None and status in ('Survived', 'Timeout')):
+                    or repair is not None and status in ('Survived', 'Timeout', 'NoCoverage')):
                 allowed = independently_killed(entry, before, report_hash, mutant, root, repair)
             if not allowed:
                 raise ValueError('Classification cannot resolve this raw status or source.')

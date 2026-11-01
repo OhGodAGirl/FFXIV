@@ -136,6 +136,10 @@ class IndependentExecutionChecks(unittest.TestCase):
         for requested in ({'3'}, {'4'}, {'99'}):
             with self.assertRaises(ValueError):
                 executor.selected_mutants(report, mapping, paths, requested)
+        self.assertEqual(['3'], [row[2]['id'] for row in executor.selected_mutants(report, mapping, paths, {'3'}, repair_mode=True)])
+        for requested in ({'4'}, {'99'}):
+            with self.assertRaises(ValueError):
+                executor.selected_mutants(report, mapping, paths, requested, repair_mode=True)
         with self.assertRaises(ValueError):
             executor.selected_mutants(report, mapping, {'src/File.cs': 'wrong'}, None)
         with self.assertRaises(ValueError):

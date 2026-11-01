@@ -14,6 +14,7 @@ BRIDGE_TOOL_FILES = {
 }
 STAGED_BRIDGE_TOOL_FILES = BRIDGE_TOOL_FILES | {
     'tools/suite_binding.py', 'tools/test-suite-binding.py',
+    'tools/test-individual-mutation.py', 'tools/test-mutation-orchestration.py',
     "tools/multi_stage_review.py", "tools/test-multi-stage-review.py",
 }
 
