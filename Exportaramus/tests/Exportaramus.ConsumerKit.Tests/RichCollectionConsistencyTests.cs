@@ -96,4 +96,21 @@ public sealed class RichCollectionConsistencyTests
         root["currentItemPresence"]!["unknown"] = root["currentItemPresence"]!["inventory"]!.DeepClone();
         AssertAccepted(root, false);
     }
+    [Fact]
+    public void UnavailableCollectionsCannotContainCapturedItems()
+    {
+        var root = Snapshot();
+        root["sourceHealth"]!["mounts"]!["sourceStatus"] = "Unavailable";
+        root["collections"]!["mounts"]!["sourceStatus"] = "Unavailable";
+        AssertAccepted(root, false);
+    }
+
+    [Fact]
+    public void PermanentUnlocksCannotUseCurrentItemOwnership()
+    {
+        var root = Snapshot();
+        root["collections"]!["mounts"]!["items"]![0]!["ownershipEvidence"] =
+            root["collections"]!["glamour_dresser"]!["items"]![0]!["ownershipEvidence"]!.DeepClone();
+        AssertAccepted(root, false);
+    }
 }
