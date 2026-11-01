@@ -1101,7 +1101,7 @@ The exact report fields are defined by the [diagnostic report 1.1 schema](../dat
 
 ### 17.3 Configuration and Theme
 
-Persist configuration format version 1 with Reduce Motion. Unsupported configuration versions use the default false value rather than applying unknown settings.
+Persist configuration format version 1 with Reduce Motion. Unsupported configuration versions use the default false value rather than applying unknown settings. Retain the latest unsaved preference after a write failure and retry after 30 seconds; newer preference changes replace older pending values. Shutdown makes one final save attempt for the latest pending preference.
 
 Observe the game's theme approximately once per second on the framework thread. A failed read retains the last accepted palette; an unknown theme ID uses Dark. Never write game theme settings.
 

@@ -385,7 +385,7 @@
   "handwrittenSourceHashes": {
     "src/Bootstrap/ConfigurationFile.cs": "b2f5b08f668b204ef613dc670d55059712f4bc63005e31f06d754cb9d0c0d85c",
     "src/Bootstrap/ConfigurationPolicy.cs": "75f82a564ce4de4fe86df4a6b20771d4f70629e8a8773fec222e902959efcc72",
-    "src/Bootstrap/ConfigurationWriteCoordinator.cs": "7a0e28075eba252d95819ca5b239b70e9b7ecfc360b01195a565fd04b03bff37",
+    "src/Bootstrap/ConfigurationWriteCoordinator.cs": "1940831730a01a32e1926d51a6b749bf05fac46656574848daf1c3b2aa85d2fe",
     "src/Bootstrap/EmbeddedProductData.cs": "b83d6bf2cd06813d2722eb06cb94a78b1121ea1d1cf0560cff73129df2ed4f51",
     "src/Bootstrap/LifecycleCleanup.cs": "1194875b81c7044db3ad10e39110d3f7c5f5b3b988f4442483186474fbf99a07",
     "src/Bootstrap/PluginIdentity.cs": "e332650112932b038ec2117aa668706abfe3785e90d71af5cccc2c1cc05041fc",

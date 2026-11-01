@@ -77,12 +77,14 @@ public sealed class ConfigurationWriteTests
     public async Task ObservesFailedWriteOnceAndAllowsLaterRequest()
     {
         var writes = 0;
-        var coordinator = new ConfigurationWriteCoordinator(_ => ++writes == 1 ? Task.FromException(new IOException()) : Task.CompletedTask);
+        var clock = new ManualClock();
+        var coordinator = new ConfigurationWriteCoordinator(_ => ++writes == 1 ? Task.FromException(new IOException()) : Task.CompletedTask, clock);
         coordinator.Request(true);
         coordinator.Update();
         Assert.Throws<IOException>(coordinator.Update);
         coordinator.Update();
         coordinator.Request(false);
+        clock.Now = clock.Now.AddSeconds(30);
         coordinator.Update();
         coordinator.Update();
         Assert.Equal(2, writes);
@@ -98,5 +100,68 @@ public sealed class ConfigurationWriteTests
         await coordinator.DisposeAsync();
         var unused = new ConfigurationWriteCoordinator(_ => Task.CompletedTask);
         await unused.DisposeAsync();
+    }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FailedPreferenceRetriesWithoutAnotherRequest(bool synchronousFailure)
+    {
+        var writes = new List<bool>();
+        var clock = new ManualClock();
+        await using var coordinator = new ConfigurationWriteCoordinator(value =>
+        {
+            writes.Add(value);
+            if (writes.Count != 1) return Task.CompletedTask;
+            if (synchronousFailure) throw new IOException();
+            return Task.FromException(new IOException());
+        }, clock);
+        coordinator.Request(true);
+        if (!synchronousFailure) coordinator.Update();
+        Assert.Throws<IOException>(coordinator.Update);
+        coordinator.Update();
+        clock.Now = clock.Now.AddSeconds(29);
+        coordinator.Update();
+        Assert.Equal([true], writes);
+        clock.Now = clock.Now.AddSeconds(1);
+        coordinator.Update();
+        coordinator.Update();
+        Assert.Equal([true, true], writes);
+    }
+    [Fact]
+    public async Task NewerPreferenceWinsOverFailedActiveWriteAndDisposalRetriesOnce()
+    {
+        var writes = new List<bool>();
+        var completion = new TaskCompletionSource();
+        var coordinator = new ConfigurationWriteCoordinator(value =>
+        {
+            writes.Add(value);
+            return writes.Count == 1 ? completion.Task : Task.CompletedTask;
+        });
+        coordinator.Request(true);
+        coordinator.Update();
+        coordinator.Request(false);
+        completion.SetException(new IOException());
+        Assert.Throws<IOException>(coordinator.Update);
+        await coordinator.DisposeAsync();
+        Assert.Equal([true, false], writes);
+    }
+    [Fact]
+    public async Task DisposalRetriesAnUncollectedFailedWriteWithoutAnotherRequest()
+    {
+        var writes = new List<bool>();
+        var coordinator = new ConfigurationWriteCoordinator(value =>
+        {
+            writes.Add(value);
+            return writes.Count == 1 ? Task.FromException(new IOException()) : Task.CompletedTask;
+        });
+        coordinator.Request(true);
+        coordinator.Update();
+        await coordinator.DisposeAsync();
+        Assert.Equal([true, true], writes);
+    }
+    private sealed class ManualClock : TimeProvider
+    {
+        public DateTimeOffset Now = DateTimeOffset.Parse("2026-10-31T00:00:00Z");
+        public override DateTimeOffset GetUtcNow() => Now;
     }
 }
