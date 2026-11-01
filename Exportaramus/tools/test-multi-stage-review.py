@@ -32,6 +32,18 @@ class StageChecks(unittest.TestCase):
                         dict(id='repair02', root=str(self.parent / 'repair02/source'), parent=None),
                         dict(id='repair03', root=str(self.root), parent='repair02')])
 
+    def test_verified_path_evidence_serializes_and_hashes_are_not_waived(self):
+        item = self.artifact('prior.csproj', 'exact original project')
+        path = Path(item['path'])
+        normalized = stage.serializable_evidence([path, item])
+        self.assertEqual(json.loads(json.dumps(normalized)), [item, item])
+        altered = dict(item, sha256='0' * 64)
+        with self.assertRaises(ValueError):
+            stage.serializable_evidence([altered])
+        path.unlink()
+        with self.assertRaises(FileNotFoundError):
+            stage.serializable_evidence([path])
+
     def test_uncovered_execution_is_eligible_but_labels_are_not_proof(self):
         self.assertTrue(stage.execution_eligible({'status': 'NoCoverage'}))
         for status in ('Killed', 'Pending', 'RuntimeError'):

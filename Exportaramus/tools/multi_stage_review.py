@@ -376,6 +376,16 @@ def execution_eligible(mutant):
             or mutant['status'] == 'Ignored' and mutant.get('statusReason') == BLOCK_REASON)
 
 
+def serializable_evidence(items):
+    result = []
+    for item in items:
+        if isinstance(item, Path):
+            item = {'path': str(item.resolve()), 'sha256': digest(item)}
+        bound(item)
+        result.append(item)
+    return result
+
+
 def stage_child(request):
     stage = request['stage']
     root = Path(stage['root']).resolve()
@@ -449,7 +459,7 @@ def stage_child(request):
             'originalInventory': repair['originalInventory'], 'repairedInventory': repair['repairedInventory'],
             'repairedPaths': repair['repairedPaths'], 'inventoryPolicy': repair.get('inventoryPolicy', 'legacy'), 'reportHash': repair['reportHash'], 'scope': repair['scope'],
             'originalCases': repair['originalCases'], 'repairedCases': repair['repairedCases'], 'targetCases': repair.get('targetCases', {}),
-            'evidence': repair['evidence'] + execution_evidence, 'findings': findings}
+            'evidence': serializable_evidence(repair['evidence'] + execution_evidence), 'findings': findings}
 
 
 def approved_tools(manifest, final_root):
