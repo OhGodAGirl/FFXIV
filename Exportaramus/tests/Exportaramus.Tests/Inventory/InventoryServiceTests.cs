@@ -325,6 +325,83 @@ public sealed class InventoryServiceTests
         Assert.Equal((ulong)17, service.GetSnapshot()!.ContentId);
     }
 
+    [Fact]
+    public async Task FailedRestoreRetriesAfterBackoffAndSuccessfulWritesCannotHideIt()
+    {
+        var cache = new ReadRetryCache();
+        var clock = new ManualClock();
+        await using var service = new InventoryService(cache, clock);
+        service.SetCharacter(1);
+        service.Pump();
+        await PumpUntil(service, () => service.LastCacheFailure is not null);
+        service.AcceptLocation(1, Bag, "Inventory", [], Now.AddSeconds(1));
+        await PumpUntil(service, () => cache.Writes > 0);
+        service.Pump();
+        Assert.Equal("InventoryCacheUnavailable", service.LastCacheFailure);
+        Assert.Single(cache.Reads);
+        clock.Now = Now.AddSeconds(29);
+        service.Pump();
+        Assert.Single(cache.Reads);
+        clock.Now = Now.AddSeconds(30);
+        await PumpUntil(service, () => service.GetSnapshot()!.Locations.Any(location => location.Key == First));
+        Assert.Equal(new ulong[] { 1, 1 }, cache.Reads);
+        Assert.Null(service.LastCacheFailure);
+        Assert.Empty(At(service.GetSnapshot()!, Bag).Items);
+        Assert.Single(At(service.GetSnapshot()!, First).Items);
+    }
+
+    [Theory]
+    [InlineData(0ul)]
+    [InlineData(2ul)]
+    public async Task CharacterChangeDropsOldRestoreRetry(ulong next)
+    {
+        var cache = new ReadRetryCache();
+        var clock = new ManualClock();
+        await using var service = new InventoryService(cache, clock);
+        service.SetCharacter(1);
+        service.Pump();
+        await PumpUntil(service, () => service.LastCacheFailure is not null);
+        service.SetCharacter(next);
+        Assert.Null(service.LastCacheFailure);
+        clock.Now = Now.AddMinutes(1);
+        if (next != 0) await PumpUntil(service, () => cache.Reads.Count == 2);
+        else service.Pump();
+        Assert.Equal(next == 0 ? new ulong[] { 1 } : [1, 2], cache.Reads);
+        Assert.Equal(next, service.GetSnapshot()?.ContentId ?? 0);
+    }
+
+    [Fact]
+    public async Task LateFailedReadCannotScheduleRetryForDepartedCharacter()
+    {
+        var cache = new ControlledCache();
+        await using var service = new InventoryService(cache);
+        service.SetCharacter(1);
+        service.Pump();
+        await cache.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        service.SetCharacter(2);
+        cache.Loaded.SetException(new IOException());
+        await PumpUntil(service, () => cache.LoadCount == 2);
+        Assert.Null(service.LastCacheFailure);
+        Assert.Equal(2ul, service.GetSnapshot()!.ContentId);
+    }
+
+    private sealed class ReadRetryCache : IInventoryCache
+    {
+        public List<ulong> Reads { get; } = [];
+        public int Writes;
+        public Task<InventorySnapshot?> LoadAsync(ulong id, CancellationToken token)
+        {
+            Reads.Add(id);
+            return Reads.Count == 1 ? Task.FromException<InventorySnapshot?>(new IOException())
+                : Task.FromResult<InventorySnapshot?>(Saved(id));
+        }
+        public Task SaveAsync(InventorySnapshot snapshot, CancellationToken token)
+        {
+            Interlocked.Increment(ref Writes);
+            return Task.CompletedTask;
+        }
+    }
+
     private static InventoryLocationSnapshot At(InventorySnapshot snapshot, InventoryLocationKey key) => snapshot.Locations.Single(location => location.Key == key);
     internal static InventorySnapshot Saved(ulong contentId) => new(contentId, 2, true,
         [new(Bag, "Inventory", InventoryObservationState.Observed, Now, Now, [new(100, 2, 0)]),

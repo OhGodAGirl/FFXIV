@@ -21,13 +21,16 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
     private Task? disposal;
     private string? lastCacheFailure;
     private DateTimeOffset retryAt;
+    private DateTimeOffset restoreRetryAt;
+    private bool restoreFailed;
+    private bool writeFailed;
 
     public string? LastCacheFailure
     {
         get
         {
             lock (sync)
-                return lastCacheFailure;
+                return restoreFailed || writeFailed ? "InventoryCacheUnavailable" : lastCacheFailure;
         }
     }
     public InventorySnapshot? GetSnapshot() => Volatile.Read(ref snapshot);
@@ -40,6 +43,8 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
             generation++;
             Volatile.Write(ref snapshot, contentId == 0 ? null : InventoryPolicy.Empty(contentId, ++revision));
             restorePending = contentId != 0 && cache is not null;
+            restoreFailed = false;
+            restoreRetryAt = default;
         }
     }
 
@@ -138,20 +143,38 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
                     if (workerWrite is not null && pendingWrites.TryGetValue(workerWrite.ContentId, out var pending)
                         && ReferenceEquals(pending, workerWrite))
                         pendingWrites.Remove(workerWrite.ContentId);
+                    if (workerWrite is not null)
+                    {
+                        writeFailed = false;
+                        retryAt = default;
+                    }
+                    else if (workerGeneration == generation)
+                    {
+                        restoreFailed = false;
+                        restoreRetryAt = default;
+                    }
                     lastCacheFailure = null;
-                    retryAt = default;
                 }
                 catch (Exception)
                 {
-                    lastCacheFailure = "InventoryCacheUnavailable";
-                    retryAt = clock.GetUtcNow().AddSeconds(30);
+                    if (workerWrite is not null)
+                    {
+                        writeFailed = true;
+                        retryAt = clock.GetUtcNow().AddSeconds(30);
+                    }
+                    else if (workerGeneration == generation && IsCurrent(workerCharacter))
+                    {
+                        restoreFailed = true;
+                        restorePending = true;
+                        restoreRetryAt = clock.GetUtcNow().AddSeconds(30);
+                    }
                 }
                 worker = null;
                 workerWrite = null;
             }
             workerGeneration = generation;
             workerCharacter = snapshot?.ContentId ?? 0;
-            if (restorePending)
+            if (restorePending && clock.GetUtcNow() >= restoreRetryAt)
             {
                 restorePending = false;
                 var identity = workerCharacter;
