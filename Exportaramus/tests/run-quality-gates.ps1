@@ -52,7 +52,7 @@ try {
         $previousPath = $env:PATH
         try {
             $env:PATH = $PSHOME + [IO.Path]::PathSeparator + $previousPath
-            foreach ($test in @('test-contract-verification.py','test-consumer-kit-verification.py','test-contract-quality-scope.py','test-source-inventory.py','test-reproducibility.py','test-portable-verification.py')) {
+            foreach ($test in @('test-contract-verification.py','test-consumer-kit-verification.py','test-contract-quality-scope.py','test-source-inventory.py','test-reproducibility.py','test-performance-comparison.py','test-portable-verification.py')) {
                 & $pythonTool (Join-Path tools $test)
                 Assert-VerificationExit $test
             }

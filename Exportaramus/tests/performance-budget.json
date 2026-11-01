@@ -2,16 +2,20 @@
   "schemaVersion": 1,
   "budgets": {
     "idleDrawP95Milliseconds": 0.25,
-    "idleFrameworkP95Milliseconds": 0.10,
+    "idleFrameworkP95Milliseconds": 0.1,
     "lightweightNativeP95Milliseconds": 4,
     "fullNativeP95Milliseconds": 25,
     "warmSyncP95Milliseconds": 250,
     "coldSyncP95Milliseconds": 1000,
-    "snapshotGetterMilliseconds": 0.10,
-    "capabilityGetterMilliseconds": 0.10,
-    "reportGateMilliseconds": 0.10,
     "diagnosticsWorkerMilliseconds": 100
   },
   "offlineEvidence": "tests/Exportaramus.Tests/Performance and TRX captured output",
-  "runtimeEvidence": "Pending representative supervised session; offline fixtures do not prove live performance"
+  "runtimeEvidence": "Pending representative supervised session; offline fixtures do not prove live performance",
+  "offlineTimingPolicy": "Diagnostic only; compare baseline and proposed code on the same runner. No absolute elapsed-time gate.",
+  "offlineBlockingChecks": [
+    "correctness",
+    "allocation bounds",
+    "coverage",
+    "mutation qualification"
+  ]
 }

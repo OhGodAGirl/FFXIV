@@ -1,0 +1,63 @@
+name: Exportaramus Performance Comparison
+on:
+  push:
+    branches: [main]
+    paths: ['Exportaramus/**', '.github/workflows/exportaramus-performance.yml']
+  pull_request:
+    paths: ['Exportaramus/**', '.github/workflows/exportaramus-performance.yml']
+  workflow_dispatch:
+    inputs:
+      baseline:
+        description: Baseline commit or branch to compare against the selected ref
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: exportaramus-performance-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  compare:
+    runs-on: windows-2025
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      DOTNET_NOLOGO: '1'
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          path: proposed
+          persist-credentials: false
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ inputs.baseline || github.event.pull_request.base.sha || github.event.before }}
+          path: baseline
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: proposed/Exportaramus/global.json
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Prepare shared build dependencies
+        run: |
+          ./proposed/Exportaramus/tools/Get-BuildDependencies.ps1 -Destination "$env:RUNNER_TEMP/dalamud"
+          "DALAMUD_HOME=$env:DALAMUD_HOME" >> $env:GITHUB_ENV
+      - name: Compare baseline and proposed code
+        run: |
+          python proposed/Exportaramus/tools/performance-comparison.py --baseline baseline/Exportaramus --proposed proposed/Exportaramus --output "$env:RUNNER_TEMP/exportaramus-performance"
+          if ($LASTEXITCODE -ne 0) { throw 'Performance comparison did not complete.' }
+          Get-Content "$env:RUNNER_TEMP/exportaramus-performance/summary.md" >> $env:GITHUB_STEP_SUMMARY
+      - name: Preserve measurements
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: exportaramus-performance
+          path: ${{ runner.temp }}/exportaramus-performance
+          if-no-files-found: warn
+          retention-days: 7
