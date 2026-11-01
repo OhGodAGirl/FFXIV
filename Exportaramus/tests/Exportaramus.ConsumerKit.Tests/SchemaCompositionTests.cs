@@ -70,6 +70,14 @@ public sealed class SchemaCompositionTests
     }
 
     [Theory]
+    [InlineData("0", "1e-10", true)]
+    [InlineData("1e-10", "0", false)]
+    [InlineData("0", "-1e-10", false)]
+    [InlineData("-1e-10", "0", true)]
+    [InlineData("-0e100", "1e-1000", true)]
+    [InlineData("1e-1000", "-0e100", false)]
+    [InlineData("-0e100", "-1e-1000", false)]
+    [InlineData("-1e-1000", "-0e100", true)]
     [InlineData("0", "-1", false)]
     [InlineData("0", "0", true)]
     [InlineData("0", "1", true)]
