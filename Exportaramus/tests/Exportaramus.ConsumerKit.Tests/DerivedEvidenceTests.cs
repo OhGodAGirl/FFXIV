@@ -144,6 +144,19 @@ public sealed class DerivedEvidenceTests
         AssertInvalid(root);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RelicEvidenceMustMatchActualItemPresence(bool owned)
+    {
+        var root = Relic(owned, false);
+        AssertValid(root);
+        var items = root["currentItemPresence"]!["inventory"]!["items"]!.AsArray();
+        if (owned) items.Clear();
+        else items.Add(new JsonObject { ["itemId"] = 1675, ["quantity"] = 1 });
+        AssertInvalid(root);
+    }
+
     [Fact]
     public void RelicAbsenceRequiresItsAchievementEvidence()
     {

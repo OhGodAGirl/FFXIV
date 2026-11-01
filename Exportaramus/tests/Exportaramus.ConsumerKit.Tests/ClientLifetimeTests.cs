@@ -303,6 +303,27 @@ public sealed class ClientLifetimeTests
     }
 
     [Fact]
+    public async Task DisposalReleasesWorkerCancellationResources()
+    {
+        var transport = new FakeTransport();
+        CancellationToken workerToken = default;
+        await using var client = new CollectionDataIpcClient((_, _) => transport, (action, token) =>
+        {
+            workerToken = token;
+            return Inline(action, token);
+        });
+        await client.TickAsync(ContractFixture.Character, ContractFixture.Now);
+        Assert.True(workerToken.CanBeCanceled);
+        var handle = workerToken.WaitHandle;
+        Assert.False(handle.SafeWaitHandle.IsClosed);
+
+        await client.DisposeAsync();
+
+        Assert.True(handle.SafeWaitHandle.IsClosed);
+        Assert.Throws<ObjectDisposedException>(() => { _ = workerToken.WaitHandle; });
+    }
+
+    [Fact]
     public async Task DisposeWaitsForOwnedWorkerAndPreventsSubsequentCalls()
     {
         var transport = new FakeTransport();
