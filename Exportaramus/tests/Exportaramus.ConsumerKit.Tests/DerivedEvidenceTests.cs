@@ -262,4 +262,12 @@ public sealed class DerivedEvidenceTests
         AssertInvalid(root);
     }
 
+    [Fact]
+    public void OutfitRejectsAchievementEvidenceAlongsideItemPresence()
+    {
+        var root = Outfit(true);
+        AssertValid(root);
+        Facts(root, "outfits").Add(Fact("achievements", OutfitItems[0], true));
+        AssertInvalid(root);
+    }
 }
