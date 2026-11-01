@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using Exportaramus.Features.CollectionData.Capture;
-using Exportaramus.Features.CollectionData.Capture.Retainers;
 using Exportaramus.Features.CollectionData.Catalog;
 using Exportaramus.Features.CollectionData.State;
 
@@ -35,46 +34,9 @@ public sealed class AdapterMutationDecisionTests
         Assert.Equal(accepted, source.Health.IsUsable);
     }
 
-    [Fact]
-    public void TenRetainersCanBecomeCompleteOnlyAfterAllTenFreshObservations()
-    {
-        var accumulator = new RetainerAccumulator();
-        var expected = Enumerable.Range(1, 10).Select(id => (ulong)id).ToImmutableArray();
-        for (var index = 0; index < expected.Length; index++)
-        {
-            var result = accumulator.Observe(1, expected, expected[index], Presence(), 1, Now);
-            Assert.True(result.SupportsQuantity);
-            if (index < 9)
-            {
-                Assert.Empty(result.Items);
-                Assert.Equal(ReasonCode.IncompleteRetainerSet, result.Health.ReasonCode);
-            }
-            else
-            {
-                Assert.Equal(new PresenceItem(100, 10), Assert.Single(result.Items));
-                Assert.True(result.Health.IsUsable);
-            }
-        }
-    }
 
-    [Fact]
-    public void MixedValidAndZeroRetainerIdentityInvalidatesTheWholePreviouslyObservedSet()
-    {
-        var accumulator = new RetainerAccumulator();
-        Assert.True(accumulator.Observe(1, [1], 1, Presence(), 1, Now).Health.IsUsable);
 
-        var firstInvalid = accumulator.Observe(1, [1, 0], 1, Presence(), 2, Now);
-        Assert.Empty(firstInvalid.Items);
-        Assert.Equal(ReasonCode.IncompleteRetainerSet, firstInvalid.Health.ReasonCode);
-        var invalid = accumulator.Observe(1, [1, 0], 0, Presence(), 2, Now);
 
-        Assert.Empty(invalid.Items);
-        Assert.Equal(ReasonCode.IncompleteRetainerSet, invalid.Health.ReasonCode);
-        Assert.True(invalid.SupportsQuantity);
-        var next = accumulator.Observe(1, [1], 0, null, 3, Now);
-        Assert.Empty(next.Items);
-        Assert.Equal(ReasonCode.IncompleteRetainerSet, next.Health.ReasonCode);
-    }
 
     [Theory]
     [InlineData(1)]

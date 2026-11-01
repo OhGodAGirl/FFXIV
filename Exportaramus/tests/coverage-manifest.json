@@ -28,7 +28,6 @@
     "src/Features/CollectionData/Capture/PromptCaptureHintBuffer.cs",
     "src/Features/CollectionData/Capture/RawCaptureBatch.cs",
     "src/Features/CollectionData/Capture/ReaderCompatibility.cs",
-    "src/Features/CollectionData/Capture/Retainers/RetainerAccumulator.cs",
     "src/Features/CollectionData/Capture/SourceReadException.cs",
     "src/Features/CollectionData/Capture/StorageFingerprint.cs",
     "src/Features/CollectionData/Capture/StorageReadinessPolicy.cs",
@@ -157,6 +156,8 @@
     "src/Features/Inventory/IRetainerGuidePort.cs",
     "src/Features/Inventory/InventoryCacheDocument.cs",
     "src/Features/Inventory/InventoryCacheJsonContext.cs",
+    "src/Features/Inventory/InventoryContainerProjection.cs",
+    "src/Features/Inventory/InventoryContainerReadPolicy.cs",
     "src/Features/Inventory/InventoryFileCache.cs",
     "src/Features/Inventory/InventoryItemQuantity.cs",
     "src/Features/Inventory/InventoryLocationKey.cs",
@@ -230,7 +231,7 @@
     "src/Contracts/1.2/ContractSchemaRegistry.cs",
     "src/Contracts/1.2/ExactJsonNumber.cs"
   ],
-  "linkedSourceCount": 218,
+  "linkedSourceCount": 219,
   "decisionFileExclusions": [],
   "separateConsumerSuite": {
     "project": "tests/Exportaramus.ConsumerKit.Tests/Exportaramus.ConsumerKit.Tests.csproj",
@@ -316,11 +317,15 @@
     },
     {
       "path": "src/Features/Inventory/InventoryContainerReader.Dalamud.cs",
-      "justification": "Native inventory container and slot observation with transient pointer checks; InventorySlotPolicy quantity/quality decisions and query policies are included."
+      "justification": "Inventory type binding and quantity projection dispatch; shared read validation and quantity decisions are included."
     },
     {
       "path": "src/Features/Inventory/InventoryIpcProvider.Dalamud.cs",
       "justification": "Dalamud gate registration and inventory runtime binding; protocol and inventory state decisions remain included."
+    },
+    {
+      "path": "src/Features/Inventory/NativeInventoryContainerSource.Dalamud.cs",
+      "justification": "Framework-thread pointer acquisition and copied slot observations. InventoryContainerReadPolicy validates the full group; InventoryContainerProjection keeps presence and quantity semantics separate."
     },
     {
       "path": "src/Features/Inventory/RetainerGuideAdapter.Dalamud.cs",
@@ -420,7 +425,6 @@
     "src/Features/CollectionData/Capture/PromptCaptureHintBuffer.cs": "c63e025a8d74f61e880e9036689b33214dd00ce3cfa1aa41e52001e98d2e50f5",
     "src/Features/CollectionData/Capture/RawCaptureBatch.cs": "a0a7a6cb6d046be82c08ba5c2f71758fc13bf5290cafd07518afa39ff7e2cbfd",
     "src/Features/CollectionData/Capture/ReaderCompatibility.cs": "9d865fba2705a1df3fe1e16ddabf740563256a7fccab4c237ddfd5883e4b2379",
-    "src/Features/CollectionData/Capture/Retainers/RetainerAccumulator.cs": "9d1cd2f8587f05eb8ac78d1e5ca4e3303e839e5b6b7174eefb7d4af376e34982",
     "src/Features/CollectionData/Capture/SourceReadException.cs": "58bc78eec8a2fb9b90d2476fe9c74a4c755c596a757ba5c24ac0f0e6374a5e60",
     "src/Features/CollectionData/Capture/StorageFingerprint.cs": "8f8995ab931970a78b295470dfdb842416e460b57b317d3fd73685966ef01de6",
     "src/Features/CollectionData/Capture/StorageReadinessPolicy.cs": "d6a7bcb47cf7af16ea22c760215293677cac2857ecb4d52157f4f15eca71e305",
@@ -548,6 +552,8 @@
     "src/Features/Inventory/IInventoryCache.cs": "8f289385a00775f442b45f7005b9a9999700f67aaae72ac34437eb574f96bb13",
     "src/Features/Inventory/InventoryCacheDocument.cs": "8c54cfe7fc8b520b20048911821118148692499019b8899abe2cf7a18df7dcd2",
     "src/Features/Inventory/InventoryCacheJsonContext.cs": "1b9aa67ef4844f4a4ba28bc98fa1fc321a3e1bd57e27b77a93a9bfa7602b8b05",
+    "src/Features/Inventory/InventoryContainerProjection.cs": "9aa9fb09e9d94da200be6e6683ac5ee59ebc82c959fea59f01e1de6685f13570",
+    "src/Features/Inventory/InventoryContainerReadPolicy.cs": "6a071f2d89c597b1ca7277b3e4a6f26678244a610236c3539efd19df209eab5b",
     "src/Features/Inventory/InventoryFileCache.cs": "ba289256c419cedf70f8238860fed03c1f37b91ccb237ea90a67ce9da947b493",
     "src/Features/Inventory/InventoryItemQuantity.cs": "2e19b082c1f8e9005aff2c6165b52446d10854f7121f5c0c16e40eca362ca3f2",
     "src/Features/Inventory/InventoryLocationKey.cs": "e3a5b4f412cde939e8607181319f97ebb69ff235bb4dd0c7c7ea646e0b33204b",

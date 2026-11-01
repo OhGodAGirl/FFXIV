@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
 using Dalamud.Plugin.Services;
-using Exportaramus.Features.CollectionData.Capture.Retainers;
 using Exportaramus.Features.CollectionData.Catalog;
 using Exportaramus.Features.CollectionData.State;
+using Exportaramus.Features.Inventory;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -21,15 +21,12 @@ public sealed unsafe class CollectionReader : ICollectionReader
     private readonly IPlayerState player;
     private readonly IFramework framework;
     private readonly IGameGui gui;
-    private readonly RetainerAccumulator retainers = new();
     private ImmutableDictionary<uint, uint>? fieldRecordItems;
     private ImmutableHashSet<uint>? beastUnlocks;
     private int beastCount;
-    private bool useInventoryRetainers;
     private Exportaramus.Features.Inventory.InventorySnapshot? retainerInventory;
     public void SetRetainerInventory(Exportaramus.Features.Inventory.InventorySnapshot? snapshot)
     {
-        useInventoryRetainers = true;
         retainerInventory = snapshot;
     }
 
@@ -44,7 +41,6 @@ public sealed unsafe class CollectionReader : ICollectionReader
 
     public void ResetSession()
     {
-        retainers.Reset();
         retainerInventory = null;
         beastUnlocks = null;
     }
@@ -131,9 +127,7 @@ public sealed unsafe class CollectionReader : ICollectionReader
             {
                 "armoire" => ReadArmoire(catalog, generation, now),
                 "glamourDresser" => ReadDresser(catalog, generation, now),
-                "retainers" => useInventoryRetainers
-                    ? Exportaramus.Features.Inventory.InventoryRetainerPresencePolicy.Capture(retainerInventory, contentId, true, generation, now)
-                    : ReadRetainers(contentId, generation, now),
+                "retainers" => InventoryRetainerPresencePolicy.Capture(retainerInventory, contentId, true, generation, now),
                 _ => ReadContainers(ContainerSets[source], source == "armoryChest", generation, now),
             };
         }
@@ -143,67 +137,9 @@ public sealed unsafe class CollectionReader : ICollectionReader
 
     private CurrentItemPresenceState ReadContainers(InventoryType[] types, bool instances, long generation, DateTimeOffset now)
     {
-        var items = new List<PresenceItem>();
-        foreach (var type in types)
-        {
-            var manager = InventoryManager.Instance();
-            if (manager == null) throw new SourceReadException(ReasonCode.IncompleteContainerSet);
-            var container = manager->GetInventoryContainer(type);
-            if (container == null || !container->IsLoaded || container->Size < 0 || container->Size > 1000)
-                throw new SourceReadException(ReasonCode.IncompleteContainerSet);
-            var size = container->Size;
-            for (var slotIndex = 0; slotIndex < size; slotIndex++)
-            {
-                var slot = container->GetInventorySlot(slotIndex);
-                if (slot == null) throw new SourceReadException(ReasonCode.IncompleteContainerSet);
-                var id = slot->GetBaseItemId();
-                if (id != 0) items.Add(new PresenceItem(id, instances || type == InventoryType.RetainerEquippedItems ? 1 : slot->GetQuantity()));
-            }
-            if (!container->IsLoaded || container->Size != size || manager != InventoryManager.Instance())
-                throw new SourceReadException(ReasonCode.IncompleteContainerSet);
-        }
-        return CaptureReadPolicy.Presence(items, true, true, generation, now);
-    }
-
-    private CurrentItemPresenceState ReadRetainers(ulong contentId, long generation, DateTimeOffset now)
-    {
-        var manager = RetainerManager.Instance();
-        if (manager == null || !manager->IsReady) throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
-        var count = manager->GetRetainerCount();
-        if (count > 10) throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
-        var expected = ImmutableArray.CreateBuilder<ulong>(count);
-        for (uint i = 0; i < count; i++)
-        {
-            var row = manager->GetRetainerBySortedIndex(i);
-            if (row == null || !row->Available || row->RetainerId == 0) throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
-            expected.Add(row->RetainerId);
-        }
-        var active = manager->GetActiveRetainer();
-        var activeId = active == null ? 0 : active->RetainerId;
-        CurrentItemPresenceState? read = null;
-        var addonName = "InventoryRetainer";
-        var addon = gui.GetAddonByName<AtkUnitBase>(addonName, 1);
-        if (addon == null || !addon->IsReady || !addon->IsVisible)
-        {
-            addonName = "InventoryRetainerLarge";
-            addon = gui.GetAddonByName<AtkUnitBase>(addonName, 1);
-        }
-        if (expected.Contains(activeId) && addon != null && addon->IsReady && addon->IsVisible)
-        {
-            read = ReadContainers(ContainerSets["retainers"], false, generation, now);
-            if (addon != gui.GetAddonByName<AtkUnitBase>(addonName, 1) || !addon->IsReady || !addon->IsVisible)
-                throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
-        }
-        if (manager != RetainerManager.Instance() || !manager->IsReady || count != manager->GetRetainerCount())
-            throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
-        for (uint i = 0; i < count; i++)
-        {
-            var row = manager->GetRetainerBySortedIndex(i);
-            if (row == null || !row->Available || row->RetainerId != expected[(int)i]) throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
-        }
-        if (activeId != 0 && (manager->GetActiveRetainer() == null || manager->GetActiveRetainer()->RetainerId != activeId))
-            throw new SourceReadException(ReasonCode.IncompleteRetainerSet);
-        return retainers.Observe(contentId, expected.ToImmutable(), activeId, read, generation, now);
+        var slots = InventoryContainerReadPolicy.Read(new NativeInventoryContainerSource(data), types.Select(type => (int)type).ToArray());
+        if (slots is null) throw new SourceReadException(ReasonCode.IncompleteContainerSet);
+        return CaptureReadPolicy.Presence(InventoryContainerProjection.Presence(slots, instances), true, true, generation, now);
     }
 
     private CurrentItemPresenceState ReadArmoire(CollectionCatalog catalog, long generation, DateTimeOffset now)
@@ -314,8 +250,6 @@ public sealed unsafe class CollectionReader : ICollectionReader
             InventoryType.ArmoryWrist, InventoryType.ArmoryRings, InventoryType.ArmorySoulCrystal],
         ["chocoboSaddlebag"] = [InventoryType.SaddleBag1, InventoryType.SaddleBag2],
         ["premiumSaddlebag"] = [InventoryType.PremiumSaddleBag1, InventoryType.PremiumSaddleBag2],
-        ["retainers"] = [InventoryType.RetainerPage1, InventoryType.RetainerPage2, InventoryType.RetainerPage3,
-            InventoryType.RetainerPage4, InventoryType.RetainerPage5, InventoryType.RetainerPage6, InventoryType.RetainerPage7, InventoryType.RetainerEquippedItems],
     };
 }
 

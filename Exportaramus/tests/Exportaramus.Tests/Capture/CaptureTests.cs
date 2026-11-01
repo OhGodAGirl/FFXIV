@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using Exportaramus.Features.CollectionData.Capture;
-using Exportaramus.Features.CollectionData.Capture.Retainers;
 using Exportaramus.Features.CollectionData.Catalog;
 using Exportaramus.Features.CollectionData.State;
 using Exportaramus.Features.Diagnostics;
@@ -52,53 +51,9 @@ public sealed class CaptureTests
         Assert.False(pending.Health.IsUsable);
     }
 
-    [Fact]
-    public void RetainersRequireEveryExpectedIdentityAndReplaceEachObservation()
-    {
-        var accumulator = new RetainerAccumulator();
-        var first = accumulator.Observe(1, [10, 20], 10, Presence(7, 3), 1, Now);
-        Assert.Equal(ReasonCode.IncompleteRetainerSet, first.Health.ReasonCode);
-        Assert.Empty(first.Items);
-        var complete = accumulator.Observe(1, [20, 10], 20, Presence(7, 2), 2, Now);
-        Assert.Equal(new PresenceItem(7, 5), Assert.Single(complete.Items));
-        var removed = accumulator.Observe(1, [10, 20], 10, CaptureReadPolicy.Presence([], true, true, 3, Now), 3, Now);
-        Assert.Equal(new PresenceItem(7, 2), Assert.Single(removed.Items));
-        var changed = accumulator.Observe(1, [10, 30], 30, Presence(8, 1), 4, Now);
-        Assert.Empty(changed.Items);
-        Assert.Equal(ReasonCode.IncompleteRetainerSet, changed.Health.ReasonCode);
-        var replacement = accumulator.Observe(1, [10, 30], 10, Presence(9, 1), 5, Now);
-        Assert.Equal(new uint[] { 8, 9 }, replacement.Items.Select(i => i.ItemId));
-        var switched = accumulator.Observe(2, [10, 30], 10, Presence(50, 1), 6, Now);
-        Assert.Empty(switched.Items);
-        accumulator.Reset();
-        Assert.Equal(ReasonCode.IncompleteRetainerSet, accumulator.Observe(2, [10, 30], 30, Presence(60, 1), 7, Now).Health.ReasonCode);
-    }
 
-    [Fact]
-    public void InvalidOrUnreadableRetainerListsNeverBecomeEmptyFresh()
-    {
-        var accumulator = new RetainerAccumulator();
-        foreach (var list in new[] { default(ImmutableArray<ulong>), ImmutableArray.Create(0ul), ImmutableArray.Create(1ul, 1ul), Enumerable.Range(1, 11).Select(i => (ulong)i).ToImmutableArray() })
-            Assert.Equal(ReasonCode.IncompleteRetainerSet, accumulator.Observe(1, list, 0, null, 1, Now).Health.ReasonCode);
-        Assert.Equal(ReasonCode.IncompleteRetainerSet, accumulator.Observe(0, [], 0, null, 1, Now).Health.ReasonCode);
-        Assert.Empty(accumulator.Observe(1, [], 0, null, 1, Now).Items);
-        Assert.Equal(ReasonCode.IncompleteRetainerSet, accumulator.Observe(1, [10], 99, Presence(1, 1), 1, Now).Health.ReasonCode);
-        Assert.Equal(ReasonCode.IncompleteRetainerSet, accumulator.Observe(1, [10], 10, null, 1, Now).Health.ReasonCode);
-        Assert.Equal(ReasonCode.IncompleteRetainerSet, accumulator.Observe(1, [10], 10, CaptureReadPolicy.FailedPresence(true, 1, Now, ReasonCode.CaptureFailed), 1, Now).Health.ReasonCode);
-        var stale = Presence(1, 1);
-        stale = stale with
-        {
-            Health = stale.Health with
-            {
-                SourceStatus = SourceStatus.Stale
-            }
-        };
-        Assert.Equal(ReasonCode.IncompleteRetainerSet, accumulator.Observe(1, [10], 10, stale, 1, Now).Health.ReasonCode);
-        Assert.Equal(ReasonCode.IncompleteRetainerSet, accumulator.Observe(1, [10], 10, Presence(1, 1) with
-        {
-            Health = null!
-        }, 1, Now).Health.ReasonCode);
-    }
+
+
 
     [Fact]
     public void CatalogCacheScopesExactLanguageAndVersion()
