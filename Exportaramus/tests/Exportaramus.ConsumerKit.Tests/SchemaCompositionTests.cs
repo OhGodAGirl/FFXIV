@@ -51,6 +51,11 @@ public sealed class SchemaCompositionTests
     [InlineData("\"$ref\":\"#\"", "7", false)]
     public void ReferencesResolveEscapedNamesAndRejectMissingOrRecursiveTargets(string schema, string payload, bool accepted)
     {
+        if (schema == "\"$ref\":\"#\"")
+        {
+            SchemaProcessProbe.AssertValidation(schema, payload, accepted);
+            return;
+        }
         Exception? failure = null;
         // Mutation instrumentation increases the stack used by recursive validation.
         var worker = new Thread(() =>
@@ -111,4 +116,15 @@ public sealed class SchemaCompositionTests
     [InlineData("-1e8", "-1e9", false)]
     public void MinimumComparesSignsFractionsAndExponents(string minimum, string payload, bool accepted) =>
         Assert.Equal(accepted, Validate("\"minimum\":" + minimum, payload));
+
+    [Fact]
+    public void FiniteReferenceChainsRespectTheDepthLimit()
+    {
+        var definitions = new List<string>();
+        for (var i = 0; i < 130; i++)
+            definitions.Add($"\"n{i}\":{{\"$ref\":\"#/$defs/n{i + 1}\"}}");
+        definitions.Add("\"n130\":true");
+        var schema = "\"$ref\":\"#/$defs/n0\",\"$defs\":{" + string.Join(',', definitions) + "}";
+        SchemaProcessProbe.WithValidationStack(() => Assert.False(Validate(schema, "7")));
+    }
 }

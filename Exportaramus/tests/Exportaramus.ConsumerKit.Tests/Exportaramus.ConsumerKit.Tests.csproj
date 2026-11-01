@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
+    <GenerateProgramFile>false</GenerateProgramFile>
     <IsPackable>false</IsPackable>
     <ConsumerKitRoot Condition="'$(ConsumerKitRoot)' == ''">../..</ConsumerKitRoot>
     <ConsumerKitProject Condition="'$(ConsumerKitProject)' == ''">$(ConsumerKitRoot)/project/ConsumerKit/1.2/Exportaramus.ConsumerKit.V1_2.csproj</ConsumerKitProject>

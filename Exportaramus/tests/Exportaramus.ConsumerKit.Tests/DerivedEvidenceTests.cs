@@ -278,4 +278,16 @@ public sealed class DerivedEvidenceTests
         Facts(root, "outfits")[0]!["sourceKey"] = "armoires";
         AssertInvalid(root);
     }
+    [Theory]
+    [InlineData("unknown-state")]
+    [InlineData("wrong-data-type")]
+    public void EveryRelicAbsenceFactMustUseValidStateAndType(string change)
+    {
+        var root = Relic(false, false);
+        AssertValid(root);
+        var facts = Facts(root, "relics");
+        if (change == "unknown-state") facts[0]!["state"] = "Unknown";
+        else facts[facts.Count - 1]!["dataType"] = "Unknown";
+        AssertInvalid(root);
+    }
 }
