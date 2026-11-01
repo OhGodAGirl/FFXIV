@@ -288,7 +288,9 @@ def main():
     from repair_bridge import case_names
     baseline_cases = case_names(Path(baseline['tests']['trx']), passing=True)
     if repair:
-        if not preserves_cases(repair['originalCases'], baseline_cases) or baseline_cases != repair['repairedCases']:
+        from repair_bridge import stage_cases
+        original_cases, repaired_cases = stage_cases(repair, args.target)
+        if not preserves_cases(original_cases, baseline_cases) or baseline_cases != repaired_cases:
             raise RuntimeError('The repaired full suite removed original test cases.')
     sdk = subprocess.check_output([str(dotnet), '--version'], cwd=snapshot, text=True).strip()
     summary = {'format': 'exportaramus-independent-mutation-shard', 'schemaVersion': '1.0',

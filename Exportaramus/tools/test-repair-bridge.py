@@ -129,4 +129,97 @@ class ProofChecks(unittest.TestCase):
         summary['reportSha256']=bridge.digest(report)
         with self.assertRaises(ValueError): check()
 
+class TargetBridgeChecks(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+
+    def test_target_cases_never_fall_back_to_provider(self):
+        repair = {'originalCases': ['provider'], 'repairedCases': ['provider', 'extra']}
+        self.assertEqual((['provider'], ['provider', 'extra']), bridge.stage_cases(repair, 'provider'))
+        for target in ('inventoryreader', 'consumerkit12', 'other'):
+            with self.assertRaises(ValueError): bridge.stage_cases(repair, target)
+        repair['targetCases'] = {'inventoryreader': {'original': ['reader'], 'repaired': ['reader', 'new']}}
+        self.assertEqual((['reader'], ['reader', 'new']), bridge.stage_cases(repair, 'inventoryreader'))
+
+    def test_v3_test_scope_does_not_allow_project_or_production_changes(self):
+        fixture = BridgeChecks(); fixture.setUp(); self.addCleanup(fixture.doCleanups)
+        for name in ('tests/Exportaramus.ConsumerKit.Tests/A.cs', 'tests/Exportaramus.InventoryReader.Mutation.Tests/A.cs'):
+            with self.assertRaises(ValueError):
+                bridge.validate_differences({name:'old'}, {name:'new'}, [fixture.change(name)], fixture.root)
+            bridge.validate_differences({name:'old'}, {name:'new'}, [fixture.change(name)], fixture.root, multi_suite=True)
+        for name in ('src/Contracts/1.2/A.cs', 'tests/Other/A.cs', 'tests/Exportaramus.ConsumerKit.Tests/A.csproj', 'tests/stryker-config.json', 'README.md'):
+            with self.assertRaises(ValueError):
+                bridge.validate_differences({name:'old'}, {name:'new'}, [fixture.change(name)], fixture.root, multi_suite=True)
+
+    def trx(self):
+        fixture = existing.LedgerChecks(); fixture.setUp(); self.addCleanup(fixture.tearDown); fixture.independent_proof()
+        source = Path(fixture.independent['baseline']['tests']['trx'])
+        doc = ET.parse(source)
+        for i,row in enumerate(doc.findall('.//UnitTestResult')): row.set('testName','case'+str(i))
+        definitions = ET.SubElement(doc.getroot(), 'TestDefinitions')
+        for i in range(2):
+            unit = ET.SubElement(definitions, 'UnitTest', storage='Exportaramus.ConsumerKit.Tests.dll')
+            ET.SubElement(unit, 'TestMethod', codeBase='Exportaramus.ConsumerKit.Tests.dll')
+        trx = self.root/'tests.trx'; doc.write(trx)
+        return trx
+
+    def test_trx_rejects_wrong_or_missing_assembly_definitions(self):
+        trx = self.trx()
+        self.assertEqual(['case0','case1'], bridge.canonical_trx(trx,'consumerkit12'))
+        with self.assertRaises(ValueError): bridge.canonical_trx(trx,'inventoryreader')
+        doc = ET.parse(trx); doc.getroot().remove(doc.find('TestDefinitions')); doc.write(trx)
+        with self.assertRaises(ValueError): bridge.canonical_trx(trx,'consumerkit12')
+
+    def test_only_explicit_removed_offline_timing_policy_is_allowed(self):
+        change = dict(path='tests/Exportaramus.Tests/Diagnostics/DiagnosticWorkerTest.cs',
+                      preservesExistingAssertions=False, preservesFixtureSemantics=True, noNewSkips=True,
+                      noRelaxedDeadlines=False, timingPolicy='NoAbsoluteOfflineTimingGates',
+                      noRelaxedExecutionDeadlines=True, preservesFunctionalAssertions=True)
+        bridge.test_obligations(change, multi_suite=True)
+        with self.assertRaises(ValueError):bridge.test_obligations(change)
+        for key,value in [('path','tests/Other.cs'),('timingPolicy','anything'),('noRelaxedExecutionDeadlines',False),('preservesFunctionalAssertions',False),('noNewSkips',False)]:
+            altered=dict(change);altered[key]=value
+            with self.assertRaises(ValueError):bridge.test_obligations(altered,multi_suite=True)
+
+    def test_both_canonical_targets_required(self):
+        for baselines in ({}, {'inventoryreader':{}}, {'inventoryreader':{},'consumerkit12':{},'other':{}}):
+            with self.assertRaises(ValueError): bridge.target_baselines({'targetBaselines':baselines}, self.root,self.root,{}, {})
+
+    def coverage(self):
+        trx = self.trx(); doc = ET.parse(trx)
+        ET.SubElement(ET.SubElement(doc.getroot(),'TestSettings'),'Deployment',runDeploymentRoot='deployment')
+        ET.SubElement(ET.SubElement(doc.getroot(),'UriAttachment'),'A',href='coverage.cobertura.xml');doc.write(trx)
+        report = self.root/'deployment/In/coverage.cobertura.xml';report.parent.mkdir(parents=True)
+        xml = ET.Element('coverage'); classes = ET.SubElement(xml,'classes');summary={};paths={}
+        for key,prefix,source in [('consumerClient','Exportaramus.ConsumerKit.V1_2.CollectionDataIpcClient','src/Contracts/1.2/Consumer/CollectionDataIpcClient.cs'),('inventoryReader','CollectionExample.InventoryItemReader','examples/CollectionExample/InventoryItemReader.cs')]:
+            path=self.root/source;path.parent.mkdir(parents=True,exist_ok=True);path.write_text('bound source');paths[source]=bridge.digest(path)
+            cls=ET.SubElement(classes,'class',name=prefix,filename=source)
+            ET.SubElement(ET.SubElement(cls,'lines'),'line',number='1',hits='1',branch='True',attrib={'condition-coverage':'100% (1/1)'})
+            summary[key]=dict(component=prefix,report=str(report),trx=str(trx),trxSha256=bridge.digest(trx),linesValid=1,linesCovered=1,branchesValid=1,branchesCovered=1)
+        ET.ElementTree(xml).write(report)
+        for v in summary.values(): v['reportSha256']=bridge.digest(report)
+        return summary,paths,report,trx
+
+    def test_exact_component_coverage_and_attachment_required(self):
+        summary,paths,report,trx=self.coverage()
+        self.assertEqual(4,len(bridge.component_coverage(summary,self.root,paths)))
+        for key,value in [('component','other'),('linesCovered',0),('branchesValid',2),('reportSha256','wrong'),('trxSha256','wrong')]:
+            changed=copy.deepcopy(summary);changed['inventoryReader'][key]=value
+            with self.assertRaises(ValueError):bridge.component_coverage(changed,self.root,paths)
+        raw=report.read_bytes()
+        for mutation in ('uncovered','wrong-source','duplicate','bad-branch'):
+            xml=ET.fromstring(raw);cls=xml.find('classes/class');line=cls.find('lines/line')
+            if mutation=='uncovered':line.set('hits','0')
+            if mutation=='wrong-source':cls.set('filename','src/Unrelated.cs')
+            if mutation=='duplicate':xml.find('classes').append(copy.deepcopy(cls))
+            if mutation=='bad-branch':line.set('condition-coverage','100% (0/0)')
+            ET.ElementTree(xml).write(report);changed=copy.deepcopy(summary)
+            for v in changed.values():v['reportSha256']=bridge.digest(report)
+            with self.assertRaises(ValueError):bridge.component_coverage(changed,self.root,paths)
+        report.write_bytes(raw);doc=ET.parse(trx);doc.find('UriAttachment/A').set('href','other.xml');doc.write(trx)
+        for v in summary.values():v['trxSha256']=bridge.digest(trx)
+        with self.assertRaises(ValueError):bridge.component_coverage(summary,self.root,paths)
+
 if __name__=='__main__': unittest.main()

@@ -124,9 +124,10 @@ def independently_killed(entry, before, report_hash, mutant, root, repair=None):
             or actual['passed'] + actual['failed'] != actual['executed']):
         raise ValueError('Independent test results do not prove a complete passing baseline and a complete failing mutant run.')
     if repair:
-        from repair_bridge import case_names, preserves_cases
+        from repair_bridge import case_names, preserves_cases, stage_cases
         baseline_cases = case_names(Path(summary['baseline']['tests']['trx']), passing=True)
-        if not preserves_cases(repair['originalCases'], baseline_cases) or baseline_cases != repair['repairedCases'] or case_names(Path(result['tests']['trx'])) != baseline_cases:
+        original_cases, repaired_cases = stage_cases(repair, target)
+        if not preserves_cases(original_cases, baseline_cases) or baseline_cases != repaired_cases or case_names(Path(result['tests']['trx'])) != baseline_cases:
             raise ValueError('Full original/repaired/mutant test cases do not reconcile.')
     return True
 

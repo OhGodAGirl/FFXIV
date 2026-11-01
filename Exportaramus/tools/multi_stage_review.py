@@ -154,13 +154,12 @@ def stage_shape(manifest, final_root):
     return stages
 
 
-def validate_strengthening(original, successor, changes, root, bridge_module):
-    bridge_module.validate_differences(original, successor, changes, root, bridge_module.STAGED_BRIDGE_TOOL_FILES)
+def validate_strengthening(original, successor, changes, root, bridge_module, multi_suite=False):
+    bridge_module.validate_differences(original, successor, changes, root, bridge_module.STAGED_BRIDGE_TOOL_FILES, multi_suite=multi_suite)
     for change in changes:
         require(change.get('reviewed') is True and change.get('reviewer', '').strip(), 'Every predecessor diff needs independent review.')
         if change['kind'] == 'TestStrengthening':
-            require(all(change.get(key) is True for key in ('preservesExistingAssertions', 'preservesFixtureSemantics',
-                    'noRelaxedDeadlines', 'noNewSkips')), 'Test obligation, fixture, deadline and skip preservation must be reviewed explicitly.')
+            bridge_module.test_obligations(change, multi_suite=multi_suite)
 
 
 def local_module(name, tools):
@@ -243,7 +242,7 @@ def verify_summary(entry, repair, review_module, root, checked_snapshots=None, s
         counts = review_module.execution_counts(root, baseline['tests'], target)
         from repair_bridge import case_names
         require(baseline['tests']['exitCode'] == 0 and counts['failed'] == 0 and counts['passed'] == counts['executed']
-                and case_names(Path(baseline['tests']['trx']), passing=True) == repair['repairedCases'], 'Execution baseline does not contain the complete stage test multiset.')
+                and case_names(Path(baseline['tests']['trx']), passing=True) == __import__('repair_bridge').stage_cases(repair, target)[1], 'Execution baseline does not contain the complete stage test multiset.')
         bound(summary['toolchain']['csc'])
         for execution, verb in ((baseline['restore'], 'restore'), (baseline['build'], 'build'), (baseline['tests'], 'test')):
             verify_command(execution, verb, snapshot, dotnet, target)
@@ -263,7 +262,7 @@ def validate_kill(result, repair, review_module, root, target='provider'):
             'A kill requires normal successful compilation and a normal failing test process.')
     counts = review_module.execution_counts(root, result['tests'], target)
     require(counts['failed'] > 0 and counts['passed'] + counts['failed'] == counts['executed']
-            and case_names(Path(result['tests']['trx'])) == repair['repairedCases'],
+            and case_names(Path(result['tests']['trx'])) == __import__('repair_bridge').stage_cases(repair, target)[1],
             'A kill requires the complete stage test-case multiset with actual failures.')
 
 
@@ -386,7 +385,7 @@ def stage_child(request):
     return {'id': stage['id'], 'root': str(root), 'run': str(repair['run']), 'before': repair['before'],
             'originalInventory': repair['originalInventory'], 'repairedInventory': repair['repairedInventory'],
             'repairedPaths': repair['repairedPaths'], 'inventoryPolicy': repair.get('inventoryPolicy', 'legacy'), 'reportHash': repair['reportHash'], 'scope': repair['scope'],
-            'originalCases': repair['originalCases'], 'repairedCases': repair['repairedCases'],
+            'originalCases': repair['originalCases'], 'repairedCases': repair['repairedCases'], 'targetCases': repair.get('targetCases', {}),
             'evidence': repair['evidence'] + execution_evidence, 'findings': findings}
 
 
@@ -478,8 +477,10 @@ def compose(manifest_path, ledger_path, output, final_root):
             prior = verified[-1]
             require(context['reportHash'] == prior['reportHash'] and context['run'] == prior['run']
                     and context['originalInventory'] == prior['originalInventory'], 'Stages reference different original campaigns.')
-            validate_strengthening(prior['repairedPaths'], context['repairedPaths'], stage['changesFromParent'], Path(stage['root']), repair_bridge)
+            validate_strengthening(prior['repairedPaths'], context['repairedPaths'], stage['changesFromParent'], Path(stage['root']), repair_bridge, multi_suite=bool(context.get('targetCases')))
             require(repair_bridge.preserves_cases(prior['repairedCases'], context['repairedCases']), 'Successor omitted predecessor test cases.')
+            for target, prior_cases in prior.get('targetCases', {}).items():
+                require(target in context.get('targetCases', {}) and repair_bridge.preserves_cases(prior_cases['repaired'], context['targetCases'][target]['repaired']), 'Successor omitted canonical target cases.')
         verified.append(context)
         evidence.extend(context['evidence'])
         for path in (request_path, response_path, log_path):

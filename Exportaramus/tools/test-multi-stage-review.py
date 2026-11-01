@@ -347,7 +347,7 @@ class StageChecks(unittest.TestCase):
                        toolchain=dict(dotnet=dotnet, csc=csc))
         repair = dict(repairedInventory=dict(sha256='stagehash'), originalInventory=dict(sha256='originalhash'),
                       bridge=dict(repairedInventory=inv), repairedPaths=paths, bridgeSha256=repair_file['sha256'],
-                      reportHash=raw['sha256'], run=Path(raw['path']).parent.parent, repairedCases=['case0', 'case1'])
+                      reportHash=raw['sha256'], run=Path(raw['path']).parent.parent, originalCases=['case0', 'case1'], repairedCases=['case0', 'case1'])
         entry = dict(mutant, file=result['file'], sourceSha256=result['sourceSha256'])
         return entry, repair, summary, folder
 
