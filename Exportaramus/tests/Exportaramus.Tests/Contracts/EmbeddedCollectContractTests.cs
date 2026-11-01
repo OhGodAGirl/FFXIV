@@ -103,6 +103,17 @@ public sealed class EmbeddedCollectContractTests
     }
 
     [Fact]
+    public void UnknownManifestCatalogRetainsItsLookupFailure()
+    {
+        var input = Inputs();
+        Assert.Equal(15, Load(input).RecognizedIds.Count);
+        var catalog = input.Contract["catalogs"]![0]!.AsObject();
+        catalog["key"] = "unknown";
+        catalog.Remove("count");
+        Assert.Throws<InvalidOperationException>(() => Load(input));
+    }
+
+    [Fact]
     public void DerivedIdentifiersAndBothNormalizedRelationshipHashesAreVerified()
     {
         var id = Inputs();
