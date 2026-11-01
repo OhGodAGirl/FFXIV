@@ -1,0 +1,32 @@
+name: Exportaramus Publication Hygiene
+on:
+  push:
+    branches: [main]
+    paths: ['Exportaramus/**', '.github/scripts/**', '.github/workflows/exportaramus-hygiene.yml']
+  pull_request:
+    paths: ['Exportaramus/**', '.github/scripts/**', '.github/workflows/exportaramus-hygiene.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: exportaramus-hygiene-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  hygiene:
+    name: Check Published Source
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Test Hygiene Rules
+        run: python -B .github/scripts/test_publication_hygiene.py
+      - name: Check Tracked Files
+        run: python -B .github/scripts/publication_hygiene.py
+      - name: Test Audit Failure Handling
+        shell: pwsh
+        run: ./.github/scripts/test-audit-nuget.ps1

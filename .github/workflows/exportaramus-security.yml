@@ -1,0 +1,65 @@
+name: Exportaramus Dependency Security
+on:
+  push:
+    branches: [main]
+    paths: ['Exportaramus/**/*.csproj', 'Exportaramus/**/packages.lock.json', 'Exportaramus/**/NuGet.Config', 'Exportaramus/**/nuget.config', 'Exportaramus/**/*.props', 'Exportaramus/**/*.targets', 'Exportaramus/global.json', 'Exportaramus/tools/*requirements*.txt', '.github/scripts/audit-nuget.ps1', '.github/workflows/exportaramus-security.yml']
+  pull_request:
+    paths: ['Exportaramus/**/*.csproj', 'Exportaramus/**/packages.lock.json', 'Exportaramus/**/NuGet.Config', 'Exportaramus/**/nuget.config', 'Exportaramus/**/*.props', 'Exportaramus/**/*.targets', 'Exportaramus/global.json', 'Exportaramus/tools/*requirements*.txt', '.github/scripts/audit-nuget.ps1', '.github/workflows/exportaramus-security.yml']
+  schedule:
+    - cron: '23 9 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: exportaramus-security-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  nuget:
+    name: Audit NuGet Dependencies
+    runs-on: windows-2025
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: Exportaramus/global.json
+      - name: Prepare Pinned Build Dependencies
+        shell: pwsh
+        run: |
+          ./Exportaramus/tools/Get-BuildDependencies.ps1 -Destination "$env:RUNNER_TEMP/dalamud"
+          "DALAMUD_HOME=$env:DALAMUD_HOME" >> $env:GITHUB_ENV
+      - name: Audit All Tracked Exportaramus Projects
+        shell: pwsh
+        working-directory: Exportaramus
+        run: ../.github/scripts/audit-nuget.ps1 -OutputDirectory "$env:RUNNER_TEMP/security-results"
+      - name: Save Audit Results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: exportaramus-nuget-audit
+          path: ${{ runner.temp }}/security-results
+          retention-days: 7
+  python:
+    name: Audit Python Dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Install Audit Tool
+        run: python -m pip install pip-audit==2.10.1
+      - name: Audit Pinned Requirements
+        run: python -m pip_audit --strict --no-deps --disable-pip -r Exportaramus/tools/contract-python-requirements.txt --format json --output python-audit.json
+      - name: Save Audit Results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: exportaramus-python-audit
+          path: python-audit.json
+          retention-days: 7

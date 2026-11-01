@@ -169,3 +169,11 @@ The README, license, SDK selection, Git exclusions, and editor settings live at 
 ## License
 
 [MIT](LICENSE)
+
+### Repository Maintenance Checks
+
+Workflow Validation checks workflow syntax and expressions whenever Actions configuration changes. Exportaramus Publication Hygiene rejects tracked generated files, live snapshots, machine-specific paths, and private vault links. Deliberately invalid path fixtures retain explicit exceptions. This is not a general secret scanner. The ordinary quality gate continues to inspect the exact runtime package contents.
+
+Exportaramus Dependency Security audits NuGet dependencies (including transitive dependencies) and the pinned Python requirements on changes, weekly, and manually. Advisory lookup or restore failures fail the check. Reports are retained for seven days. These checks cover known package advisories, not downloaded Dalamud binaries.
+
+Dependabot proposes weekly grouped Actions, NuGet, and Python updates. Updates require review; no automatic merging is configured. The pinned Dalamud SDK is excluded from routine version updates and must be reviewed separately for API compatibility.
