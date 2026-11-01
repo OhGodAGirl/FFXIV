@@ -168,6 +168,33 @@ def summarize(before, current, scope, report, exit_code, report_path=None, audit
     }
 
 
+def partial_results(run):
+    """Retain diagnostic counts without treating incomplete reports as qualification."""
+    results = []
+    for definition in campaign_definitions(ROOT):
+        name = definition['name']
+        reports = sorted((run / name).rglob('mutation-report.json'))
+        item = {'name': name, 'reportCount': len(reports), 'statusCounts': {}, 'totalMutants': 0}
+        if len(reports) != 1:
+            item['error'] = 'Exactly one report is required for this target.'
+        else:
+            path = reports[0]
+            try:
+                report = json.loads(path.read_bytes())
+                files = report['files']
+                counts = {status: 0 for status in STATUSES}
+                for entry in files.values():
+                    for mutant in entry['mutants']:
+                        status = mutant['status']
+                        counts[status] = counts.get(status, 0) + 1
+                item.update(report=str(path.relative_to(run)), reportSha256=digest(path),
+                            statusCounts=counts, totalMutants=sum(counts.values()))
+            except (OSError, ValueError, KeyError, TypeError, AttributeError) as exception:
+                item['error'] = f'{type(exception).__name__}: {exception}'
+        results.append(item)
+    return results
+
+
 def finish(run, exit_code, ledger_path=None):
     manifest_path = run / 'input-manifest.json'
     before = json.loads(manifest_path.read_bytes())
@@ -199,6 +226,8 @@ def finish(run, exit_code, ledger_path=None):
     if constituents is not None:
         summary['constituentCampaigns'] = constituents
         summary['constituentManifestSha256'] = digest(run / 'constituent-campaigns.json')
+    summary['partialResults'] = partial_results(run)
+    summary['partialTotalMutants'] = sum(item['totalMutants'] for item in summary['partialResults'])
     summary['inputManifestSha256'] = digest(manifest_path)
     summary['reportSha256'] = digest(report_path) if report_path else None
     summary['linkedSourceCount'] = before['linkedSourceCount']
@@ -245,7 +274,7 @@ def finish(run, exit_code, ledger_path=None):
         write_json(run / 'raw-mutation-campaign-summary.json', summary)
     write_json(run / 'mutation-campaign-summary.json', summary)
     write_json(run / 'unresolved-mutants.json', summary['unresolvedMutants'])
-    print(json.dumps({key: summary[key] for key in ('status', 'totalMutants', 'statusCounts', 'inputsUnchanged', 'gatePassed')}))
+    print(json.dumps({key: summary[key] for key in ('status', 'totalMutants', 'partialTotalMutants', 'statusCounts', 'inputsUnchanged', 'gatePassed')}))
     return 0 if summary['gatePassed'] else 1
 
 

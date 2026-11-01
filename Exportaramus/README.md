@@ -125,6 +125,8 @@ The [mutation policy](tests/mutation-policy.json) requires a score of 100 and co
 
 ### Mutation Testing In GitHub Actions
 
+The presentation timing benchmark runs in the required ordinary baseline, before instrumentation. Mutation execution excludes only tests marked `UninstrumentedPerformance`; its 0.1 ms budget remains unchanged. Failed campaigns retain per-target report counts and hashes in `partialResults`, with their total in `partialTotalMutants`. These diagnostic fields do not qualify an incomplete campaign or replace the canonical mutation totals.
+
 Open **Actions → Exportaramus Mutation Testing → Run workflow** in this repository. Choose the branch and a mode:
 
 - **full** (default): run the ordinary offline checks, then all four mutation targets with Stryker 4.16.0 and two workers. The mutation step is limited to five hours; the job has an additional thirty minutes for setup and saving results.

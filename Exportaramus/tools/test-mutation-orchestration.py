@@ -70,6 +70,60 @@ class CampaignChecks(unittest.TestCase):
         args['exit_code'] = 1
         self.assertFalse(self.result('Survived', completed_threshold_failure=True, **args)['gatePassed'])
 
+class PartialCampaignChecks(unittest.TestCase):
+    def test_failed_targets_keep_successful_reports_without_passing_the_gate(self):
+        with tempfile.TemporaryDirectory() as directory:
+            run = Path(directory)
+            output = run / 'consumerkit12'
+            output.mkdir()
+            report = output / 'mutation-report.json'
+            report.write_text(json.dumps({'files': {'Client.cs': {'mutants': [
+                {'status': 'Killed'}, {'status': 'Survived'}, {'status': 'NoCoverage'}]}}}))
+            original = report.read_bytes()
+            results = campaign.partial_results(run)
+            self.assertEqual(4, len(results))
+            self.assertEqual(3, sum(item['totalMutants'] for item in results))
+            self.assertEqual(3, sum('error' in item for item in results))
+            self.assertEqual(original, report.read_bytes())
+            self.assertEqual(campaign.digest(report), results[2]['reportSha256'])
+            self.assertFalse(CampaignChecks().result(report=None, exit_code=1)['gatePassed'])
+
+    def test_finish_writes_partial_counts_without_qualifying_an_incomplete_campaign(self):
+        with tempfile.TemporaryDirectory() as directory:
+            run = Path(directory)
+            before = {'files': {}, 'sourceSha256': 'source', 'startedAtUtc': 'start',
+                      'linkedSourceCount': 1, 'schemaVersion': '2.0'}
+            (run / 'input-manifest.json').write_text(json.dumps(before))
+            (run / 'source-after.json').write_text(json.dumps({'sha256': 'source'}))
+            for name in ('consumerkit12', 'inventoryreader'):
+                target = run / name
+                target.mkdir()
+                (target / 'mutation-report.json').write_text(json.dumps({'files': {
+                    'Example.cs': {'mutants': [{'id': '1', 'status': 'Killed'}]}}}))
+            with patch.object(campaign, 'input_hashes', return_value={}), patch.object(campaign, 'audit_scope', return_value={}):
+                self.assertEqual(1, campaign.finish(run, 1))
+            summary = json.loads((run / 'mutation-campaign-summary.json').read_bytes())
+            self.assertFalse(summary['gatePassed'])
+            self.assertEqual('failed', summary['status'])
+            self.assertIsNone(summary['report'])
+            self.assertEqual(2, summary['partialTotalMutants'])
+            self.assertEqual(4, len(summary['partialResults']))
+
+    def test_malformed_and_duplicate_reports_are_not_counted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            run = Path(directory)
+            target = run / 'testable'
+            target.mkdir()
+            (target / 'mutation-report.json').write_text('{')
+            self.assertIn('error', campaign.partial_results(run)[0])
+            nested = target / 'other'
+            nested.mkdir()
+            (nested / 'mutation-report.json').write_text('{}')
+            result = campaign.partial_results(run)[0]
+            self.assertEqual(2, result['reportCount'])
+            self.assertEqual(0, result['totalMutants'])
+
+
 class CombinedCampaignChecks(unittest.TestCase):
     def test_supplemental_configuration_cannot_weaken_primary_campaign(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -84,6 +138,13 @@ class CombinedCampaignChecks(unittest.TestCase):
             path.write_text(json.dumps(config))
             with self.assertRaisesRegex(ValueError,'identical strict'):
                 campaign.validate_assembly_configs(root)
+
+    def test_only_uninstrumented_performance_is_filtered(self):
+        for definition in campaign.campaign_definitions(campaign.ROOT):
+            config = json.loads(definition['config'].read_bytes())['stryker-config']
+            self.assertEqual('Category!=UninstrumentedPerformance', config['test-case-filter'])
+            self.assertEqual(['**/*'], config['mutate'])
+            self.assertEqual({'high': 100, 'low': 100, 'break': 100}, config['thresholds'])
 
     def test_both_complete_raw_reports_are_required_and_preserved(self):
         with tempfile.TemporaryDirectory() as directory:
