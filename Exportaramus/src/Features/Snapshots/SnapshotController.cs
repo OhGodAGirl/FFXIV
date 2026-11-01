@@ -9,6 +9,7 @@ namespace Exportaramus.Features.Snapshots;
 public sealed class SnapshotController : IDisposable
 {
     private readonly ISnapshotCapturePort capture;
+    private readonly IBackgroundWorkScheduler? background;
     private readonly Func<Func<string>, Task<string>> prepareCapabilities;
     private readonly DiagnosticMeasurements measurements;
     private double operationStarted;
@@ -51,9 +52,10 @@ public sealed class SnapshotController : IDisposable
     public event Action<string>? WithdrawnV11;
     public event Action<string>? WithdrawnV12;
 
-    public SnapshotController(ISnapshotCapturePort capture, AtomicSnapshotStorage storage, FFXIVCollectContract? contract, DiagnosticMeasurements? measurements = null, Func<Func<string>, Task<string>>? prepareCapabilities = null)
+    public SnapshotController(ISnapshotCapturePort capture, AtomicSnapshotStorage storage, FFXIVCollectContract? contract, DiagnosticMeasurements? measurements = null, Func<Func<string>, Task<string>>? prepareCapabilities = null, IBackgroundWorkScheduler? background = null)
     {
         this.prepareCapabilities = prepareCapabilities ?? (work => Task.Run(work));
+        this.background = background;
         this.capture = capture;
         this.storage = storage;
         this.measurements = measurements ?? new();
@@ -299,7 +301,7 @@ public sealed class SnapshotController : IDisposable
         workerGeneration = gen;
         persistingReports = false;
         var trustedSources = capture.TrustedSourceKeys;
-        worker = Task.Run(async () =>
+        worker = RunWorker(async () =>
         {
             CollectionState? restoredState = null;
             var hadCompact = false;
@@ -389,7 +391,7 @@ public sealed class SnapshotController : IDisposable
         var reportsAvailable = Reports.Available;
         var isTargeted = targeted && raw is not null;
         var full = !isTargeted && activeRequest != CaptureRequest.AutomaticLightweight;
-        worker = Task.Run(async () =>
+        worker = RunWorker(async () =>
         {
             if (raw is not null)
             {
@@ -522,5 +524,8 @@ public sealed class SnapshotController : IDisposable
         catch (Exception) { }
         finally { token.Dispose(); }
     }
+    private Task<WorkerResult> RunWorker(Func<Task<WorkerResult>> work, CancellationToken token) =>
+        background is null ? Task.Run(work, token) : background.Run(work, token);
+
     private sealed record WorkerResult(long Generation, ulong ContentId, CollectionState State, AcceptedSnapshotBundle? Bundle, bool Restoration, bool EvidenceHealthy = true, string RestoredCapabilities = "", bool Targeted = false, ImmutableArray<string> Observed = default, string? RestorationFailure = null);
 }

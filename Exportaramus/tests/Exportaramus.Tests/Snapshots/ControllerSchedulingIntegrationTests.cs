@@ -13,19 +13,15 @@ public sealed class ControllerSchedulingIntegrationTests
     [Fact]
     public async Task AutomaticDeadlinesStartAtAcceptanceAfterTheReadAndWorkerHaveCompleted()
     {
-        await using var run = new Harness();
+        await using var run = new Harness(controlled: true);
         await run.Restore(0);
         run.Controller.RequestFull();
         run.Update(5);
         Assert.True(run.Controller.Busy);
         Assert.Single(run.Port.Begins);
         run.Update(100);
-        var wait = Stopwatch.StartNew();
-        while (run.Controller.DiagnosticTasks.Single(task => task.Name == "CollectionOutput").State != "Completed")
-        {
-            if (wait.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Owned output worker did not complete.");
-            await Task.Delay(1);
-        }
+        await run.CompleteBackgroundWork();
+        Assert.Equal("Completed", run.Controller.DiagnosticTasks.Single(task => task.Name == "CollectionOutput").State);
         Assert.Null(run.Controller.Publication.Current);
         await run.Accept(200, 1, CaptureType.Full);
 
@@ -44,7 +40,7 @@ public sealed class ControllerSchedulingIntegrationTests
     [Fact]
     public async Task AcceptedFullCaptureResetsBothAutomaticDeadlines()
     {
-        await using var run = new Harness();
+        await using var run = new Harness(controlled: true);
         await run.Restore(0);
         run.Controller.RequestFull();
         await run.Accept(5, 1, CaptureType.Full);
@@ -64,7 +60,7 @@ public sealed class ControllerSchedulingIntegrationTests
     [Fact]
     public async Task AcceptedLightweightCaptureMovesOnlyThePresenceDeadline()
     {
-        await using var run = new Harness();
+        await using var run = new Harness(controlled: true);
         await run.Restore(0);
         run.Controller.RequestFull();
         await run.Accept(5, 1, CaptureType.Full);
@@ -86,7 +82,7 @@ public sealed class ControllerSchedulingIntegrationTests
     [Fact]
     public async Task AcceptedReportsMoveNeitherAutomaticDeadline()
     {
-        await using var run = new Harness();
+        await using var run = new Harness(controlled: true);
         await run.Restore(0);
         run.Controller.RequestFull();
         await run.Accept(5, 1, CaptureType.Full);
@@ -109,7 +105,7 @@ public sealed class ControllerSchedulingIntegrationTests
     [Fact]
     public async Task RestorationDoesNotResetPresenceCadenceWhenTheInitialFullCaptureNeedsRetries()
     {
-        await using var run = new Harness();
+        await using var run = new Harness(controlled: true);
         await run.Storage.CommitAsync(123, CollectionDataSerializer.Compact(SnapshotFixture.Create(), 8), null, null,
             false, false, SnapshotFixture.Now, default);
         run.Update(0); // Establish login's original due times before asynchronous restoration completes.
@@ -139,6 +135,7 @@ public sealed class ControllerSchedulingIntegrationTests
     internal sealed class Harness : IAsyncDisposable
     {
         private readonly string root = Path.Combine(AppContext.BaseDirectory, "controller-schedule", Guid.NewGuid().ToString("N"));
+        private readonly ControlledScheduler? background;
         public Port Port { get; } = new();
         public AtomicSnapshotStorage Storage
         {
@@ -148,10 +145,12 @@ public sealed class ControllerSchedulingIntegrationTests
         {
             get;
         }
-        public Harness(Exportaramus.Features.Diagnostics.DiagnosticMeasurements? measurements = null)
+        public Harness(Exportaramus.Features.Diagnostics.DiagnosticMeasurements? measurements = null, bool controlled = false)
         {
             Storage = new(root);
-            Controller = new(Port, Storage, null, measurements);
+            background = controlled ? new() : null;
+            Controller = new(Port, Storage, null, measurements,
+                controlled ? work => Task.FromResult(work()) : null, background);
         }
         public void Update(double now) => Controller.Update(123, "Fixture", false, false, now, SnapshotFixture.Now.AddSeconds(now));
         public async Task Restore(double now) => await Pump(now, () => Controller.Reports.Available && !Controller.Busy);
@@ -176,21 +175,64 @@ public sealed class ControllerSchedulingIntegrationTests
             Assert.Equal(revision, Controller.Publication.Current?.Revision);
             Assert.False(Controller.Busy);
         }
+        public async Task CompleteBackgroundWork()
+        {
+            Assert.NotNull(background);
+            await background.Complete();
+        }
         private async Task Pump(double now, Func<bool> finished)
         {
+            if (background is not null)
+            {
+                // Bound controller transitions, not the wall time of file I/O or normalization.
+                for (var step = 0; step < 12 && !finished(); step++)
+                {
+                    ControllerPumpStep.Advance(Controller, () => Update(now));
+                    await background.Complete();
+                }
+                Assert.True(finished(), "Controller did not finish after controlled work: " + Describe());
+                return;
+            }
             var clock = Stopwatch.StartNew();
             while (!finished())
             {
-                if (clock.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Controller did not reach its public completion state: " + Controller.Error);
+                if (clock.Elapsed > TimeSpan.FromSeconds(5)) Assert.Fail("Controller did not reach its public completion state: " + Describe());
                 ControllerPumpStep.Advance(Controller, () => Update(now));
                 await Task.Delay(1);
             }
         }
+        private string Describe() => Controller.DiagnosticOperation(0).ControllerState + "; " + Controller.Error + "; " +
+            string.Join(", ", Controller.DiagnosticTasks.Select(task => task.Name + "=" + task.State));
         public async ValueTask DisposeAsync()
         {
             Controller.Dispose();
+            if (background is not null) await background.Complete();
             await Controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
             if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    private sealed class ControlledScheduler : IBackgroundWorkScheduler
+    {
+        private readonly Queue<Func<Task>> pending = new();
+        public Task<T> Run<T>(Func<Task<T>> work, CancellationToken cancellationToken)
+        {
+            var completion = new TaskCompletionSource<T>();
+            pending.Enqueue(async () =>
+            {
+                try
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    completion.SetResult(await work());
+                }
+                catch (OperationCanceledException) { completion.SetCanceled(cancellationToken); }
+                catch (Exception exception) { completion.SetException(exception); }
+            });
+            return completion.Task;
+        }
+        public async Task Complete()
+        {
+            while (pending.TryDequeue(out var work)) await work();
         }
     }
 
