@@ -73,7 +73,7 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
     }
 
     public bool Active => controller.Active;
-    public string Message => controller.Message + (selectionStatus.Length > 0 ? " — " + selectionStatus : "");
+    public string Message => controller.Message + (selectionStatus.Length > 0 ? " â€” " + selectionStatus : "");
     public void Start()
     {
         if (!framework.IsInFrameworkUpdateThread) return;
@@ -96,14 +96,14 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
     }
     private void TraceTalkInput(AddonEvent kind, AddonArgs args)
     {
-        if (!Active || selectedRetainer == 0 || tracedEvents >= 16 || args is not AddonReceiveEventArgs input) return;
+        if (log.MinimumLogLevel > Serilog.Events.LogEventLevel.Verbose || !Active || selectedRetainer == 0 || tracedEvents >= 16 || args is not AddonReceiveEventArgs input) return;
         tracedEvents++;
-        log.Warning("Retainer Talk input: step={Step}, type={Type}, parameter={Parameter}, attempts={Attempts}",
+        log.Verbose("Retainer Talk input: step={Step}, type={Type}, parameter={Parameter}, attempts={Attempts}",
             controller.Step, input.AtkEventType, input.EventParam, dialogueAttempts);
         var evt = (AtkEvent*)input.AtkEvent;
         var eventData = (AtkEventData*)input.AtkEventData;
         if (evt != null)
-            log.Warning("Retainer Talk input shape: node={HasNode}, stageTarget={StageTarget}, stateType={StateType}, button={Button}",
+            log.Verbose("Retainer Talk input shape: node={HasNode}, stageTarget={StageTarget}, stateType={StateType}, button={Button}",
                 evt->Node != null, evt->Target == (AtkEventTarget*)AtkStage.Instance(), evt->State.EventType,
                 eventData == null ? -1 : eventData->MouseData.ButtonId);
     }
@@ -358,7 +358,7 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
         dialogueAttempts++;
         selectionStatus = $"Dialogue advance attempted ({dialogueAttempts}); waiting for the game.";
         if (dialogueAttempts == 1)
-            log.Warning("Retainer Talk: sending observed stage MouseClick through ReceiveEvent, parameter 0; identity checks passed.");
+            log.Verbose("Retainer Talk: sending observed stage MouseClick through ReceiveEvent, parameter 0; identity checks passed.");
         talk->ReceiveEvent(AtkEventType.MouseClick, 0, &click, &eventData);
     }
     private static bool ActiveRetainer(ulong id)
