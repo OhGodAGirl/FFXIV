@@ -290,4 +290,15 @@ public sealed class DerivedEvidenceTests
         else facts[facts.Count - 1]!["dataType"] = "Unknown";
         AssertInvalid(root);
     }
+    [Fact]
+    public void RelicAbsenceRequiresUsableAchievementEvidence()
+    {
+        var root = Relic(false, false);
+        AssertValid(root);
+        root["collections"]!.AsObject().Remove("achievements");
+        root["omittedCollections"]!["achievements"] = new JsonObject();
+        root["sourceHealth"]!["achievements"]!["completeness"] = "Partial";
+        using var document = JsonDocument.Parse(root.ToJsonString());
+        Assert.False(CollectionDataSemanticValidator.ValidateRich(document.RootElement));
+    }
 }

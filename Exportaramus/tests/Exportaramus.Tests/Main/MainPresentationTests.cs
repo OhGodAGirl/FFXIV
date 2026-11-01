@@ -5,6 +5,7 @@ using Exportaramus.Shared.Ui;
 
 namespace Exportaramus.Tests.Main;
 
+[Collection("Visual tokens")]
 public sealed class MainPresentationTests
 {
     private static readonly DateTimeOffset Now = DateTimeOffset.Parse("2026-09-06T12:00:00Z");

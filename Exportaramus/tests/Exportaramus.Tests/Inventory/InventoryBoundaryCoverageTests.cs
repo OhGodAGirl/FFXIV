@@ -7,6 +7,7 @@ using Xunit;
 
 namespace Exportaramus.Tests.Inventory;
 
+[Collection("Visual tokens")]
 public sealed class InventoryBoundaryCoverageTests
 {
     private static readonly DateTimeOffset Now = DateTimeOffset.Parse("2026-09-12T12:00:00Z");
@@ -112,10 +113,13 @@ public sealed class InventoryBoundaryCoverageTests
     [Fact]
     public void ApplyingThemeExposesEverySelectedPaletteToken()
     {
-        VisualTokens.ApplyTheme(1);
-        var palette = ThemePolicy.Resolve(1);
-        Assert.Equal(new[] { palette.Window, palette.Panel, palette.Raised, palette.Alternate, palette.Gold, palette.Heading, palette.Icon, palette.Border, palette.Primary, palette.Secondary, palette.Muted, palette.Count, palette.Success, palette.Warning, palette.Error, palette.Shadow },
-            new[] { VisualTokens.Window, VisualTokens.Panel, VisualTokens.Raised, VisualTokens.Alternate, VisualTokens.Gold, VisualTokens.Heading, VisualTokens.Icon, VisualTokens.Border, VisualTokens.Primary, VisualTokens.Secondary, VisualTokens.Muted, VisualTokens.Count, VisualTokens.Success, VisualTokens.Warning, VisualTokens.Error, VisualTokens.Shadow });
-        VisualTokens.ApplyTheme(null);
+        try
+        {
+            VisualTokens.ApplyTheme(1);
+            var palette = ThemePolicy.Resolve(1);
+            Assert.Equal(new[] { palette.Window, palette.Panel, palette.Raised, palette.Alternate, palette.Gold, palette.Heading, palette.Icon, palette.Border, palette.Primary, palette.Secondary, palette.Muted, palette.Count, palette.Success, palette.Warning, palette.Error, palette.Shadow },
+                new[] { VisualTokens.Window, VisualTokens.Panel, VisualTokens.Raised, VisualTokens.Alternate, VisualTokens.Gold, VisualTokens.Heading, VisualTokens.Icon, VisualTokens.Border, VisualTokens.Primary, VisualTokens.Secondary, VisualTokens.Muted, VisualTokens.Count, VisualTokens.Success, VisualTokens.Warning, VisualTokens.Error, VisualTokens.Shadow });
+        }
+        finally { VisualTokens.ApplyTheme(null); }
     }
 }

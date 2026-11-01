@@ -9,6 +9,9 @@ public sealed class DocumentResourceTests
     [Theory]
     [InlineData("{\"a\":1,\"a\":2}", false, CollectionDataValidationCode.InvalidJson)]
     [InlineData("{\"schemaVersion\":\"1..2\"}", true, CollectionDataValidationCode.MalformedSchemaVersion)]
+    [InlineData("{}", true, CollectionDataValidationCode.MissingSchemaVersion)]
+    [InlineData("{\"schemaVersion\":\"1.3\"}", true, CollectionDataValidationCode.UnsupportedSchemaVersion)]
+    [InlineData("{\"schemaVersion\":\"\\uD800\"}", true, CollectionDataValidationCode.InvalidJson)]
     public void RejectedDocumentsReturnTheirRentedBuffers(string payload, bool versioned, CollectionDataValidationCode code)
     {
         // Initialize JSON metadata before observing only this synchronous operation.

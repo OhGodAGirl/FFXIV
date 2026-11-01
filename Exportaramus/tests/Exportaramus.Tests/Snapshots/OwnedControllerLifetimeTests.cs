@@ -56,7 +56,7 @@ public sealed class OwnedControllerLifetimeTests
         shutdown.SetResult();
         try
         {
-            var completed = await Task.WhenAny(controller.ShutdownTask, Task.Delay(TimeSpan.FromSeconds(1)));
+            var completed = await Task.WhenAny(controller.ShutdownTask, context.Posted.Task);
             Assert.Same(controller.ShutdownTask, completed);
             await controller.ShutdownTask;
         }
@@ -70,7 +70,12 @@ public sealed class OwnedControllerLifetimeTests
     private sealed class HeldContext : SynchronizationContext
     {
         private readonly ConcurrentQueue<(SendOrPostCallback Callback, object? State)> callbacks = new();
-        public override void Post(SendOrPostCallback callback, object? state) => callbacks.Enqueue((callback, state));
+        public TaskCompletionSource Posted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public override void Post(SendOrPostCallback callback, object? state)
+        {
+            callbacks.Enqueue((callback, state));
+            Posted.TrySetResult();
+        }
         public void Drain()
         {
             for (var i = 0; i < 16 && callbacks.TryDequeue(out var call); i++) call.Callback(call.State);
