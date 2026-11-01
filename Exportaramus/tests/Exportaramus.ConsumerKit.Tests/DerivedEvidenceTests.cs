@@ -173,4 +173,47 @@ public sealed class DerivedEvidenceTests
         Item(root, "relics")["id"] = 999999;
         AssertInvalid(root);
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RelicWithoutAchievementUsesOnlyItemPresence(bool owned)
+    {
+        var facts = new JsonArray();
+        if (owned) facts.Add(Fact("inventory", 2327, true));
+        else foreach (var source in CollectionDataSemanticValidator.PresenceKeys) facts.Add(Fact(source, 2327, false));
+        var root = Snapshot("relics", 2327, owned, facts);
+        AssertValid(root);
+        facts.Add(Fact("achievements", 129, owned));
+        AssertInvalid(root);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void OutfitCanCombineEvidenceFromDifferentSources(bool lastPresent)
+    {
+        var facts = new JsonArray
+        {
+            Fact("inventory", 2642, true),
+            Fact("armoryChest", 2965, true),
+        };
+        if (lastPresent) facts.Add(Fact("chocoboSaddlebag", 3747, true));
+        else foreach (var source in CollectionDataSemanticValidator.PresenceKeys) facts.Add(Fact(source, 3747, false));
+        var root = Snapshot("outfits", 45094, lastPresent, facts);
+        AssertValid(root);
+        Item(root, "outfits")["owned"] = !lastPresent;
+        AssertInvalid(root);
+    }
+
+    [Theory]
+    [InlineData("outfits", "PermanentUnlockOrCurrentItemPresence")]
+    [InlineData("relics", "AllRequiredConstituents")]
+    public void DerivedRulesCannotBeSwappedBetweenCollections(string key, string rule)
+    {
+        var root = key == "outfits" ? Outfit(true) : Relic(true, true);
+        AssertValid(root);
+        Item(root, key)["ownershipEvidence"]!["ruleCode"] = rule;
+        AssertInvalid(root);
+    }
 }
