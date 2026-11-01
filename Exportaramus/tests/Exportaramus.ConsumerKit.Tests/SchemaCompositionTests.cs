@@ -68,6 +68,18 @@ public sealed class SchemaCompositionTests
     [InlineData("1e100", "1e101", true)]
     [InlineData("1e-100", "1e-101", false)]
     [InlineData("1e-100", "1e-99", true)]
+    [InlineData("1", "-1", false)]
+    [InlineData("-1", "1", true)]
+    [InlineData("0.001", "1", true)]
+    [InlineData("1", "0.001", false)]
+    [InlineData("-0.001", "-1", false)]
+    [InlineData("-1", "-0.001", true)]
+    [InlineData("0.11", "0.1", false)]
+    [InlineData("0.1", "0.11", true)]
+    [InlineData("-0.11", "-0.1", true)]
+    [InlineData("-0.1", "-0.11", false)]
+    [InlineData("0.00123", "1.23e-3", true)]
+    [InlineData("0.00124", "1.23e-3", false)]
     public void MinimumComparesSignsFractionsAndExponents(string minimum, string payload, bool accepted) =>
         Assert.Equal(accepted, Validate("\"minimum\":" + minimum, payload));
 }

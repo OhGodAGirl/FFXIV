@@ -38,6 +38,12 @@ public sealed class SchemaBoundaryTests
     [InlineData("0.0001e100000000000000000000", "1e99999999999999999996", true)]
     [InlineData("1.0000000000000000000000000000001", "1", false)]
     [InlineData("1e-1000", "0", false)]
+    [InlineData("1e-0000", "1", true)]
+    [InlineData("1e+0000", "1", true)]
+    [InlineData("100", "1e2", true)]
+    [InlineData("0.0100", "1e-2", true)]
+    [InlineData("1.23e-3", "0.00123", true)]
+    [InlineData("-1.23e-3", "-0.00123", true)]
     public void DuplicateNumbersAreComparedWithoutRoundingOrExponentOverflow(string left, string right, bool equal) =>
         Assert.Equal(!equal, Validate("{\"uniqueItems\":true}", "[" + left + "," + right + "]"));
 
