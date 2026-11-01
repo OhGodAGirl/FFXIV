@@ -17,6 +17,15 @@ public sealed class PublicationBoundaryReviewTests
     }
 
     [Fact]
+    public void InvalidItemDoesNotReturnAReporterIdentity()
+    {
+        Assert.True(ReportOwnershipEvidencePolicy.TryNormalize("123", 1, "Reporter", out _, out var normalized));
+        Assert.Equal("Reporter", normalized);
+        Assert.False(ReportOwnershipEvidencePolicy.TryNormalize("123", 0, "Reporter", out _, out normalized));
+        Assert.Empty(normalized);
+    }
+
+    [Fact]
     public void DresserPresenceUsesMappedItemIdentity()
     {
         var data = SnapshotFixture.Create();
