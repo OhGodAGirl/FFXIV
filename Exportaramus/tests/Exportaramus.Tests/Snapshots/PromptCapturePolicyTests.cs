@@ -1,3 +1,4 @@
+using Exportaramus.Features.CollectionData.Contracts;
 using Exportaramus.Features.Snapshots;
 
 namespace Exportaramus.Tests.Snapshots;
@@ -72,13 +73,15 @@ public sealed class PromptCapturePolicyTests
         var policy = new PromptCapturePolicy();
         policy.SetCharacter(123, 0);
         var seen = new HashSet<string>();
-        for (var i = 0; i < 27; i++)
+        var sources = CollectionKeys.Unlocks.Concat(CollectionKeys.Presence).ToArray();
+        for (var i = 0; i < sources.Length; i++)
         {
             var due = policy.Take(15 + i * 1.5);
             Assert.InRange(due.Length, 0, 1);
             seen.UnionWith(due);
         }
-        Assert.Equal(26, seen.Count);
+        Assert.Equal(sources.Where(key => key != "quests").Order(), seen.Order());
+        Assert.Equal(new[] { sources[0] }, policy.Take(15 + sources.Length * PromptCapturePolicy.FallbackInterval));
         Assert.Contains("orchestrions", seen);
         Assert.Contains("inventory", seen);
         Assert.DoesNotContain("quests", seen);
