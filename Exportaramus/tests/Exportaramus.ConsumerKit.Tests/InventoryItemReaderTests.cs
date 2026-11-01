@@ -29,6 +29,151 @@ public sealed class InventoryItemReaderTests
     [InlineData(1000000, "42")]
     [InlineData(100, "0")]
     [InlineData(100, "01")]
+    public void InvalidRequestIsRejectedEvenWhenResponseIsUnavailable(int itemId, string character)
+    {
+        var payload = ContractFixture.Edit(Unavailable, root => root["itemId"] = itemId);
+        Assert.Throws<InvalidDataException>(() => InventoryItemReader.Read(Capabilities, payload, (uint)itemId, character));
+    }
+
+    [Fact]
+    public void CapabilitiesAndLocationsRejectExtraFields()
+    {
+        var caps = ContractFixture.Edit(Capabilities, root => root["extra"] = true);
+        Assert.Throws<InvalidDataException>(() => InventoryItemReader.Read(caps, Available, 100, "42"));
+        Assert.Throws<InvalidDataException>(() => Read(ContractFixture.Edit(Available, root => Row(root)["extra"] = true)));
+    }
+
+    [Theory]
+    [InlineData(64, true)]
+    [InlineData(65, false)]
+    public void LocationNameLengthHasAnInclusiveLimit(int length, bool accepted)
+    {
+        var payload = ContractFixture.Edit(Available, root => Row(root)["name"] = new string('a', length));
+        if (accepted) Assert.Equal(length, Assert.Single(Read(payload)!.Locations).Name.Length);
+        else Assert.Throws<InvalidDataException>(() => Read(payload));
+    }
+
+    [Fact]
+    public void ControlCharactersAndUnknownRetainedStatesAreRejected()
+    {
+        Assert.Throws<InvalidDataException>(() => Read(ContractFixture.Edit(Available, root => Row(root)["name"] = "a\nb")));
+        var payload = ContractFixture.Edit(Available, root =>
+        {
+            root["hasRetainedLocations"] = true;
+            Row(root)["state"] = "Unknown";
+        });
+        Assert.Throws<InvalidDataException>(() => Read(payload));
+    }
+
+    [Fact]
+    public void MaximumLocationQuantityIsAccepted()
+    {
+        var payload = ContractFixture.Edit(Available, root =>
+        {
+            root["normalQuantity"] = uint.MaxValue;
+            root["highQualityQuantity"] = 0;
+            Row(root)["normalQuantity"] = uint.MaxValue;
+            Row(root)["highQualityQuantity"] = 0;
+        });
+        Assert.Equal((ulong)uint.MaxValue, Read(payload)!.Normal);
+    }
+
+    [Theory]
+    [InlineData(10, true)]
+    [InlineData(11, false)]
+    public void RetainerLimitIsIndependentOfTheTotalLocationLimit(int count, bool accepted)
+    {
+        var payload = ContractFixture.Edit(Available, root =>
+        {
+            var template = Row(root).DeepClone();
+            var rows = root["locations"]!.AsArray();
+            rows.Clear();
+            for (var i = 1; i <= count; i++)
+            {
+                var row = template.DeepClone();
+                row["kind"] = "Retainer";
+                row["retainerId"] = i.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                rows.Add(row);
+            }
+            root["normalQuantity"] = count * 2;
+            root["highQualityQuantity"] = count;
+        });
+        if (accepted) Assert.Equal(count, Read(payload)!.Locations.Count);
+        else Assert.Throws<InvalidDataException>(() => Read(payload));
+    }
+
+    [Fact]
+    public void NonObjectRepliesProduceAValidationError()
+    {
+        Assert.Throws<InvalidDataException>(() => Read("[]"));
+        Assert.Throws<InvalidDataException>(() => InventoryItemReader.Read("[]", Available, 100, "42"));
+    }
+
+    [Fact]
+    public void ValidationErrorsIncludeAnExplanation()
+    {
+        var invalid = ContractFixture.Edit(Available, root => root["schemaVersion"] = "2.0");
+        var missing = ContractFixture.Edit(Available, root => root["quantityMeaning"] = null);
+        Assert.False(string.IsNullOrWhiteSpace(Assert.Throws<InvalidDataException>(() => Read(invalid)).Message));
+        Assert.False(string.IsNullOrWhiteSpace(Assert.Throws<InvalidDataException>(() => Read(missing)).Message));
+    }
+
+    [Fact]
+    public void AllSeventeenLocationsAreAccepted()
+    {
+        var payload = ContractFixture.Edit(Available, root =>
+        {
+            var template = Row(root).DeepClone();
+            var rows = root["locations"]!.AsArray();
+            rows.Clear();
+            foreach (var kind in new[] { "Inventory", "Equipped", "ArmoryChest", "ChocoboSaddlebag", "PremiumSaddlebag", "Armoire", "GlamourDresser" })
+            {
+                var row = template.DeepClone();
+                row["kind"] = kind;
+                if (kind is "Armoire" or "GlamourDresser")
+                {
+                    row["normalQuantity"] = null;
+                    row["highQualityQuantity"] = null;
+                }
+                rows.Add(row);
+            }
+            for (var i = 1; i <= 10; i++)
+            {
+                var row = template.DeepClone();
+                row["kind"] = "Retainer";
+                row["retainerId"] = i.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                rows.Add(row);
+            }
+            root["normalQuantity"] = 30;
+            root["highQualityQuantity"] = 15;
+        });
+        Assert.Equal(17, Read(payload)!.Locations.Count);
+    }
+
+    [Fact]
+    public void ExactByteLimitIsAcceptedAndMultibyteOverflowIsRejected()
+    {
+        var padded = Unavailable.PadRight(InventoryItemReader.MaximumJsonBytes);
+        Assert.Null(Read(padded));
+        var caps = Capabilities.PadRight(InventoryItemReader.MaximumJsonBytes);
+        Assert.Null(InventoryItemReader.Read(caps, Unavailable, 100, "42"));
+        var oversized = "{\"extra\":\"" + new string('é', InventoryItemReader.MaximumJsonBytes / 2) + "\"}";
+        Assert.Throws<InvalidDataException>(() => Read(oversized));
+        Assert.Throws<System.Text.EncoderFallbackException>(() => Read("\ud800"));
+    }
+
+    [Fact]
+    public void ExcessiveJsonNestingIsRejectedBeforeFieldValidation()
+    {
+        var payload = new string('[', 17) + "0" + new string(']', 17);
+        Assert.ThrowsAny<System.Text.Json.JsonException>(() => Read(payload));
+    }
+
+    [Theory]
+    [InlineData(0, "42")]
+    [InlineData(1000000, "42")]
+    [InlineData(100, "0")]
+    [InlineData(100, "01")]
     [InlineData(100, "invalid")]
     [InlineData(100, "18446744073709551616")]
     public void InvalidRequestIdentityOrItemIsRejectedBeforeReadingTheResponse(int itemId, string character)

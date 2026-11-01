@@ -13,6 +13,40 @@ public sealed class ClientLifetimeTests
 
     private static CollectionDataIpcClient Client(FakeTransport transport) => new((_, _) => transport, Inline);
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NotificationAtExactByteLimitTriggersRefresh(bool multibyte)
+    {
+        var transport = new FakeTransport();
+        await using var client = Client(transport);
+        await client.TickAsync(ContractFixture.Character, ContractFixture.Now);
+        client.Changed(multibyte ? new string('é', 2048) : new string('x', 4096));
+        await client.TickAsync(ContractFixture.Character, ContractFixture.Now.AddSeconds(1));
+        Assert.Equal(2, transport.ReadCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ResettingScopeAllowsSameSessionToRestartRevision(bool withdrawal)
+    {
+        var transport = new FakeTransport();
+        transport.Snapshot = ContractFixture.Edit(transport.Snapshot, root => root["revision"] = 10);
+        await using var client = Client(transport);
+        await client.TickAsync(ContractFixture.Character, ContractFixture.Now);
+        Assert.Equal(10, client.View.Revision);
+        transport.Snapshot = "";
+        if (withdrawal) client.Withdrawn(ContractFixture.Read("snapshot-withdrawn-valid.json"));
+        else await client.TickAsync(null, ContractFixture.Now);
+        await client.TickAsync(ContractFixture.Character, ContractFixture.Now);
+        transport.Snapshot = ContractFixture.Edit(ContractFixture.Read("compact-valid-beasts-populated.json"), root => root["revision"] = 1);
+        client.Changed("{}");
+        await client.TickAsync(ContractFixture.Character, ContractFixture.Now);
+        Assert.Equal(CollectionDataAvailability.Ready, client.View.Availability);
+        Assert.Equal(1, client.View.Revision);
+    }
+
     [Fact]
     public async Task MissingProviderIsRetriedOnDiscoveryAndThenBecomesReady()
     {
