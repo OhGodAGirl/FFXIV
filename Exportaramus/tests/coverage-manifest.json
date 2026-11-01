@@ -25,6 +25,7 @@
     "src/Features/CollectionData/Capture/ICollectionReader.cs",
     "src/Features/CollectionData/Capture/ISnapshotCapturePort.cs",
     "src/Features/CollectionData/Capture/NotebookMappingPolicy.cs",
+    "src/Features/CollectionData/Capture/PromptCaptureHintBuffer.cs",
     "src/Features/CollectionData/Capture/RawCaptureBatch.cs",
     "src/Features/CollectionData/Capture/ReaderCompatibility.cs",
     "src/Features/CollectionData/Capture/Retainers/RetainerAccumulator.cs",
@@ -229,7 +230,7 @@
     "src/Contracts/1.2/ContractSchemaRegistry.cs",
     "src/Contracts/1.2/ExactJsonNumber.cs"
   ],
-  "linkedSourceCount": 217,
+  "linkedSourceCount": 218,
   "decisionFileExclusions": [],
   "separateConsumerSuite": {
     "project": "tests/Exportaramus.ConsumerKit.Tests/Exportaramus.ConsumerKit.Tests.csproj",
@@ -275,7 +276,7 @@
     },
     {
       "path": "src/Features/CollectionData/Capture/PromptCaptureHints.Dalamud.cs",
-      "justification": "Public Dalamud unlock and inventory event subscription, bounded hint acquisition and framework-thread draining; PromptCapturePolicy, targeted merge and publication decisions remain in the included pure scope."
+      "justification": "Public Dalamud event subscriptions and native row identification. PromptCaptureHintBuffer classification, coalescing, burst limits and lifetime behavior are included alongside PromptCapturePolicy."
     },
     {
       "path": "src/Features/CollectionData/Capture/SnapshotCapturePort.Dalamud.cs",
@@ -416,6 +417,7 @@
     "src/Features/CollectionData/Capture/ICollectionReader.cs": "135da5e62516f5a73e67fb086ba74ce215d1b3783b6ed9598106b61a53d43071",
     "src/Features/CollectionData/Capture/ISnapshotCapturePort.cs": "b1e3a2dc8154835a1e6da747c3063b15384d348644aaa40887c8a5068f4528d9",
     "src/Features/CollectionData/Capture/NotebookMappingPolicy.cs": "7aa7ee01c62aa695ee66583d4cd80da6076e7804b35c54f178c5b47dbee75782",
+    "src/Features/CollectionData/Capture/PromptCaptureHintBuffer.cs": "c63e025a8d74f61e880e9036689b33214dd00ce3cfa1aa41e52001e98d2e50f5",
     "src/Features/CollectionData/Capture/RawCaptureBatch.cs": "a0a7a6cb6d046be82c08ba5c2f71758fc13bf5290cafd07518afa39ff7e2cbfd",
     "src/Features/CollectionData/Capture/ReaderCompatibility.cs": "9d865fba2705a1df3fe1e16ddabf740563256a7fccab4c237ddfd5883e4b2379",
     "src/Features/CollectionData/Capture/Retainers/RetainerAccumulator.cs": "9d1cd2f8587f05eb8ac78d1e5ca4e3303e839e5b6b7174eefb7d4af376e34982",
