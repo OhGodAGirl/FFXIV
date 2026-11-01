@@ -10,7 +10,7 @@ snapshot with compatible plugins, or export your progress to
 
 ## Features
 
-- Tracks 25 collection types, including mounts, minions, orchestrion rolls,
+- Tracks collections including mounts, minions, orchestrion rolls,
   Triple Triad cards, achievements, quests, outfits, relics, and Beasts.
 - Keeps your collections up to date as you play.
 - Captures your Glamour Dresser, Armoire, and retainers with guided refreshes.
@@ -70,58 +70,12 @@ Newly added collectibles may not be included until Exportaramus is updated.
 
 `/exportaramus diagnostics` — Open diagnostics for troubleshooting.
 
-## For Developers
+## Plugin Integration
 
-### Building From Source
-
-On Windows, install Git and the .NET SDK specified in `global.json`. Use PowerShell 7.5 or newer. Set `DALAMUD_HOME` to an existing Dalamud API 15 development directory, or run the dependency download shown below. It downloads a pinned, checksum-verified API 15 archive without installing or launching the game. To download, build, and test the source, run:
-
-```powershell
-git clone https://github.com/OhGodAGirl/FFXIV.git
-cd FFXIV/Exportaramus
-./tools/Get-BuildDependencies.ps1
-dotnet restore project/Exportaramus.slnx --locked-mode
-dotnet build project/Exportaramus.slnx -c Release --no-restore -p:ShouldUnsetParentConfigurationAndPlatform=false
-dotnet test tests/Exportaramus.Tests/Exportaramus.Tests.csproj -c Release --no-build --no-restore -- xUnit.MaxParallelThreads=2
-```
-
-The plugin package is written to `project/bin/Release/Exportaramus/latest.zip`.
-
-The download sets `DALAMUD_HOME` for the current PowerShell session. On later sessions, set `$env:DALAMUD_HOME = (Resolve-Path .tools/dalamud/15.0.3.9).Path` instead of downloading again. You can pass `-Destination` to select another new directory.
-
-GitHub Actions runs the offline checks on Windows for Exportaramus pushes and pull requests. Results and the build package are retained for seven days; a passing run does not publish a release or establish in-game acceptance.
-
-### Building the Consumer Kit
-
-The Consumer Kit lets another plugin read Exportaramus data without referencing the Exportaramus plugin DLL. Its source and schemas share this repository's existing folders.
-
-```powershell
-dotnet restore project/ConsumerKit/1.2/Exportaramus.ConsumerKit.V1_2.csproj --locked-mode
-dotnet build project/ConsumerKit/1.2/Exportaramus.ConsumerKit.V1_2.csproj -c Release --no-restore
-dotnet test tests/Exportaramus.ConsumerKit.Tests/Exportaramus.ConsumerKit.Tests.csproj -c Release -p:RestoreLockedMode=true
-```
-
-The [Collection Example](examples/CollectionExample/README.md) shows how to build and load a consumer plugin. Use the full project above for consumers; the projects under `project/Contracts/` build the provider's smaller runtime libraries. Do not reference both variants in the same plugin.
-
-The full API reference is in the [Backend Specification](<docs/Exportaramus - Backend Specification.md#13-collectiondata-ipc>).
-
-The [Consumer Integration Guide](<docs/Consumer Integration Guide.md>) walks through the example and explains how to interpret collection and inventory observations. The [Frontend Specification](<docs/Exportaramus - Frontend Specification.md>) documents the interface and its acceptance cases.
-
-### Verification
-
-Use PowerShell 7.5 or newer and Python 3.11 or newer, alongside the .NET SDK and Dalamud development assemblies described above. Install the pinned Python verification dependencies into a virtual environment:
-
-```powershell
-python -m venv .venv
-.venv/Scripts/python -m pip install -r tools/contract-python-requirements.txt
-pwsh -File tests/run-quality-gates.ps1 -Python .venv/Scripts/python.exe
-```
-
-The scripts resolve `dotnet` and `python` from PATH by default. Pass `-Dotnet` and `-Python` to select executable paths, and `-OutputDirectory` to choose where verification results are written. Generated results stay separate from source inputs.
-
-The portable checks cover locked restore, compilation, package inspection, provider and ConsumerKit behavior, strict coverage, canonical schemas and fixtures, checksums, and the source scope. The full API reference remains in the Backend Specification. Mutation qualification and supervised in-game acceptance are separate from these offline checks; a passing portable run does not establish either.
-
-The [mutation policy](tests/mutation-policy.json) requires a score of 100 and complete instrumentation evidence. The mutation runner covers the provider, separately referenced 1.1 contracts, the canonical 1.2 ConsumerKit, and the example inventory reader. [Performance budgets](tests/performance-budget.json) distinguish offline measurements from performance that requires a supervised game session.
+To use Exportaramus data in another plugin, see the
+[Consumer Integration Guide](<docs/Consumer Integration Guide.md>),
+[example plugin](examples/CollectionExample/README.md), and
+[API reference](<docs/Exportaramus - Backend Specification.md#13-collectiondata-ipc>).
 
 ### Directory Layout
 
