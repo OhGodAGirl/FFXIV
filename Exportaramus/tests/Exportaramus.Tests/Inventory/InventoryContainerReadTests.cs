@@ -12,6 +12,7 @@ public sealed class InventoryContainerReadTests
         Assert.Equal([new InventorySlotObservation(1, 0, 100, 5, true), new(2, 0, 100, 5, true)], result);
         Assert.Equal(4, source.ContainerCalls);
         Assert.Equal(2, source.KnownCalls);
+        Assert.Equal(new[] { (1, 0), (1, 1), (2, 0), (2, 1) }, source.ReadSlots);
         Assert.Empty(InventoryContainerReadPolicy.Read(source, [])!);
     }
     [Theory]
@@ -77,6 +78,7 @@ public sealed class InventoryContainerReadTests
         public int ManagerFailureAt = -1;
         public int ContainerCalls;
         public int KnownCalls;
+        public List<(int Container, int Slot)> ReadSlots { get; } = [];
         private int managerCalls;
         public bool IsCurrent => ++managerCalls != ManagerFailureAt;
         public InventoryContainerObservation Container(int type)
@@ -91,13 +93,18 @@ public sealed class InventoryContainerReadTests
                 _ => ContainerValue,
             };
         }
-        public InventorySlotObservation? Slot(int type, int slot) => SlotFailure switch
+        public InventorySlotObservation? Slot(int type, int slot)
         {
-            0 => null,
-            1 => new(99, slot, 100, 5, false),
-            2 => new(type, 99, 100, 5, false),
-            _ => new(type, slot, slot == 0 ? 100u : 0, 5, true),
-        };
+            Assert.InRange(slot, 0, ContainerValue.Size - 1);
+            ReadSlots.Add((type, slot));
+            return SlotFailure switch
+            {
+                0 => null,
+                1 => new(99, slot, 100, 5, false),
+                2 => new(type, 99, 100, 5, false),
+                _ => new(type, slot, slot == 0 ? 100u : 0, 5, true),
+            };
+        }
         public bool IsKnownItem(uint id)
         {
             KnownCalls++; return SlotFailure != 3;
