@@ -114,6 +114,12 @@ def independently_killed(entry, before, report_hash, mutant, root, repair=None):
     if replacement.read_bytes() != expected:
         raise ValueError('Independent execution did not use the exact source replacement.')
     target = suite_binding.verify_summary(summary, repair['repairedPaths'] if repair else before['files'], [entry['file']])
+    if summary.get('testCoveragePolicy') == 'baseline-only-v1':
+        snapshot = Path(summary['snapshot']).resolve()
+        dotnet = summary['toolchain']['dotnet']['path']
+        suite_binding.verify_command(summary['baseline']['tests'], 'test', snapshot, dotnet, target)
+        suite_binding.verify_command(result['tests'], 'test', snapshot, dotnet, target,
+                                     'mutant' if summary.get('testCoveragePolicy') == 'baseline-only-v1' else 'baseline')
     baseline = execution_counts(root, summary['baseline']['tests'], target)
     actual = execution_counts(root, result['tests'], target)
     from repair_bridge import case_names

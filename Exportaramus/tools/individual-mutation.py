@@ -267,6 +267,9 @@ def main():
     # Run every test in the selected canonical suite without filtering.
     build_command = suite_binding.command(dotnet, 'build', snapshot, args.target)
     test_command = suite_binding.command(dotnet, 'test', snapshot, args.target)
+    if args.target == 'provider':
+        suite_binding.validate_coverage_only_settings(snapshot)
+    mutant_test_command = suite_binding.command(dotnet, 'test', snapshot, args.target, phase='mutant')
     baseline = {'restore': execute([dotnet, 'restore', project, '--locked-mode', '--nologo'], snapshot,
                                     output / 'restore.log', args.build_timeout_seconds)}
     if baseline['restore']['exitCode'] or baseline['restore']['timedOut']:
@@ -294,6 +297,7 @@ def main():
             raise RuntimeError('The repaired full suite removed original test cases.')
     sdk = subprocess.check_output([str(dotnet), '--version'], cwd=snapshot, text=True).strip()
     summary = {'format': 'exportaramus-independent-mutation-shard', 'schemaVersion': '1.0',
+               'testCoveragePolicy': 'baseline-only-v1',
                'sourceSha256': inventory['sha256'], 'inventory': str(args.inventory.resolve()), 'inventorySha256': digest(inventory_bytes),
                'report': str(args.report.resolve()), 'reportSha256': digest(report_bytes),
                'executor': str(Path(__file__).resolve()), 'executorSha256': digest(Path(__file__).read_bytes()),
@@ -328,7 +332,7 @@ def main():
             value['build']['compilerDiagnosticCodes'] = sorted(set(re.findall(r'\berror (CS\d+):', (directory / 'build.log').read_text(encoding='utf-8'))))
             value['tests'] = None
             if value['build']['exitCode'] == 0 and not value['build']['timedOut']:
-                value['tests'] = run_tests(test_command, snapshot, directory / 'test-results', args.test_timeout_seconds)
+                value['tests'] = run_tests(mutant_test_command, snapshot, directory / 'test-results', args.test_timeout_seconds)
             value['outcome'] = classify(value['build'], value['tests'], baseline['tests']['counts']['total'])
             if value['tests'] is not None and value['outcome'] in ('Killed', 'Survived'):
                 if case_names(Path(value['tests']['trx'])) != baseline_cases:

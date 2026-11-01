@@ -428,6 +428,22 @@ class StageChecks(unittest.TestCase):
         with self.assertRaises(ValueError):
             stage.bound(dict(path=key[0], sha256=key[1]), self.root)
 
+    def test_suite_validation_is_cached_only_after_complete_summary_validation(self):
+        import suite_binding
+        fixture = self.execution_fixture()
+        cache = {}
+        with patch.object(suite_binding, 'verify_summary', wraps=suite_binding.verify_summary) as check:
+            self.check_execution(fixture, cache)
+            self.check_execution(fixture, cache)
+            self.assertEqual(1, check.call_count)
+            self.assertEqual(['src/A.cs'], check.call_args.args[2])
+            fixture[2]['reviewStatus'] = 'same execution, different summary bytes'
+            self.check_execution(fixture, cache)
+            self.assertEqual(2, check.call_count)
+        snapshot = Path(fixture[2]['snapshot']) / 'src/A.cs'
+        snapshot.write_text('changed after successful validation')
+        with self.assertRaises(ValueError): self.check_execution(fixture, cache)
+
     def test_successful_compilation_reopens_static_nonviability(self):
         fixture = self.execution_fixture()
         self.check_execution(fixture)

@@ -3,6 +3,7 @@ from pathlib import Path
 import hashlib
 import json
 import subprocess
+import xml.etree.ElementTree as ET
 
 TARGETS = {
     'provider': ('tests/Exportaramus.Testable/Exportaramus.Testable.csproj', 'tests/Exportaramus.Tests/Exportaramus.Tests.csproj'),
@@ -11,7 +12,9 @@ TARGETS = {
 }
 
 
-def command(dotnet, verb, snapshot, target, results=None):
+def command(dotnet, verb, snapshot, target, results=None, phase="baseline"):
+    if phase not in ('baseline', 'mutant'):
+        raise ValueError('Unknown test execution phase')
     if target not in TARGETS:
         raise ValueError('Unknown canonical mutation target')
     base = [str(dotnet), verb, str(Path(snapshot) / TARGETS[target][1])]
@@ -22,17 +25,17 @@ def command(dotnet, verb, snapshot, target, results=None):
     if verb != 'test':
         raise ValueError('Unknown execution operation')
     base += ['-c', 'Release', '--no-restore', '--nologo']
-    if target == 'provider':
+    if target == 'provider' and phase == 'baseline':
         base += ['--settings', str(Path(snapshot) / 'tests/coverage.runsettings'), '--collect:XPlat Code Coverage']
     if results is not None:
         base += ['--results-directory', str(results), '--logger', 'trx;LogFileName=tests.trx']
     return base
 
 
-def verify_command(execution, verb, snapshot, dotnet, target):
+def verify_command(execution, verb, snapshot, dotnet, target, phase="baseline"):
     results = Path(execution['trx']).parent if verb == 'test' else None
     if (Path(execution['workingDirectory']).resolve() != Path(snapshot).resolve()
-            or execution['command'] != command(dotnet, verb, snapshot, target, results)):
+            or execution['command'] != command(dotnet, verb, snapshot, target, results, phase)):
         raise ValueError('Execution does not use the exact canonical suite, tool, working directory and arguments')
 
 
@@ -87,7 +90,35 @@ def evaluate(snapshot, target, dotnet, paths):
             'projects': projects, 'productionSources': sorted(sources)}
 
 
+def validate_coverage_only_settings(snapshot):
+    settings = ET.parse(Path(snapshot) / 'tests/coverage.runsettings').getroot()
+    if (settings.tag != 'RunSettings' or settings.attrib or len(settings) != 1
+            or settings[0].tag != 'DataCollectionRunSettings' or settings[0].attrib
+            or len(settings[0]) != 1 or settings[0][0].tag != 'DataCollectors' or settings[0][0].attrib
+            or len(settings[0][0]) != 1 or settings[0][0][0].tag != 'DataCollector'
+            or settings[0][0][0].get('friendlyName') != 'XPlat Code Coverage'):
+        raise ValueError('Only coverage-only runsettings may be omitted from mutant execution')
+
+
 def verify_summary(summary, paths, selected_sources):
+    policy = summary.get('testCoveragePolicy')
+    if policy not in (None, 'baseline-only-v1'):
+        raise ValueError('Unknown execution coverage policy')
+    if policy == 'baseline-only-v1':
+        if paths.get('tools/suite_binding.py') != hashlib.sha256(Path(__file__).read_bytes()).hexdigest():
+            raise ValueError('Coverage policy validator does not match the frozen inventory')
+        target = summary.get('suiteBinding', {}).get('target', 'provider')
+        snapshot = Path(summary['snapshot']).resolve()
+        dotnet = summary['toolchain']['dotnet']['path']
+        if target == 'provider':
+            settings = snapshot / 'tests/coverage.runsettings'
+            if paths.get('tests/coverage.runsettings') != hashlib.sha256(settings.read_bytes()).hexdigest():
+                raise ValueError('Coverage runsettings differ from the frozen inventory')
+            validate_coverage_only_settings(snapshot)
+        verify_command(summary['baseline']['tests'], 'test', snapshot, dotnet, target)
+        for result in summary['results']:
+            if result.get('tests') is not None:
+                verify_command(result['tests'], 'test', snapshot, dotnet, target, 'mutant')
     binding = summary.get('suiteBinding')
     if not binding:
         if any(p.startswith('src/Contracts/1.2/Consumer/') or p == 'examples/CollectionExample/InventoryItemReader.cs' for p in selected_sources):
@@ -114,7 +145,8 @@ def verify_summary(summary, paths, selected_sources):
             raise ValueError('Mixed mutation targets')
         verify_command(result['build'], 'build', snapshot, dotnet, binding['target'])
         if result.get('tests') is not None:
-            verify_command(result['tests'], 'test', snapshot, dotnet, binding['target'])
+            verify_command(result['tests'], 'test', snapshot, dotnet, binding['target'],
+                           'mutant' if policy == 'baseline-only-v1' else 'baseline')
     return binding['target']
 
 

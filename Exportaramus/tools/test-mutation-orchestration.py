@@ -312,6 +312,33 @@ class LedgerChecks(unittest.TestCase):
         path.write_text(campaign.json.dumps(self.independent))
         self.entry['independentExecution'] = dict(summary=str(path), sha256=review.sha256(path))
 
+    def test_baseline_only_policy_requires_collection_and_exact_mutant_command(self):
+        import suite_binding
+        self.independent_proof()
+        settings = self.root / 'tests/coverage.runsettings'
+        settings.parent.mkdir(exist_ok=True)
+        settings.write_text('<RunSettings><DataCollectionRunSettings><DataCollectors><DataCollector friendlyName="XPlat Code Coverage"/></DataCollectors></DataCollectionRunSettings></RunSettings>')
+        self.before['files'].update({'tools/suite_binding.py': review.sha256(Path(suite_binding.__file__)),
+                                    'tests/coverage.runsettings': review.sha256(settings)})
+        self.independent.update(testCoveragePolicy='baseline-only-v1', snapshot=str(self.root),
+                                toolchain={'dotnet': {'path': 'dotnet'}})
+        baseline = self.independent['baseline']['tests']
+        mutant = self.independent['results'][0]['tests']
+        for execution, phase in ((baseline, 'baseline'), (mutant, 'mutant')):
+            execution['workingDirectory'] = str(self.root)
+            execution['command'] = suite_binding.command('dotnet', 'test', self.root, 'provider', Path(execution['trx']).parent, phase)
+        self.save_independent()
+        self.assertFalse(self.resolve()[2])
+        pristine = copy.deepcopy(self.independent)
+        for change in ('baseline', 'filter', 'policy'):
+            self.independent = copy.deepcopy(pristine)
+            if change == 'baseline':
+                self.independent['baseline']['tests']['command'] = suite_binding.command('dotnet', 'test', self.root, 'provider', self.root, 'mutant')
+            elif change == 'filter': self.independent['results'][0]['tests']['command'].append('--filter')
+            else: self.independent['testCoveragePolicy'] = 'skip'
+            self.save_independent()
+            self.assertTrue(self.resolve()[2])
+
     def test_independent_kill_requires_exact_source_and_full_test_evidence(self):
         self.independent_proof()
         self.assertFalse(self.resolve()[2])

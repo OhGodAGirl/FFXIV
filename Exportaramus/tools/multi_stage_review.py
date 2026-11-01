@@ -63,7 +63,10 @@ def exact_mutation(entry, mutant):
     require(all(entry.get(key) == mutant.get(key) for key in FIELDS), 'Mutation ID/status/span/replacement is not exact.')
 
 
-def verify_command(execution, verb, snapshot, dotnet, target='provider'):
+def verify_command(execution, verb, snapshot, dotnet, target='provider', phase='baseline'):
+    if phase != 'baseline':
+        import suite_binding
+        return suite_binding.verify_command(execution, verb, snapshot, dotnet, target, phase)
     if target != 'provider':
         import suite_binding
         return suite_binding.verify_command(execution, verb, snapshot, dotnet, target)
@@ -231,7 +234,10 @@ def verify_summary(entry, repair, review_module, root, checked_snapshots=None, s
     mutant_path = review_module.verified_artifact(root, result['mutatedSource'], result['mutatedSourceSha256'])
     require(mutant_path.parent == result_path.parent and mutant_path.read_bytes() == mutated.encode('utf-8'), 'Mutated bytes are not the exact replacement.')
     import suite_binding
-    target = suite_binding.verify_summary(summary, repair['repairedPaths'], [entry['file']])
+    if cached:
+        target = summary.get('suiteBinding', {}).get('target', 'provider')
+    else:
+        target = suite_binding.verify_summary(summary, repair['repairedPaths'], sorted({r['file'] for r in results}))
     dotnet = bound(summary['toolchain']['dotnet'])
     if not cached:
         baseline = summary['baseline']
@@ -251,7 +257,8 @@ def verify_summary(entry, repair, review_module, root, checked_snapshots=None, s
     review_module.verified_artifact(root, result['build']['log'], result['build']['logSha256'])
     verify_command(result['build'], 'build', snapshot, dotnet, target)
     if result.get('tests') is not None:
-        verify_command(result['tests'], 'test', snapshot, dotnet, target)
+        verify_command(result['tests'], 'test', snapshot, dotnet, target,
+                       'mutant' if summary.get('testCoveragePolicy') == 'baseline-only-v1' else 'baseline')
     return summary, result, result_path
 
 
@@ -386,6 +393,7 @@ def stage_child(request):
     require(bridge_module.live_paths(root, repair.get('inventoryPolicy', 'legacy')) == repair['repairedPaths'], 'Stage inputs changed during verification.')
     for snapshot in checked_snapshots:
         for relative, sha in repair['repairedPaths'].items():
+            require(digest(snapshot / relative) == sha, 'Execution snapshot changed during verification: ' + relative)
             execution_evidence.append({'path': str(snapshot / relative), 'sha256': sha})
     return {'id': stage['id'], 'root': str(root), 'run': str(repair['run']), 'before': repair['before'],
             'originalInventory': repair['originalInventory'], 'repairedInventory': repair['repairedInventory'],

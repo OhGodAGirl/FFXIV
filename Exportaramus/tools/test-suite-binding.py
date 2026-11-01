@@ -64,6 +64,58 @@ class SuiteChecks(unittest.TestCase):
                         {'files': {'old/root/src/client.cs': {'source':'changed'}}}):
             with self.assertRaises(ValueError): suite.report_mapping(binding, altered, self.paths)
 
+    def test_provider_coverage_is_required_for_baseline_and_omitted_only_for_explicit_mutant_phase(self):
+        dotnet = Path('dotnet').resolve()
+        for phase in ('baseline', 'mutant'):
+            args = suite.command(dotnet, 'test', self.root, 'provider', self.root/'results', phase)
+            self.assertEqual(phase == 'baseline', '--collect:XPlat Code Coverage' in args)
+            self.assertEqual(phase == 'baseline', '--settings' in args)
+            execution = {'command': args, 'workingDirectory': str(self.root), 'trx': str(self.root/'results/tests.trx')}
+            suite.verify_command(execution, 'test', self.root, dotnet, 'provider', phase)
+            multi_stage_review.verify_command(execution, 'test', self.root, dotnet, 'provider', phase)
+            opposite = 'mutant' if phase == 'baseline' else 'baseline'
+            with self.assertRaises(ValueError): suite.verify_command(execution, 'test', self.root, dotnet, 'provider', opposite)
+            for flag in ('--no-build', '--filter', '--list-tests', '-p:Other=value'):
+                altered = dict(execution, command=args+[flag])
+                with self.assertRaises(ValueError): suite.verify_command(altered, 'test', self.root, dotnet, 'provider', phase)
+        with self.assertRaises(ValueError): suite.command(dotnet, 'test', self.root, 'provider', phase='unknown')
+
+    def test_new_coverage_policy_binds_tool_and_rejects_missing_baseline_collection(self):
+        root = self.root
+        dotnet = 'dotnet'
+        def execution(phase):
+            return {'command': suite.command(dotnet, 'test', root, 'provider', root/'results', phase),
+                    'workingDirectory': str(root), 'trx': str(root/'results/tests.trx')}
+        summary = {'testCoveragePolicy': 'baseline-only-v1', 'snapshot': str(root),
+                   'toolchain': {'dotnet': {'path': dotnet}}, 'baseline': {'tests': execution('baseline')},
+                   'results': [{'tests': execution('mutant')}]}
+        settings = root/'tests/coverage.runsettings'
+        settings.write_text('<RunSettings><DataCollectionRunSettings><DataCollectors><DataCollector friendlyName="XPlat Code Coverage"/></DataCollectors></DataCollectionRunSettings></RunSettings>')
+        paths = {'tools/suite_binding.py': hashlib.sha256(Path(suite.__file__).read_bytes()).hexdigest()}
+        paths['tests/coverage.runsettings'] = hashlib.sha256(settings.read_bytes()).hexdigest()
+        self.assertEqual('provider', suite.verify_summary(summary, paths, ['src/provider.cs']))
+        with self.assertRaises(ValueError): suite.verify_summary(summary, {}, ['src/provider.cs'])
+        good_settings = settings.read_text()
+        settings.write_text(good_settings.replace('</RunSettings>', '<RunConfiguration/></RunSettings>'))
+        with self.assertRaises(ValueError): suite.verify_summary(summary, paths, ['src/provider.cs'])
+        settings.write_text(good_settings)
+        for change in ('baseline', 'mutant', 'policy'):
+            wrong = copy.deepcopy(summary)
+            if change == 'baseline': wrong['baseline']['tests'] = execution('mutant')
+            elif change == 'mutant': wrong['results'][0]['tests']['command'].append('--filter')
+            else: wrong['testCoveragePolicy'] = 'none'
+            with self.assertRaises(ValueError): suite.verify_summary(wrong, paths, ['src/provider.cs'])
+
+    def test_historical_reviewer_does_not_require_new_phase_argument(self):
+        from types import SimpleNamespace
+        called = []
+        def historical(execution, verb, snapshot, dotnet, target):
+            called.append(target)
+        import sys
+        with patch.dict(sys.modules, {'suite_binding': SimpleNamespace(verify_command=historical)}):
+            multi_stage_review.verify_command({}, 'test', self.root, 'dotnet', 'consumerkit12')
+        self.assertEqual(['consumerkit12'], called)
+
     def test_unknown_target_rejected(self):
         with self.assertRaises(ValueError): suite.evaluate(self.root, 'wrong', 'dotnet', self.paths)
     def test_both_reviewers_reject_wrong_suite(self):
