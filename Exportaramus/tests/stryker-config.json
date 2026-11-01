@@ -3,6 +3,7 @@
     "project": "Exportaramus.Testable.csproj",
     "test-projects": ["../Exportaramus.Tests/Exportaramus.Tests.csproj"],
     "configuration": "Release",
+    "test-case-filter": "Category!=UninstrumentedPerformance",
     "mutate": ["**/*"],
     "mutation-level": "Standard",
     "concurrency": 4,

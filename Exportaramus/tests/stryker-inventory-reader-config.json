@@ -5,6 +5,7 @@
       "../Exportaramus.InventoryReader.Mutation.Tests/Exportaramus.InventoryReader.Mutation.Tests.csproj"
     ],
     "configuration": "Release",
+    "test-case-filter": "Category!=UninstrumentedPerformance",
     "mutate": [
       "**/*"
     ],

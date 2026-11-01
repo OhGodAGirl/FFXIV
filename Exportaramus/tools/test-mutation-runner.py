@@ -90,7 +90,13 @@ exit 0
         self.assertEqual(4, len(executions))
         self.assertTrue(all(item['exitCode'] == 7 for item in executions))
         self.assertEqual(4, sum('--config-file' in call for call in self.calls()))
-        self.assertTrue(all(call[call.index('--concurrency') + 1] == '2' for call in self.calls()))
+        self.assertEqual(3, sum(call[0] == 'test' for call in self.calls()))
+        self.assertTrue(all(call[call.index('--concurrency') + 1] == '2' for call in self.calls() if '--config-file' in call))
+
+    def test_full_campaign_rejects_skipped_baseline_before_mutation(self):
+        result = self.run_wrapper(mode='skipped')
+        self.assertNotEqual(0, result.returncode)
+        self.assertFalse(any('--config-file' in call for call in self.calls()))
 
     def test_incorrect_tool_version_fails_before_creating_evidence(self):
         result = self.run_wrapper(setup=True, runner=sys.executable)

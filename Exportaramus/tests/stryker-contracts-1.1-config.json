@@ -5,6 +5,7 @@
       "../../../tests/Exportaramus.Tests/Exportaramus.Tests.csproj"
     ],
     "configuration": "Release",
+    "test-case-filter": "Category!=UninstrumentedPerformance",
     "mutate": [
       "**/*"
     ],

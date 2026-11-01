@@ -22,20 +22,21 @@ $helper = Join-Path $repository 'tools/mutation-campaign.py'
 if ($LASTEXITCODE -ne 0) { throw 'Mutation input and scope preparation failed.' }
 $campaigns = @(& $python $helper campaigns | ConvertFrom-Json)
 if ($LASTEXITCODE -ne 0 -or $campaigns.Count -ne 4) { throw 'The complete current mutation campaign definition is unavailable.' }
+& $dotnet $runner --help > (Join-Path $RunDirectory 'runner-help.log')
+Assert-VerificationExit 'Stryker startup'
+$tested = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+$baselines = @()
+foreach ($campaign in $campaigns) {
+    $project = [IO.Path]::GetFullPath((Join-Path $campaign.workingDirectory $campaign.testProject))
+    if (!$tested.Add($project)) { continue }
+    $results = Join-Path $RunDirectory ('baseline-' + $campaign.name)
+    & $dotnet test $project -c Release -p:RestoreLockedMode=true --logger 'trx;LogFileName=baseline.trx' --results-directory $results -- xUnit.MaxParallelThreads=2
+    Assert-VerificationExit 'Mutation baseline'
+    $counts = Read-VerificationTests -Trx (Join-Path $results 'baseline.trx')
+    $baselines += @{ project=$project; tests=$counts }
+}
+@{ baselines=$baselines; mutationExecuted=$false } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $RunDirectory 'baseline-verification.json') -Encoding utf8NoBOM
 if ($SetupOnly) {
-    & $dotnet $runner --help > (Join-Path $RunDirectory 'runner-help.log')
-    Assert-VerificationExit 'Stryker startup'
-    $tested = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
-    $baselines = @()
-    foreach ($campaign in $campaigns) {
-        $project = [IO.Path]::GetFullPath((Join-Path $campaign.workingDirectory $campaign.testProject))
-        if (!$tested.Add($project)) { continue }
-        $results = Join-Path $RunDirectory ('baseline-' + $campaign.name)
-        & $dotnet test $project -c Release -p:RestoreLockedMode=true --logger 'trx;LogFileName=baseline.trx' --results-directory $results -- xUnit.MaxParallelThreads=2
-        Assert-VerificationExit 'Mutation baseline'
-        $counts = Read-VerificationTests -Trx (Join-Path $results 'baseline.trx')
-        $baselines += @{ project=$project; tests=$counts }
-    }
     & (Join-Path $repository 'tools/Get-SourceInventory.ps1') -Destination (Join-Path $RunDirectory 'source-after.json')
     $before = Get-Content -LiteralPath (Join-Path $RunDirectory 'source-before.json') -Raw | ConvertFrom-Json
     $after = Get-Content -LiteralPath (Join-Path $RunDirectory 'source-after.json') -Raw | ConvertFrom-Json

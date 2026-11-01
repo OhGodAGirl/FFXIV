@@ -110,6 +110,7 @@ public sealed class OfflinePerformanceTests(ITestOutputHelper output)
     }
 
     [Fact]
+    [Trait("Category", "UninstrumentedPerformance")]
     public void BoundedPresentationPreparationMeetsOfflinePointOneMillisecondBudget()
     {
         var bundle = Bundle(4 * 1024 * 1024);
