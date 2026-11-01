@@ -229,4 +229,37 @@ public sealed class DerivedEvidenceTests
         Item(root, key)["ownershipEvidence"]!["ruleCode"] = rule;
         AssertInvalid(root);
     }
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void OutfitPresenceCanCoexistWithAbsenceInAnotherSource(bool reverseOrder)
+    {
+        var facts = new JsonArray();
+        foreach (var id in OutfitItems)
+        {
+            facts.Add(Fact(reverseOrder ? "armoryChest" : "inventory", id, !reverseOrder));
+            facts.Add(Fact(reverseOrder ? "inventory" : "armoryChest", id, reverseOrder));
+        }
+        var root = Snapshot("outfits", 45094, true, facts);
+        AssertValid(root);
+        Item(root, "outfits")["owned"] = false;
+        AssertInvalid(root);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RelicOwnershipNeedsOnlyOnePositiveSource(bool achievementPresent)
+    {
+        var facts = new JsonArray
+        {
+            Fact("achievements", 129, achievementPresent),
+            Fact("inventory", 1675, !achievementPresent),
+        };
+        var root = Snapshot("relics", 1675, true, facts);
+        AssertValid(root);
+        Item(root, "relics")["owned"] = false;
+        AssertInvalid(root);
+    }
+
 }
