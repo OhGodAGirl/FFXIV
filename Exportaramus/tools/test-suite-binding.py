@@ -55,13 +55,13 @@ class SuiteChecks(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'identity'): suite.evaluate(self.root, 'consumerkit12', 'dotnet', self.paths)
     def test_report_requires_exact_source_path_hash_and_complete_target(self):
         binding = {'productionSources': ['src/client.cs']}
-        report = {'files': {'C:/old/root/src/client.cs': {'source': 'frozen'}}}
-        self.assertEqual({'C:/old/root/src/client.cs':'src/client.cs'}, suite.report_mapping(binding, report, self.paths))
+        report = {'files': {'old/root/src/client.cs': {'source': 'frozen'}}}
+        self.assertEqual({'old/root/src/client.cs':'src/client.cs'}, suite.report_mapping(binding, report, self.paths))
         combined = copy.deepcopy(report)
         combined['files']['other/target.cs'] = {'source':'other'}
         self.assertEqual(1, len(suite.report_mapping(binding, combined, self.paths)))
-        for altered in ({'files': {}}, {'files': {'C:/other.cs': {'source':'frozen'}}},
-                        {'files': {'C:/old/root/src/client.cs': {'source':'changed'}}}):
+        for altered in ({'files': {}}, {'files': {'other.cs': {'source':'frozen'}}},
+                        {'files': {'old/root/src/client.cs': {'source':'changed'}}}):
             with self.assertRaises(ValueError): suite.report_mapping(binding, altered, self.paths)
 
     def test_unknown_target_rejected(self):
