@@ -1,0 +1,37 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      actions:
+        patterns: ['*']
+  - package-ecosystem: nuget
+    directories:
+      - /Exportaramus/project/**
+      - /Exportaramus/tests/**
+      - /Exportaramus/examples/**
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      nuget-minor-and-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+    # API upgrades require a deliberate Dalamud compatibility review.
+    ignore:
+      - dependency-name: Dalamud.NET.Sdk
+  - package-ecosystem: pip
+    directory: /Exportaramus/tools
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      python-minor-and-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
