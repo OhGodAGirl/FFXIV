@@ -33,7 +33,7 @@ public sealed class InventoryItemReaderTests
     [InlineData(100, "18446744073709551616")]
     public void InvalidRequestIdentityOrItemIsRejectedBeforeReadingTheResponse(int itemId, string character)
     {
-        // Arrange: valid replies cannot make a malformed caller scope safe.
+        // Arrange: pair a valid reply with an invalid caller scope.
         var payload = Available;
 
         // Act and Assert.
@@ -59,7 +59,7 @@ public sealed class InventoryItemReaderTests
     [InlineData("wrong-high")]
     public void QuantityQualityContractMustHaveBothOrderedQualityNames(string fault)
     {
-        // Arrange: quantity order is a contract, not a label that the reader may guess.
+        // Arrange: use the wrong quantity order.
         var capabilities = ContractFixture.Edit(Capabilities, root => root["quantityQuality"] = fault switch
         {
             "wrong-type" => JsonValue.Create("Normal"),
@@ -101,7 +101,7 @@ public sealed class InventoryItemReaderTests
         var nullMeaning = ContractFixture.Edit(Available, root => root["quantityMeaning"] = null);
         var objectLocations = ContractFixture.Edit(Available, root => root["locations"] = new JsonObject());
 
-        // Act and Assert: neither malformed shape can be interpreted as a valid zero.
+        // Act and Assert: reject both malformed values instead of returning zero.
         Assert.Throws<InvalidDataException>(() => Read(nullMeaning));
         Assert.Throws<InvalidDataException>(() => Read(objectLocations));
     }
@@ -121,7 +121,7 @@ public sealed class InventoryItemReaderTests
     [InlineData(4294967295L, 1L)]
     public void AQuantifiedLocationCannotHaveZeroOrOverflowingCombinedQuantity(long normal, long high)
     {
-        // Arrange: a single location must fit the provider's UInt32 total domain.
+        // Arrange: exceed UInt32 at a single location.
         var payload = ContractFixture.Edit(Available, root =>
         {
             root["normalQuantity"] = normal;

@@ -200,7 +200,7 @@ public sealed class ClientLifetimeTests
     [InlineData(true)]
     public async Task WithdrawalDuringAReadCannotPublishItsMatchingSnapshot(bool previouslyRejected)
     {
-        // Arrange: a withdrawal arrives after the provider captures its response, before acceptance.
+        // Arrange: withdraw after capture but before accepting the response.
         var transport = new FakeTransport();
         var snapshot = transport.Snapshot;
         await using var client = Client(transport);
@@ -217,7 +217,7 @@ public sealed class ClientLifetimeTests
         // Act.
         await client.TickAsync(ContractFixture.Character, ContractFixture.Now);
 
-        // Assert: the in-flight result is invalidated, and a later fresh read can recover.
+        // Assert: reject the old response and allow a new read.
         Assert.Equal(CollectionDataAvailability.Unavailable, client.View.Availability);
         Assert.Null(client.View.Snapshot);
         transport.BeforeSnapshotReturns = null;
@@ -249,7 +249,7 @@ public sealed class ClientLifetimeTests
     [Fact]
     public async Task FaultedOwnedWorkerStillReleasesItsConnectionAndPropagatesFailure()
     {
-        // Arrange: a supported custom worker fails outside the refresh action.
+        // Arrange: fail the worker outside the refresh action.
         var transport = new FakeTransport();
         var failure = new InvalidOperationException("Worker failed.");
         var client = new CollectionDataIpcClient((_, _) => transport,
@@ -260,7 +260,7 @@ public sealed class ClientLifetimeTests
         // Act.
         var actual = await Assert.ThrowsAsync<InvalidOperationException>(() => client.DisposeAsync().AsTask());
 
-        // Assert: cleanup runs even though the worker failure is observable to its owner.
+        // Assert: clean up and report the worker failure.
         Assert.Same(failure, actual);
         Assert.Equal(1, transport.DisposeCount);
         Assert.Equal(CollectionDataAvailability.Disposed, client.View.Availability);
@@ -348,7 +348,7 @@ public sealed class ClientLifetimeTests
     [Fact]
     public async Task WithdrawalQueueOverflowInvalidatesAcceptedDataEvenWhenNoticesAreUnrelated()
     {
-        // Arrange: overflowing a bounded queue means matching notices might have been lost.
+        // Arrange: overflow the queue so a matching notice may be lost.
         var transport = new FakeTransport();
         await using var client = Client(transport);
         await client.TickAsync(ContractFixture.Character, ContractFixture.Now);
@@ -360,7 +360,7 @@ public sealed class ClientLifetimeTests
         // Act.
         await client.TickAsync(ContractFixture.Character, ContractFixture.Now.AddSeconds(1));
 
-        // Assert: overflow forced a reread before normal discovery was due.
+        // Assert: overflow triggers an early reread.
         Assert.Equal(2, transport.ReadCount);
         Assert.Equal(CollectionDataAvailability.Unavailable, client.View.Availability);
         Assert.Null(client.View.Snapshot);
@@ -389,7 +389,7 @@ public sealed class ClientLifetimeTests
     [InlineData(true, true)]
     public async Task CharacterChangeOrDisposalDuringAReadSuppressesSuccessAndRejection(bool dispose, bool invalidReply)
     {
-        // Arrange: invalidate the scope after the provider captures its reply.
+        // Arrange: invalidate the scope after capturing the reply.
         var transport = new FakeTransport();
         if (invalidReply)
             transport.Snapshot = "{";
@@ -408,7 +408,7 @@ public sealed class ClientLifetimeTests
         await pending;
         if (cleanup is not null) await cleanup;
 
-        // Assert: neither success nor failure from the old scope overwrites the new state.
+        // Assert: neither an old result nor an old error changes the new state.
         Assert.Null(client.View.Snapshot);
         Assert.Equal(dispose ? CollectionDataAvailability.Disposed : CollectionDataAvailability.Unavailable,
             client.View.Availability);
@@ -421,7 +421,7 @@ public sealed class ClientLifetimeTests
     [Fact]
     public async Task DefaultWorkerCompletesARealBackgroundRefresh()
     {
-        // Arrange: use the public default scheduler rather than the deterministic test worker.
+        // Arrange: use the default scheduler.
         var transport = new FakeTransport();
         await using var client = new CollectionDataIpcClient((_, _) => transport);
 

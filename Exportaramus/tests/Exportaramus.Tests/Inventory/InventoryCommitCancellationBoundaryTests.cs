@@ -10,8 +10,8 @@ public sealed class InventoryCommitCancellationBoundaryTests
     [Fact]
     public void ValidatedReadbackChecksCancellationBeforeAnyCommitDispatch()
     {
-        // Neither existing hook runs between final readback validation and commit. This
-        // compiled-code contract avoids a timing-dependent cancellation race or a new seam.
+        // No hook runs between readback validation and commit. Inspect compiled code to check cancellation
+        // without a timing race.
         var save = typeof(InventoryFileCache).GetMethod(nameof(InventoryFileCache.SaveAsync))!;
         var stateMachine = save.GetCustomAttribute<AsyncStateMachineAttribute>();
         Assert.NotNull(stateMachine);
@@ -38,7 +38,7 @@ public sealed class InventoryCommitCancellationBoundaryTests
         var check = Assert.Single(calls, call => call.Method == cancel
             && call.index > validation.index && call.index < firstDispatch);
 
-        // A check hidden in only one conditional arm would not protect all commit choices.
+        // The cancellation check must cover every commit branch.
         Assert.DoesNotContain(instructions.Skip(validation.index + 1).Take(check.index - validation.index - 1),
             instruction => instruction.Code.FlowControl is FlowControl.Branch or FlowControl.Cond_Branch
                 or FlowControl.Return or FlowControl.Throw);

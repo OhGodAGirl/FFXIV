@@ -1,6 +1,6 @@
 namespace Exportaramus.Bootstrap;
 
-/// <summary>Coalesces configuration writes using immutable value copies and a host-supplied exact path.</summary>
+/// <summary>Saves the latest settings to the path supplied by the host.</summary>
 public sealed class ConfigurationPersistence : IAsyncDisposable
 {
     private readonly ConfigurationWriteCoordinator coordinator;

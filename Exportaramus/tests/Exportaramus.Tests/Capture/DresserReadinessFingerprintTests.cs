@@ -14,10 +14,10 @@ public sealed class DresserReadinessFingerprintTests
     [Fact]
     public void SameAggregatePhysicalCopyAndOutfitPartitionChangesRequestRecapture()
     {
-        // Every state has the same aggregate item 100; physical ownership differs.
+        // Each state contains item 100, but in different entries.
         var one = Fingerprint((100, []), (0, []));
         var two = Fingerprint((100, []), (100, []));
-        // Outfit 200 has item 100 in slots zero and two: partition differs, union does not.
+        // Outfit 200 has item 100 in slots 0 and 2. The item set stays the same.
         var outfitA = Fingerprint((200, [true, false, false, false, false, false, false, false, false, false, false]), (100, []));
         var outfitB = Fingerprint((200, [false, false, true, false, false, false, false, false, false, false, false]), (100, []));
         var policy = new StorageReadinessPolicy();

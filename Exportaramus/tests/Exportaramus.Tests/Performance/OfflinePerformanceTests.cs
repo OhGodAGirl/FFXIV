@@ -10,7 +10,8 @@ using Xunit.Abstractions;
 
 namespace Exportaramus.Tests.Performance;
 
-/// <summary>Offline managed paths only. These measurements do not establish live Draw/framework/capture budgets.</summary>
+/// <summary>Measures managed code offline. Does not measure in-game drawing, framework updates or
+/// capture.</summary>
 [Collection(OfflinePerformanceCollection.Name)]
 public sealed class OfflinePerformanceTests(ITestOutputHelper output)
 {
@@ -37,8 +38,7 @@ public sealed class OfflinePerformanceTests(ITestOutputHelper output)
         store.SetCapabilities(capabilities);
         var samples = new double[100];
         long allocation = 0;
-        // A dedicated thread keeps the measured interval outside the test runner's worker and
-        // execution context. Thread setup, warmup and result reporting are outside each sample.
+        // Measure on a dedicated thread. Exclude thread setup, warmup and reporting.
         var measurementThread = new Thread(() =>
         {
             for (var i = 0; i < 100; i++) _ = MeasureGetterBlock(store);

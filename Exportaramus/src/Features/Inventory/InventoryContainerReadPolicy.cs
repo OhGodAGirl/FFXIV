@@ -3,7 +3,7 @@ namespace Exportaramus.Features.Inventory;
 public readonly record struct InventoryContainerObservation(nint Address, int Size, bool Loaded);
 public readonly record struct InventorySlotObservation(int Container, int Slot, uint ItemId, uint Quantity, bool HighQuality);
 
-/// <summary>Observations are copied values. Implementations must never expose a native pointer to callers.</summary>
+/// <summary>Return copied values, not native pointers.</summary>
 public interface IInventoryContainerSource
 {
     bool IsCurrent
@@ -37,7 +37,7 @@ public static class InventoryContainerReadPolicy
             }
         }
         if (!source.IsCurrent) return null;
-        // Recheck the whole group: reading a later page must not invalidate an earlier one.
+        // Recheck every page after the read; a later page may invalidate an earlier one.
         for (var i = 0; i < types.Count; i++)
             if (source.Container(types[i]) != containers[i]) return null;
         return items;

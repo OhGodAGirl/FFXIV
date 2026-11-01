@@ -51,8 +51,8 @@ public sealed class InventoryFileCacheExecutionBoundaryTests : IDisposable
     [Fact]
     public void SaveRequestsDiskFlushInTheCompiledWriteStateMachine()
     {
-        // Ordinary readback only proves visibility through the OS cache. This is a narrow
-        // compiled-code contract for the existing stable-storage request, not a power-loss test.
+        // Readback may use the OS cache. Check the flush request in compiled code; this does not simulate
+        // power loss.
         var save = typeof(InventoryFileCache).GetMethod(nameof(InventoryFileCache.SaveAsync))!;
         var stateMachine = save.GetCustomAttribute<AsyncStateMachineAttribute>();
         Assert.NotNull(stateMachine);
@@ -119,8 +119,8 @@ public sealed class InventoryFileCacheExecutionBoundaryTests : IDisposable
             get; private set;
         }
 
-        // The unchecked value wraps to one byte, avoiding a large or negative allocation.
-        // A negative newarr also throws OverflowException and would hide the conversion defect.
+        // Unchecked conversion wraps to one byte. Avoid a negative array length: its OverflowException could
+        // hide the conversion bug.
         public override long Length => ++LengthReads == 1 ? 1 : (1L << 32) + 1;
 
         public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)

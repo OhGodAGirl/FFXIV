@@ -12,10 +12,8 @@ internal static class ControllerPumpStep
         update();
         if (terminal && !priorStaleRejection)
         {
-            // These fixture pumps expect current work to advance its public phase. A new worker
-            // is allowed; do not require NotStarted. After an earlier stale rejection, a second
-            // stale success may start another already-completed restoration with the same public
-            // phase, so retain the existing bounded polling deadline rather than assert here.
+            // Completed current work must advance the phase, but may start another worker. After a stale
+            // rejection, the phase may repeat; let the polling timeout detect a stall.
             Assert.NotEqual(before, Phase(controller));
         }
     }

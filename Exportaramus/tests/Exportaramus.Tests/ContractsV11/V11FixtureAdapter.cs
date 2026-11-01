@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 using Exportaramus.ConsumerKit.V1_1;
 namespace Exportaramus.Tests.ContractsV11;
 
-// Reuse established adversarial vectors without changing the frozen 1.0 or 1.1 artifacts.
+// Reuse failure cases without changing versioned fixtures.
 internal static class V11FixtureAdapter
 {
     public static string Rich(Exportaramus.Features.CollectionData.CollectionData data, string name, DateTimeOffset at) =>

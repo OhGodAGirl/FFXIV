@@ -4,7 +4,7 @@ namespace Exportaramus.Features.CollectionData.Capture;
 
 public static class DresserSetExpansionPolicy
 {
-    // Prism-box IDs are encoded integers, not game-owned InventoryItem objects.
+    // Prism-box IDs are encoded values, not InventoryItem pointers.
     public static uint NormalizeStoredId(uint id) => id % 1_000_000;
 
     public static ImmutableArray<uint> Expand(ImmutableArray<uint> slotItemIds, ImmutableArray<bool> unlockedSlots)

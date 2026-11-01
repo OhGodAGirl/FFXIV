@@ -25,7 +25,7 @@ public sealed class PublicationOrderingAndLogoutContractTests
     [InlineData(true)]
     public void PublicSnapshotAndCapabilityMapsUseOrdinalKeysForFullAndPartiallyUnavailableData(bool partial)
     {
-        // Section 18 makes ordinal sorting a semantic output rule outside JSON Schema.
+        // Ordinal sorting is a semantic rule, not a JSON Schema check.
         var data = SnapshotFixture.Create();
         string[] omitted = partial ? ["mounts", "minions"] : [];
         if (partial)

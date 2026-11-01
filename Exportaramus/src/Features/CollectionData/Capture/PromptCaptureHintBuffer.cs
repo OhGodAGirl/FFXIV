@@ -1,6 +1,7 @@
 namespace Exportaramus.Features.CollectionData.Capture;
 
-/// <summary>Bounded, coalesced hints; these never establish ownership or observed quantities.</summary>
+/// <summary>Combines duplicate hints. Hints request a read; they do not establish ownership or
+/// quantities.</summary>
 public sealed class PromptCaptureHintBuffer : IDisposable
 {
     private static readonly string[] Sources =

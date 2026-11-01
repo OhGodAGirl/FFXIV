@@ -270,7 +270,7 @@ public static class CollectionDataSemanticValidator
             var result = semantic(root);
             if (result != CollectionDataValidationCode.None)
                 return CollectionDataValidationResult<T>.Invalid(result);
-            // All bound root schemas require an object; these source-generated DTOs have no custom converters.
+            // Root schemas require an object. The generated DTOs have no custom converters.
             return CollectionDataValidationResult<T>.Valid(root.Deserialize(type)!);
         }
         catch (Exception e) when (e is JsonException or InvalidOperationException or KeyNotFoundException or FormatException or OverflowException or ArgumentException)
@@ -291,7 +291,7 @@ public static class CollectionDataSemanticValidator
 
     private static CollectionDataValidationCode Identity(JsonElement root, string? expected)
     {
-        // common.contentId requires a string matching ^[1-9][0-9]{0,19}$; UInt64 overflow is semantic.
+        // The schema checks the contentId format; this check rejects UInt64 overflow.
         var id = root.GetProperty("contentId").GetString();
         if (!ulong.TryParse(id, NumberStyles.None, CultureInfo.InvariantCulture, out _)) return CollectionDataValidationCode.InvalidContentId;
         return expected is not null && id != expected ? CollectionDataValidationCode.WrongCharacter : CollectionDataValidationCode.None;
@@ -302,7 +302,7 @@ public static class CollectionDataSemanticValidator
     private static bool Usable(JsonElement health) => health.GetProperty("sourceStatus").GetString() is "Fresh" or "Stale" && health.GetProperty("completeness").GetString() == "Complete" && health.GetProperty("capabilityState").GetString() != "UnavailablePendingValidation";
     private static bool ExactKeys(JsonElement map, IEnumerable<string> expected) => map.EnumerateObject().Select(p => p.Name).Order(StringComparer.Ordinal).SequenceEqual(expected.Order(StringComparer.Ordinal));
     private static bool ExactArray(JsonElement array, IEnumerable<string> expected) => array.EnumerateArray().Select(p => p.GetString()!).Order(StringComparer.Ordinal).SequenceEqual(expected.Order(StringComparer.Ordinal));
-    private static bool Sorted(string[] values) => values.SequenceEqual(values.Order(StringComparer.Ordinal)); // Notice arrays already require uniqueItems.
+    private static bool Sorted(string[] values) => values.SequenceEqual(values.Order(StringComparer.Ordinal)); // The schema already rejects duplicates.
 
     private static bool ValidateMaps(JsonElement root, bool rich)
     {

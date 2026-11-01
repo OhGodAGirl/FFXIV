@@ -98,7 +98,7 @@ public sealed class InventoryUnavailableAndShutdownTests
 
     private static async Task SettleOwnedWorker(InventoryService service)
     {
-        // The owned-task barrier makes the no-new-load assertion deterministic without sleeping.
+        // Wait for the task before checking that no new load started.
         var field = typeof(InventoryService).GetField("worker", BindingFlags.Instance | BindingFlags.NonPublic)!;
         if (field.GetValue(service) is Task worker)
             await worker.WaitAsync(Deadline);

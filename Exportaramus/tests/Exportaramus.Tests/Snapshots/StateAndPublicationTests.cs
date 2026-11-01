@@ -224,7 +224,7 @@ public sealed class StateAndPublicationTests
             CurrentItemPresence = absent
         });
         Assert.False(result.Collections.ContainsKey("outfits"));
-        Assert.True(result.Collections["relics"].Items[0].Owned); // Exact achievement is positive evidence.
+        Assert.True(result.Collections["relics"].Items[0].Owned);
     }
 
     [Fact]

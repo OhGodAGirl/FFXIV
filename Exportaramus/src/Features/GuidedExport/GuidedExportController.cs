@@ -1,6 +1,7 @@
 namespace Exportaramus.Features.GuidedExport;
 
-/// <summary>One bounded transition per framework tick; effects are revalidated by the adapter at execution.</summary>
+/// <summary>Runs one transition per framework update. The adapter checks each action before executing
+/// it.</summary>
 public sealed class GuidedExportController
 {
     public static readonly TimeSpan AppearanceTimeout = TimeSpan.FromMilliseconds(900);
@@ -69,7 +70,7 @@ public sealed class GuidedExportController
 
         if (State is GuidedState.Paused or GuidedState.PausedWithPartial)
         {
-            // SavePartial was handled above for the same completed-dresser/incomplete-armoire invariant.
+
             if (command == GuidedCommand.Continue || frame.SafeConditions && frame.RuntimeValidated && frame.AddonReady && frame.ManagerReady)
             {
                 if (waitingForManualClose)

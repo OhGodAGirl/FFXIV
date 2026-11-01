@@ -11,7 +11,7 @@ public static class ReaderCompatibility
         "aetherytes", "npcs", "quests", "survey_records", "inventory", "armoryChest",
         "chocoboSaddlebag", "premiumSaddlebag", "retainers", "armoire", "glamourDresser");
 
-    // Offline API/catalog compatibility permits a first live read; it is not supervised validation evidence.
+    // API and catalog checks allow a live read but do not prove it works in game.
     public static ImmutableHashSet<string> SourcesFor(string version) =>
         version is CurrentGameVersion or "2026.10.06.0000.0000" or "2026.09.01.0000.0000" ? Sources.Add("facewear").Add("field_records").Add("beasts") :
         version == "2026.08.11.0000.0000" ? Sources : ImmutableHashSet<string>.Empty;

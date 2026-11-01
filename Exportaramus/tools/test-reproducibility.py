@@ -68,7 +68,7 @@ New-Item -ItemType Directory -Path $EvidenceDirectory -Force | Out-Null
             cwd=self.base, env=environment, capture_output=True, text=True)
 
     def test_relocated_tree_and_unrelated_working_directory_reproduce(self):
-        # Arrange: no private environment script or preexisting inspection receipt exists.
+        # Arrange: omit private environment scripts and old inspection receipts.
         # Act
         result = self.reproduce()
         # Assert
@@ -95,7 +95,7 @@ New-Item -ItemType Directory -Path $EvidenceDirectory -Force | Out-Null
         }
         for scenario, expected in cases.items():
             with self.subTest(scenario=scenario):
-                # Arrange: restore controlled inputs before each independent run.
+                # Arrange: reset inputs before each run.
                 self.write('src/Pure.cs', 'source')
                 self.write('development/dependency.dll', 'dependency')
                 self.write('project/bin/Release/Exportaramus/latest.zip', 'package')
@@ -110,7 +110,7 @@ New-Item -ItemType Directory -Path $EvidenceDirectory -Force | Out-Null
 
 class PackageInspectionTests(unittest.TestCase):
     def test_actual_inspector_resolves_relative_package_and_evidence_from_its_source_root(self):
-        # Arrange: compile a synthetic assembly with the required public identity, without an SDK install.
+        # Arrange: compile a test assembly with the required identity using the existing compiler.
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary)
             root = base / 'relocated source'
@@ -151,11 +151,11 @@ finally { $stream.Dispose() }
                 for name in ('Exportaramus.ConsumerKit.V1_1.dll', 'Exportaramus.ConsumerKit.V1_2.dll',
                              'Exportaramus.deps.json', 'Exportaramus.dll', 'Exportaramus.json', 'images/icon.png'):
                     archive.write(output / name, name)
-            # Act: both paths are relative while the process starts outside the source tree.
+            # Act: use relative paths from outside the source tree.
             inspected = subprocess.run(['pwsh', '-NoProfile', '-File', str(root / 'tools/Inspect-Package.ps1'),
                                         '-OutputDirectory', 'project/bin/Release', '-EvidenceDirectory', 'evidence'],
                                        cwd=base, capture_output=True, text=True)
-            # Assert: real metadata, ZIP and per-file validation passed at the relocated root.
+            # Assert: validate metadata, ZIP contents and files at the new path.
             self.assertEqual(0, inspected.returncode, inspected.stdout + inspected.stderr)
             receipt = json.loads((root / 'evidence/package-inspection.json').read_text(encoding='utf-8-sig'))
             self.assertEqual('Passed', receipt['status'])
@@ -167,7 +167,7 @@ finally { $stream.Dispose() }
                     ('Exportaramus.ConsumerKit.V1_2', 'CollectionDataIpcClient', 'Reference consumer or test type ships'),
                     ('UnrelatedAssembly', 'PortableFixture', 'Runtime assembly identity differs')]:
                 with self.subTest(contract_assembly=assembly_name, type_name=type_name):
-                    # Arrange: substitute an otherwise byte-consistent ZIP entry into the contract DLL slot.
+                    # Arrange: replace the contract DLL with another entry and update its hashes.
                     compiled = subprocess.run(['pwsh', '-NoProfile', '-File', str(compiler), '-Destination',
                                                str(output / 'Exportaramus.ConsumerKit.V1_2.dll'), '-AssemblyName', assembly_name,
                                                '-TypeName', type_name], capture_output=True, text=True)
@@ -180,7 +180,7 @@ finally { $stream.Dispose() }
                     rejected = subprocess.run(['pwsh', '-NoProfile', '-File', str(root / 'tools/Inspect-Package.ps1'),
                                                '-OutputDirectory', 'project/bin/Release', '-EvidenceDirectory', 'rejected-evidence'],
                                               cwd=base, capture_output=True, text=True)
-                    # Assert: package/local parity alone cannot certify an unintended runtime contract assembly.
+                    # Assert: reject the wrong contract assembly even when local and packaged bytes match.
                     self.assertNotEqual(0, rejected.returncode)
                     self.assertIn(expected, rejected.stdout + rejected.stderr)
                     self.assertFalse((root / 'rejected-evidence/package-inspection.json').exists())

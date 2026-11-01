@@ -285,7 +285,7 @@ public sealed class DiagnosticsTests
         }
         finally
         {
-            // An assertion can fail before publication; release the injected source before disposal waits for it.
+            // Release the source before disposal, even if an assertion fails.
             completion.TrySetResult(Report);
         }
     }
@@ -341,7 +341,7 @@ public sealed class DiagnosticsTests
         {
             release.TrySetResult(Report);
             runningDisposal ??= running.DisposeAsync().AsTask();
-            // Repeated DisposeAsync calls return immediately; observe the original task instead.
+            // Wait for the first DisposeAsync task; later calls return immediately.
             await runningDisposal.WaitAsync(TimeSpan.FromSeconds(3));
         }
     }

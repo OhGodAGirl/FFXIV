@@ -1,4 +1,4 @@
-// Regression parity with Contracts/ExactJsonNumberTests.cs, targeting the independently pinned 1.2 assembly.
+// Runs the Contracts/ExactJsonNumberTests.cs cases against the 1.2 assembly.
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;

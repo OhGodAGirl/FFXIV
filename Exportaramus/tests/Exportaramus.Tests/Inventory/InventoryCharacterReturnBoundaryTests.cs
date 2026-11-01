@@ -21,8 +21,8 @@ public sealed class InventoryCharacterReturnBoundaryTests
             Assert.False(returned.RetainerRosterKnown);
             Assert.All(returned.Locations, location => Assert.False(location.HasObservation));
 
-            // The first result belongs to the abandoned visit to character1. Keep the
-            // replacement read pending so it cannot hide an incorrectly published result.
+            // The first result belongs to the earlier visit to character 1. Hold the new read so it cannot
+            // hide a stale publication.
             cache.FirstResult.TrySetResult(InventoryServiceTests.Saved(1));
             using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             while (!cache.SecondStarted.Task.IsCompleted)

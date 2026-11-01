@@ -3,7 +3,7 @@ using Exportaramus.Features.CollectionData.Contracts;
 
 namespace Exportaramus.Features.Snapshots;
 
-/// <summary>Framework-thread scheduling only. A hint never establishes an observed fact.</summary>
+/// <summary>Use on the framework thread. Hints request reads; they do not supply observations.</summary>
 public sealed class PromptCapturePolicy
 {
     public const double CoalesceDelay = 0.25;

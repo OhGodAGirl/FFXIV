@@ -503,7 +503,7 @@ def compose(manifest_path, ledger_path, output, final_root):
     static_ledger = dict(ledger, schemaVersion='1.0', entries=static)
     static_accepted, sources, errors = mutation_review.reconcile(static_ledger, final['before'], final['reportHash'], final['scope'], report, final_root)
     accepted.update(static_accepted)
-    # A complete successful ordinary build disproves nonviability, regardless of whether its tests killed the mutant.
+    # A successful normal build means the mutant is viable, even if tests did not kill it.
     nonviable = {(e['file'], e['id']) for e in entries if e['classification'] == 'IndividuallyNonViable'}
     for stage, context in zip(stages, verified):
         errors.extend(inventory_executions(stage, context, final['reportHash'], nonviable))

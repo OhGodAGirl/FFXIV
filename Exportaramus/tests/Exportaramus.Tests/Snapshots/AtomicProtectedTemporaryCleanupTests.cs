@@ -17,7 +17,7 @@ public sealed class AtomicProtectedTemporaryCleanupTests : IDisposable
         Assert.StartsWith(original.CharacterPath(1) + ".", temporary, StringComparison.Ordinal);
         var journal = Path.Combine(root, "state", "write-recovery.json");
         var journalBytes = await File.ReadAllBytesAsync(journal);
-        // Simulate an attribute change while storage is unloaded; preserve the real interrupted journal.
+        // Change attributes while storage is unloaded. Keep the interrupted journal.
         File.SetAttributes(temporary, File.GetAttributes(temporary) | FileAttributes.ReadOnly);
         var unrelated = Path.Combine(Path.GetDirectoryName(temporary)!, "unrelated.tmp");
         await File.WriteAllTextAsync(unrelated, "leave untouched");

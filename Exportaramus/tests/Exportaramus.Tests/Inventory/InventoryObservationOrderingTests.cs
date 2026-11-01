@@ -9,7 +9,7 @@ public sealed class InventoryObservationOrderingTests
     [InlineData(false)]
     public async Task OlderSuccessfulReadCannotReplaceANewerAcceptedUnavailableState(bool readFailed)
     {
-        // Arrange: a newer failed/unavailable attempt retains the last observed contents.
+        // Arrange: retain contents after a newer failed read.
         var now = new DateTimeOffset(2026, 10, 31, 12, 0, 0, TimeSpan.Zero);
         var key = new InventoryLocationKey(InventoryLocationKind.Inventory);
         await using var service = new InventoryService();
@@ -18,10 +18,10 @@ public sealed class InventoryObservationOrderingTests
         Assert.True(service.MarkUnavailable(1, key, "Inventory", now.AddMinutes(2), readFailed));
         var before = service.GetSnapshot()!;
 
-        // Act: an older successful read arrives after that accepted attempt.
+        // Act: deliver an older successful read.
         var accepted = service.AcceptLocation(1, key, "Inventory", [], now.AddMinutes(1));
 
-        // Assert: neither publication identity nor the retained evidence regresses.
+        // Assert: preserve the current publication and retained data.
         Assert.False(accepted);
         Assert.Same(before, service.GetSnapshot());
         var location = Assert.Single(before.Locations, location => location.Key == key);

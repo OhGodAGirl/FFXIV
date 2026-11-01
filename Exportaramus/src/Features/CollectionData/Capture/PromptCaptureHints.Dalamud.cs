@@ -5,7 +5,7 @@ using Lumina.Excel.Sheets;
 
 namespace Exportaramus.Features.CollectionData.Capture;
 
-// Platform subscriptions only; classification, coalescing and burst limits are tested separately.
+
 public sealed class PromptCaptureHints : IDisposable
 {
     private readonly IUnlockState unlocks;

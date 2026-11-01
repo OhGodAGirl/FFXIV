@@ -12,7 +12,7 @@ public sealed class CompendiumSnapshotWriterTests
     [InlineData(true, true)]
     public async Task WriterPreservesCharacterPayloadsAndRequestedHistoryMode(bool changed, bool manual)
     {
-        // Arrange: distinct payloads make an incorrect positional delegation observable on disk.
+        // Arrange: use distinct payloads so swapped arguments change the files.
         var root = Path.Combine(Path.GetTempPath(), "Exportaramus-writer-" + Guid.NewGuid().ToString("N"));
         var storage = new AtomicSnapshotStorage(root);
         var writer = new CompendiumSnapshotWriter(storage);
@@ -26,7 +26,8 @@ public sealed class CompendiumSnapshotWriterTests
             // Act.
             var result = await writer.WriteAsync(42, compact, expanded, reports, changed, manual, now, default, expandedV12);
 
-            // Assert: no payload or character scope changes, and only requested changed captures create history.
+            // Assert: preserve payloads and character IDs. Create history only for requested, changed
+            // captures.
             Assert.Equal(compact, await File.ReadAllTextAsync(storage.CharacterPath(42)));
             Assert.Equal(expanded, await File.ReadAllTextAsync(storage.CanonicalPath));
             Assert.Equal(reports, await File.ReadAllTextAsync(storage.EvidencePath(42)));
@@ -53,7 +54,7 @@ public sealed class CompendiumSnapshotWriterTests
     [Fact]
     public async Task WriterForwardsCancellationWithoutReplacingAcceptedFiles()
     {
-        // Arrange: an already cancelled replacement must preserve the accepted snapshot.
+        // Arrange: cancel the replacement before it starts.
         var root = Path.Combine(Path.GetTempPath(), "Exportaramus-writer-" + Guid.NewGuid().ToString("N"));
         var storage = new AtomicSnapshotStorage(root);
         var writer = new CompendiumSnapshotWriter(storage);

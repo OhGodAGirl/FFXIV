@@ -2,8 +2,8 @@ namespace Exportaramus.Bootstrap;
 
 public static class LifecycleCleanup
 {
-    /// <summary>Start independent shutdown operations, then observe all of them before releasing host resources.</summary>
-    /// <remarks>Operations must finish without returning to the framework thread.</remarks>
+    /// <summary>Start all shutdown tasks and wait for them before releasing host resources.</summary>
+    /// <remarks>Shutdown tasks must not wait for the framework thread.</remarks>
     public static void Complete(params Func<ValueTask>[] shutdown)
     {
         var workers = new List<Task>(shutdown.Length);

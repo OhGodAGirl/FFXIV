@@ -7,7 +7,7 @@ using Dalamud.Plugin;
 
 namespace Exportaramus.ApiContractTests;
 
-// Compile-only: never invoked by the probe executable or plugin.
+// Compile check only. Never called by the probe or plugin.
 internal sealed class UiContractProbe : Window
 {
     internal UiContractProbe() : base("Probe", ImGuiWindowFlags.NoTitleBar)

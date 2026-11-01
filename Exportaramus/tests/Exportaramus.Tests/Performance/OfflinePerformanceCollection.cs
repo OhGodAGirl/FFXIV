@@ -1,6 +1,6 @@
 namespace Exportaramus.Tests.Performance;
 
-/// <summary>Runs measured budgets without concurrent fixture work competing for the process.</summary>
+/// <summary>Runs performance tests without other fixtures running at the same time.</summary>
 [CollectionDefinition(Name, DisableParallelization = true)]
 public sealed class OfflinePerformanceCollection
 {

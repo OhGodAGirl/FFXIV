@@ -54,7 +54,7 @@ public static class ThemePolicy
             Selection = Map(new(.55f, .44f, .24f, .55f)),
         };
     }
-    // ColorThemeType order follows the game's Theme Settings choices.
+
     public static ThemePalette Resolve(uint? theme) => theme switch
     {
         1 => Light,

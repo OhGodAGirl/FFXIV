@@ -28,8 +28,8 @@ public sealed class ControllerReportHealthRegressionTests
             Assert.Null(controller.Publication.Current);
             Assert.True(controller.Reports.Available);
 
-            // Keep monotonic time at0, before any scheduled capture. Only the next
-            // catalog preparation fails; report restoration and storage succeeded.
+            // Keep time at 0 to prevent scheduled capture. Fail only the next catalog preparation; restore
+            // and storage succeeded.
             port.FailNextCatalogPreparation = true;
             controller.Update(123, "Fixture", false, false, 0, SnapshotFixture.Now);
 

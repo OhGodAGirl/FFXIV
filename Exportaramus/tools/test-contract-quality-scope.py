@@ -36,7 +36,7 @@ class QualityScopeTests(unittest.TestCase):
             self.assertEqual({root / 'provider.cs', root / 'contracts.cs', root / 'shared.cs'}, actual)
 
     def test_explicit_remove_and_native_exclude_are_honored(self):
-        # Arrange: native bindings and a removed experiment must not enter a pure coverage claim.
+        # Arrange: exclude native bindings and the removed experiment from pure-code coverage.
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()
             for name in ['Policy.cs', 'Native.Dalamud.cs', 'Experiment.cs']:
@@ -52,7 +52,7 @@ class QualityScopeTests(unittest.TestCase):
             self.assertEqual({root / 'Policy.cs'}, actual)
 
     def test_current_provider_excludes_the_client_and_the_separate_consumer_suite_includes_it(self):
-        # Arrange: the library and provider have different source scopes despite sharing contract records.
+        # Arrange: the library and provider share records but include different code.
         client = scope.ROOT / 'src/Contracts/1.2/Consumer/CollectionDataIpcClient.cs'
         records = scope.ROOT / 'src/Contracts/1.2/CollectionDataContracts.cs'
 
@@ -60,7 +60,7 @@ class QualityScopeTests(unittest.TestCase):
         provider_sources = scope.project_sources(scope.PROJECT)
         consumer_sources = scope.project_sources(scope.CONSUMER_PROJECT)
 
-        # Assert: provider coverage cannot silently certify the separate client implementation.
+        # Assert: provider coverage excludes the separate client implementation.
         self.assertNotIn(client, provider_sources)
         self.assertIn(client, consumer_sources)
         self.assertIn(records, provider_sources)

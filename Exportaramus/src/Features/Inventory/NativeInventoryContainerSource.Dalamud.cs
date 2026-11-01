@@ -4,7 +4,7 @@ using Lumina.Excel.Sheets;
 
 namespace Exportaramus.Features.Inventory;
 
-// Used only within one framework callback; no native slot survives that callback.
+// Use only within one framework callback. Do not retain native slots.
 internal sealed unsafe class NativeInventoryContainerSource(IDataManager data) : IInventoryContainerSource
 {
     private readonly InventoryManager* manager = InventoryManager.Instance();

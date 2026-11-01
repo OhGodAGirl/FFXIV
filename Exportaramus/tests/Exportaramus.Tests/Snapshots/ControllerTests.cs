@@ -394,8 +394,7 @@ public sealed class ControllerTests : IDisposable
         {
             ControllerPumpStep.Advance(controller, () => controller.Update(id, "Test", false, false, monotonic, Now.AddSeconds(monotonic)));
             if (completed()) return;
-            // These fixtures expect success, or complete explicitly on their injected failure.
-            // Reject an unexpected completed failure before repeating the same fixed-time update.
+            // Stop on unexpected failure instead of repeating the same update until timeout.
             if (!controller.Busy) Assert.Null(controller.Error);
             Assert.True(controller.Busy, "A pending fixture expectation requires an owned capture or background operation.");
             await Task.Delay(2);

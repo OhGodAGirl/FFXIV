@@ -67,8 +67,8 @@ public sealed class CollectionDataIpcProvider : IDisposable
         }
         catch { Dispose(); throw; }
     }
-    // Dalamud owns subscriber dispatch. Catch its aggregate failure so accepted publication survives.
-    // API 15 offers no supported per-subscriber dispatch or timeout facility (documented discrepancy).
+    // Catch subscriber failures so they cannot undo publication. API 15 has no per-subscriber dispatch or
+    // timeout API.
     private void SendChanged(string json)
     {
         try

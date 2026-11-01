@@ -108,7 +108,7 @@ public sealed class ControllerSchedulingIntegrationTests
         await using var run = new Harness(controlled: true);
         await run.Storage.CommitAsync(123, CollectionDataSerializer.Compact(SnapshotFixture.Create(), 8), null, null,
             false, false, SnapshotFixture.Now, default);
-        run.Update(0); // Establish login's original due times before asynchronous restoration completes.
+        run.Update(0); // Set login deadlines before restore finishes.
         await run.Restore(10);
         Assert.Equal(CaptureType.Restored, run.Controller.Publication.Current!.Data.State.CaptureType);
         Assert.Equal(1, run.Controller.Publication.Current.Revision);
@@ -124,7 +124,7 @@ public sealed class ControllerSchedulingIntegrationTests
         run.AssertNoCapture(164.999, 2);
         run.Update(165);
         Assert.Equal(3, run.Port.Begins.Count);
-        run.AssertNoCapture(310, 3); // Treating restoration at10 as a capture incorrectly makes presence due here.
+        run.AssertNoCapture(310, 3); // Presence would be due here if restore at 10 incorrectly reset the capture clock.
         run.AssertNoCapture(314.999, 3);
         await run.Accept(315, 2, CaptureType.Lightweight);
 
@@ -184,7 +184,7 @@ public sealed class ControllerSchedulingIntegrationTests
         {
             if (background is not null)
             {
-                // Bound controller transitions, not the wall time of file I/O or normalization.
+                // Limit controller steps rather than I/O or normalization time.
                 for (var step = 0; step < 12 && !finished(); step++)
                 {
                     ControllerPumpStep.Advance(Controller, () => Update(now));

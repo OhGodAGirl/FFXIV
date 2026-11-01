@@ -20,7 +20,8 @@ public static class RestoredStatePolicy
             return CollectionStatePolicy.Stale(prior, ReasonCode.RestoredFromDisk, "Restored from disk.", true) with
             {
                 CapabilityState = CapabilityState.Supported,
-                // Generations belong to a provider session. Prior-session generation numbers cannot exceed this session's root.
+                // Generation numbers are session-local. Do not carry numbers from an earlier session into
+                // this one.
                 CaptureGeneration = generation,
             };
         }

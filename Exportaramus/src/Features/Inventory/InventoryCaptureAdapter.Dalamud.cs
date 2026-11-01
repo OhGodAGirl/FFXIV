@@ -6,7 +6,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace Exportaramus.Features.Inventory;
 
-// Independent passive capture. Update is called by the host only on the framework thread.
+// Call Update only on the framework thread.
 public sealed unsafe class InventoryCaptureAdapter
 {
     private readonly InventoryService service;
@@ -71,8 +71,8 @@ public sealed unsafe class InventoryCaptureAdapter
                 else service.AcceptLocation(contentId, key, location.Name, items, now);
                 return;
             }
-            // The reviewed storage readers expose membership, including unlocked dresser set slots.
-            // Zero quantities explicitly mean membership-only, never an invented normal-quality copy.
+            // These readers report membership, including unlocked Dresser slots. Zero quantities mean
+            // membership only, not a normal-quality copy.
             if (catalog is null || catalog.GameDataVersion != version) return;
             var presence = collections.ReadPresence(location.Source, catalog, contentId, ++generation, now);
             if (!IdentityMatches(contentId)) return;

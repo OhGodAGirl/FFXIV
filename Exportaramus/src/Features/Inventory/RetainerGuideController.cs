@@ -114,7 +114,7 @@ public sealed class RetainerGuideController(IRetainerGuidePort port)
             else Move(RetainerGuideStep.SelectRetainer, now, Progress("Opening Retainer"));
             return;
         }
-        else // Every other active state was handled above; only CloseOverview remains.
+        else // Only CloseOverview remains.
         {
             if (port.CloseOverviewAndInventory()) Complete();
             return;

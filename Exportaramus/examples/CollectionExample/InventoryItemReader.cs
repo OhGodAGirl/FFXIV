@@ -4,11 +4,11 @@ using System.Text.Json;
 
 namespace CollectionExample;
 
-/// <summary>Validates one Inventory V1 item response. It does not cache live inventory.</summary>
+/// <summary>Validates one Inventory V1 item response without caching it.</summary>
 public static class InventoryItemReader
 {
-    // Local limits bound allocation and parsing work; Inventory 1.0 does not advertise parser limits.
-    // The parser also limits depth to 16 and locations to seven standard stores plus ten retainers.
+    // Inventory 1.0 does not define parser limits. Limit depth to 16 and locations to seven standard stores
+    // plus ten retainers.
     public const int MaximumJsonBytes = 4 * 1024 * 1024;
     public sealed record Location(string Kind, string RetainerId, string Name, string State,
         DateTimeOffset ObservedAtUtc, uint? Normal, uint? HighQuality);
@@ -16,13 +16,10 @@ public static class InventoryItemReader
         ulong Normal, ulong HighQuality, bool UnknownLocations, bool RetainedLocations,
         IReadOnlyList<Location> Locations);
 
-    /// <summary>Checks a capabilities document and one item reply against the requested item and character.</summary>
-    /// <returns>A validated last-observed result, or null for a valid unavailable response.</returns>
-    /// <remarks>
-    /// Invalid input throws rather than becoming a zero count. Callers must handle JSON, type, range,
-    /// encoding, and contract-validation exceptions at the lookup boundary, as Plugin.OnUpdate does.
-    /// Retained locations preserve their original observation time; a valid result does not imply fresh data.
-    /// </remarks>
+    /// <summary>Validates capabilities and the item reply for the requested item and character.</summary>
+    /// <returns>The last observed result, or null if unavailable.</returns> <remarks> Invalid input throws;
+    /// it does not mean zero items. Handle JSON, type, range, encoding and validation errors at the call
+    /// site. Retained locations keep their original observation times and may be stale. </remarks>
     public static Result? Read(string capabilities, string payload, uint itemId, string expectedCharacter)
     {
         Require(itemId is > 0 and < 1_000_000 && Identity(expectedCharacter));
@@ -113,7 +110,7 @@ public static class InventoryItemReader
         Require(value.ValueKind == JsonValueKind.Object);
         var remaining = names.Split(' ').ToHashSet(StringComparer.Ordinal);
         foreach (var property in value.EnumerateObject())
-            Require(remaining.Remove(property.Name)); // Reject duplicate and unexpected fields.
+            Require(remaining.Remove(property.Name));
         Require(remaining.Count == 0);
     }
 

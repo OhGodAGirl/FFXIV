@@ -86,7 +86,7 @@ class SourceInventoryTests(unittest.TestCase):
         self.assertNotIn('docs/inventory.json', paths)
 
     def test_absent_private_reference_and_named_specifications_are_not_required(self):
-        # Arrange: only the portable script and a public guide exist.
+        # Arrange: include only the portable script and public guide.
         self.write('docs/Verification.md')
         # Act
         result = self.inventory()

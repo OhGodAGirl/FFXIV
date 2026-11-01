@@ -15,8 +15,7 @@ public sealed class InventorySaveSizeBoundaryTests : IDisposable
     [Fact]
     public async Task AValidSnapshotAtTheExactSerializedByteLimitCanBeSavedAndRestored()
     {
-        // Use the compiled production serializer so the boundary is its actual UTF-8 output,
-        // not padding added to a different document or a parallel serializer contract.
+        // Use the production serializer to measure the UTF-8 size boundary.
         var contextType = typeof(InventoryFileCache).Assembly.GetType("Exportaramus.Features.Inventory.InventoryCacheJsonContext", true)!;
         var context = (JsonSerializerContext)contextType.GetProperty("Default", BindingFlags.Public | BindingFlags.Static)!.GetValue(null)!;
         var metadata = (JsonTypeInfo<InventoryCacheDocument>)context.GetTypeInfo(typeof(InventoryCacheDocument))!;

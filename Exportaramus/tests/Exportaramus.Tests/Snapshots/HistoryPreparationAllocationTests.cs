@@ -29,7 +29,7 @@ public sealed class HistoryPreparationAllocationTests(ITestOutputHelper output)
             for (var sample = 0; sample < 3; sample++) populated = Math.Min(populated, await Measure(storage, files));
 
             output.WriteLine($"History preparation allocated {baseline} bytes with 25 valid histories; {populated} bytes with the same 25 plus 2,048 unrelated files.");
-            // Fixed I/O setup has generous headroom; materializing thousands of unrelated full paths does not.
+            // Allow fixed I/O overhead, but not allocations for thousands of unrelated paths.
             Assert.True(populated - baseline < 128 * 1024, $"Unrelated filenames added {populated - baseline} bytes to history preparation.");
             Assert.Equal(25, storage.Diagnostic.HistoryFileCount);
             Assert.Equal(25, Directory.GetFiles(folder, "*-snapshot-*.json").Length);
@@ -43,7 +43,7 @@ public sealed class HistoryPreparationAllocationTests(ITestOutputHelper output)
     {
         files.BeginMeasurement();
         var pending = storage.CommitAsync(1, "{}", null, null, false, false, SnapshotFixture.Now, default);
-        // History discovery and preparation happen synchronously before the first payload writer opens.
+        // History discovery finishes before the first payload writer opens.
         Assert.True(files.Observed);
         Assert.Equal(files.StartThread, files.ObservedThread);
         await pending;

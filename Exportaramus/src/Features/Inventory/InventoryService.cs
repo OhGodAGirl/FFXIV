@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 
 namespace Exportaramus.Features.Inventory;
 
-/// <summary>Accepts complete location observations; readers receive immutable prepared values.</summary>
+/// <summary>Accepts complete location reads and returns immutable snapshots.</summary>
 public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider? timeProvider = null) : IAsyncDisposable
 {
     private readonly object sync = new();
@@ -89,7 +89,7 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
         lock (sync)
         {
             if (!CanAccept(contentId, key, name) || observedAt == default) return false;
-            // CanAccept guarantees a standard location or a member of the current Retainer roster.
+            // CanAccept guarantees that this location belongs to the current character.
             var old = snapshot!.Locations.First(location => location.Key == key);
             if (old.ObservedAtUtc > observedAt || old.AttemptedAtUtc > observedAt) return false;
             var quantified = key.Kind is not (InventoryLocationKind.Armoire or InventoryLocationKind.GlamourDresser);
@@ -108,7 +108,7 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
         lock (sync)
         {
             if (!CanAccept(contentId, key, name) || attemptedAt == default) return false;
-            // CanAccept guarantees this location exists in the current snapshot.
+            // CanAccept guarantees that the location exists.
             var old = snapshot!.Locations.First(location => location.Key == key);
             if (old.AttemptedAtUtc > attemptedAt) return false;
             var state = readFailed ? InventoryObservationState.ReadFailed : old.HasObservation ? InventoryObservationState.Retained : InventoryObservationState.Unknown;
@@ -123,7 +123,7 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
         }
     }
 
-    /// <summary>Collect completed work and launch at most one owned I/O operation, without waiting.</summary>
+    /// <summary>Collect finished work and start at most one cache operation. Do not wait for I/O.</summary>
     public void Pump()
     {
         lock (sync)
@@ -207,7 +207,7 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
         };
         Volatile.Write(ref snapshot, value);
         if (cache is null) return;
-        // Bounded per-character coalescing retains final writes across ordinary character switches.
+        // Keep the latest pending save for each character, including after a character switch.
         if (pendingWrites.ContainsKey(value.ContentId) || pendingWrites.Count < 16) pendingWrites[value.ContentId] = value;
         else lastCacheFailure = "InventoryCacheQueueFull";
     }
@@ -222,7 +222,7 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
             Volatile.Write(ref snapshot, null);
             lifetime.Cancel();
             var owned = worker;
-            // An in-flight write remains in pendingWrites until Pump collects it under this same lock.
+            // Keep active writes in pendingWrites until Pump collects them under this lock.
             var finalWrites = pendingWrites.Values.ToImmutableArray();
             pendingWrites.Clear();
             disposal = Task.Run(async () =>
@@ -233,7 +233,7 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
                         await owned.ConfigureAwait(false);
                 }
                 catch (Exception) { }
-                // Final writes own only immutable values and cache handles, never host services.
+                // Shutdown writes must use only immutable data and cache handles, not host services.
                 using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
                 if (cache is not null)
                     foreach (var value in finalWrites)

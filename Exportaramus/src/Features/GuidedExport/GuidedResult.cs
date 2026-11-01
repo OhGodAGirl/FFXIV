@@ -7,4 +7,4 @@ public enum GuidedResult
     Pending, Succeeded, Failed
 }
 
-// Identities are stable managed tokens. Neither this model nor the controller retains native pointers.
+// Store managed IDs, not native pointers.

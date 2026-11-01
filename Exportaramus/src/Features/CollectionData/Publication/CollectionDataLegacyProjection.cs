@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 using Exportaramus.ConsumerKit.V1;
 namespace Exportaramus.Features.CollectionData.Publication;
 
-// Keep the pinned 1.0 contract exact while both gates publish the same accepted capture.
+// Both gates publish the same capture. Preserve the 1.0 contract shape.
 public static class CollectionDataLegacyProjection
 {
     public static ImmutableArray<string> CompactKeys { get; } = [.. CollectionDataSemanticValidator.UnlockKeys, .. CollectionDataSemanticValidator.PresenceKeys, "reportedOwnership"];

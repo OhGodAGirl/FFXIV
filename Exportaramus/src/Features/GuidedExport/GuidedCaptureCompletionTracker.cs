@@ -3,7 +3,7 @@ using Exportaramus.Features.CollectionData.State;
 
 namespace Exportaramus.Features.GuidedExport;
 
-/// <summary>Associates requested capture/save effects with the next accepted publication, without observing native state.</summary>
+/// <summary>Matches capture and save requests to the next accepted publication.</summary>
 public sealed class GuidedCaptureCompletionTracker
 {
     private long requestedRevision = -1;

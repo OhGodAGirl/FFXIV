@@ -112,7 +112,7 @@ public sealed class PromptCaptureRegressionTests
         if (targeted) run.Controller.HintSource("orchestrions", 123, 20);
         else run.Controller.RequestFull();
         run.Update(20.25); // Start the native read.
-        run.Update(20.25); // Finish the read and start its worker; acceptance requires a later update.
+        run.Update(20.25); // Finish the read and start the worker. Accept its result on a later update.
         Assert.True(run.Controller.Busy);
         Assert.Equal("Accepted", run.Controller.Reports.TryEnqueue("123", 100, "Pending fixture", 20.25, SnapshotFixture.Now.AddSeconds(20.25)));
         await run.Pump(20.25, () => run.Controller.Publication.Current!.Data.State.ReportedEvidence.Items.Any(

@@ -2,7 +2,8 @@ using Exportaramus.Features.GuidedExport;
 
 namespace Exportaramus.Features.Main;
 
-/// <summary>Refresh relative labels once per second and operation changes immediately; idle frames allocate nothing.</summary>
+/// <summary>Updates time labels once per second and operation changes immediately. Idle frames allocate
+/// nothing.</summary>
 public sealed class PresentationInvalidationPolicy
 {
     private long second = -1;

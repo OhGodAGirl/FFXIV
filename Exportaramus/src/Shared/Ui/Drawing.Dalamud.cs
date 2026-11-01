@@ -6,7 +6,7 @@ namespace Exportaramus.Shared.Ui;
 
 internal static class Drawing
 {
-    // Draw-list coordinates are pixels; measure against the active host body font.
+    // Draw-list coordinates use pixels. Measure with the current body font.
     internal static float Unit => ImGui.GetFontSize() / 17f;
     internal static Vector2 Offset(float x, float y) => new Vector2(x, y) * Unit;
     internal static float ButtonWidth(string label, bool icon = false) => ImGui.CalcTextSize(label).X + (icon ? 49 : 24) * Unit;

@@ -21,8 +21,8 @@ public sealed class MutationCollectBoundaryTests
         var initialSize = Encoding.UTF8.GetByteCount(JsonSerializer.Serialize(ids));
         var additions = (1048576 - initialSize + 10) / 11;
         var surplus = initialSize + additions * 11 - 1048576;
-        // Distinct ten-digit IDs add eleven bytes each. Two single-ID arrays absorb
-        // the remainder, leaving the final nine-digit ID for the one-byte boundary.
+        // Each ten-digit ID adds 11 bytes. Use two single-ID arrays for the remainder and a nine-digit ID for
+        // the final one-byte step.
         for (var index = 0; index < additions; index++)
             ids[keys[index / 49999]].Add(1000000001u + (uint)(index % 49999));
         ids[keys[^2]][0] = PowerOfTen(9 - Math.Min(9, surplus));
@@ -32,10 +32,10 @@ public sealed class MutationCollectBoundaryTests
         Assert.Equal(byteCount, Encoding.UTF8.GetByteCount(expected));
         Assert.All(ids.Values, values => { Assert.InRange(values.Count, 1, 50000); Assert.Equal(values.Count, values.Distinct().Count()); });
 
-        // The injectable contract models a valid future catalog without changing pinned artifacts.
+        // Use a test contract to model a future catalog without changing bundled data.
         var contract = FFXIVCollectContract.LoadEmbedded() with
         {
-            // This byte-boundary fixture deliberately models the original fifteen-key contract.
+            // This fixture uses the original 15-key contract.
             Beasts = null,
             RecognizedIds = ids.ToImmutableDictionary(pair => pair.Key, pair => pair.Value.ToImmutableHashSet())
         };

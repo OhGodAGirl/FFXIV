@@ -84,7 +84,7 @@ $b = New-VerificationRun -ProjectRoot $PSScriptRoot -Name sample
             self.ps('Read-VerificationTests -Trx "$PSScriptRoot/result.trx"', success=False)
 
     def test_aborted_or_incomplete_run_cannot_pass_using_only_positive_test_counts(self):
-        # Arrange: completed individual tests do not establish completion of the whole run.
+        # Arrange: finish individual tests but leave the run incomplete.
         for bad in ['outcome="Aborted"', 'outcome="Completed"']:
             self.trx()
             trx = self.root / 'result.trx'
@@ -97,7 +97,7 @@ $b = New-VerificationRun -ProjectRoot $PSScriptRoot -Name sample
 
     def test_ambiguous_summary_counters_or_results_cannot_select_one_favorable_record(self):
         for duplicate in ['summary', 'counters', 'results']:
-            # Arrange: every favorable record is individually plausible; its duplicate makes the receipt ambiguous.
+            # Arrange: duplicate an otherwise valid result.
             self.trx()
             path = self.root / 'result.trx'
             document = ET.parse(path)
@@ -115,7 +115,7 @@ $b = New-VerificationRun -ProjectRoot $PSScriptRoot -Name sample
 
     def test_execution_counters_and_passed_rows_must_describe_the_same_completed_run(self):
         for fault in ['not-executed', 'missing-counter', 'missing-row', 'failed-row']:
-            # Arrange: reported totals alone cannot substitute for actual completed result rows.
+            # Arrange: report totals without completed result rows.
             self.trx()
             path = self.root / 'result.trx'
             document = ET.parse(path)
@@ -134,7 +134,7 @@ $b = New-VerificationRun -ProjectRoot $PSScriptRoot -Name sample
             self.ps('Read-VerificationTests -Trx "$PSScriptRoot/result.trx"', success=False)
 
     def test_component_coverage_requires_exact_type_and_all_measured_branches(self):
-        # Arrange: uncovered harness code must not be confused with the included reader component.
+        # Arrange: leave harness code uncovered while covering the reader.
         self.trx()
         self.coverage()
         # Act.
@@ -161,7 +161,7 @@ $b = New-VerificationRun -ProjectRoot $PSScriptRoot -Name sample
 
     def test_nested_coverage_or_missing_branch_counts_cannot_certify_the_primary_component(self):
         for fault in ['nested-only', 'missing-branch-counts']:
-            # Arrange: preserve matching attachment bytes, while removing essential component evidence.
+            # Arrange: keep attachments but remove required component evidence.
             self.trx()
             self.coverage()
             report = self.root / 'coverage.cobertura.xml'
@@ -176,7 +176,7 @@ $b = New-VerificationRun -ProjectRoot $PSScriptRoot -Name sample
             self.ps('Read-VerificationCoverage -Run $PSScriptRoot -Trx "$PSScriptRoot/result.trx" -TypePrefix Example.Reader', success=False)
 
     def test_unrelated_report_does_not_replace_a_missing_trx_attachment(self):
-        # Arrange: a collector copy exists, but the exact file named by the TRX is absent.
+        # Arrange: keep a collector copy but remove the file named by the TRX.
         self.trx()
         self.coverage()
         (self.root / 'deployment/In/coverage.cobertura.xml').unlink()
@@ -184,7 +184,7 @@ $b = New-VerificationRun -ProjectRoot $PSScriptRoot -Name sample
         self.ps('Read-VerificationCoverage -Run $PSScriptRoot -Trx "$PSScriptRoot/result.trx"', success=False)
 
     def test_coverage_attachment_cannot_escape_its_fresh_run_directory(self):
-        # Arrange: even a complete report elsewhere cannot satisfy a forged traversal path.
+        # Arrange: use a traversal path despite a valid report elsewhere.
         self.trx()
         self.coverage()
         trx = self.root / 'result.trx'
@@ -193,7 +193,7 @@ $b = New-VerificationRun -ProjectRoot $PSScriptRoot -Name sample
         self.ps('Read-VerificationCoverage -Run $PSScriptRoot -Trx "$PSScriptRoot/result.trx"', success=False)
 
     def test_focused_runner_uses_explicit_tool_and_output_directory(self):
-        # Arrange: fake dotnet records arguments and creates only the requested fresh test receipt.
+        # Arrange: record dotnet arguments and write the requested test receipt.
         (self.root / 'fake dotnet.ps1').write_text(r'''$args | ConvertTo-Json | Set-Content "$PSScriptRoot/arguments.json"
 $index = [Array]::IndexOf($args, '--results-directory')
 $directory = $args[$index + 1]
@@ -209,23 +209,23 @@ $global:LASTEXITCODE = 0
         self.assertTrue(list((self.root / 'results elsewhere').rglob('focused.trx')))
 
     def test_mutation_request_is_rejected_before_any_tools_are_invoked(self):
-        # Arrange: no external executables are installed in this relocated fixture.
-        # Act and Assert: the error explains the separate qualification boundary.
+        # Arrange: leave external tools unavailable in the relocated fixture.
+        # Act and Assert: require the error to explain the separate mutation run.
         output = self.ps('try { & "$PSScriptRoot/tests/run-quality-gates.ps1" -RunMutation } catch { if ($_.Exception.Message -notlike "*separate manual campaign*") { throw }; "expected-boundary" }')
         self.assertEqual('expected-boundary', output)
 
     def test_source_changed_receipt_is_preserved_and_returns_a_nonzero_exit(self):
-        # Arrange: each executed check passed, but final source inventory differs from its starting hash.
+        # Arrange: pass every check, then change the source inventory.
         receipt = self.root / 'gate-execution.json'
         value = {'status': 'IncompleteOrFailed', 'inputsUnchanged': False,
                  'sourceSha256': 'starting-source', 'finalSourceSha256': 'changed-source',
                  'steps': [{'name': 'Build', 'status': 'Passed'}, {'name': 'Tests', 'status': 'Passed'}]}
         receipt.write_text(json.dumps(value), encoding='utf-8')
 
-        # Act: this is the same final receipt guard called by the real orchestrator after its finally block.
+        # Act: call the runner's final receipt check.
         self.ps('Assert-VerificationOutcome -Receipt "$PSScriptRoot/gate-execution.json"', success=False)
 
-        # Assert: callers see failure and retain the evidence explaining it.
+        # Assert: return failure and keep its evidence.
         self.assertEqual(value, json.loads(receipt.read_text(encoding='utf-8')))
         orchestrator = (self.root / 'tests/run-quality-gates.ps1').read_text(encoding='utf-8')
         self.assertIn('Assert-VerificationOutcome -Receipt "$run/gate-execution.json"', orchestrator)

@@ -33,7 +33,7 @@ public sealed class CapabilityFactoryContractTests
         }
         finally
         {
-            // Release the owned task even if an earlier assertion fails; never invoke a missing delegate.
+            // Release the task if an assertion fails. Check the delegate before calling it.
             completion.TrySetResult(prepared ?? string.Empty);
             controller.Dispose();
             await controller.ShutdownTask;

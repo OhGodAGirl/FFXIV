@@ -8,7 +8,7 @@ using Lumina.Excel.Sheets;
 
 namespace Exportaramus.Features.CollectionData.Catalog;
 
-// Sheet projections run in bounded framework slices. No live row survives a yielded projection.
+// Read sheets in short framework updates. Copy row values before yielding.
 public sealed class CollectionCatalogBuilder : ICatalogProjectionBuilder
 {
     private readonly IDataManager data;
@@ -25,7 +25,7 @@ public sealed class CollectionCatalogBuilder : ICatalogProjectionBuilder
     }
 
     public CatalogProjection? Projection => projection.Projection;
-    // Keep the one-millisecond budget; allow cheap rows to use that budget instead of stopping at 256.
+    // Use the one-millisecond budget rather than a fixed 256-row limit.
     public bool Advance(int maximumRows = 2048) => projection.Advance(maximumRows);
     public void Dispose() => projection.Dispose();
 
@@ -45,8 +45,7 @@ public sealed class CollectionCatalogBuilder : ICatalogProjectionBuilder
         }
         foreach (var r in Sheet<Glasses>())
             if (r.RowId != 0) yield return ("facewear", FacewearMappingPolicy.Project(r.RowId, r.Style.RowId));
-        // No experimental XBMPet columns are read. Canonical IDs are pinned to the
-        // complete row directory and native manager's 50-pet domain; capture validates it.
+        // Use row IDs and the native manager's 50-pet limit. Do not read unverified XBMPet columns.
         for (uint id = 1; id <= Capture.BeastReadPolicy.CatalogCount; id++)
             yield return ("beasts", new(id, id, $"Beast {id}", true));
         foreach (var r in Sheet<Ornament>()) yield return CatalogRowPolicy.Project(new("fashions", r.RowId, r.Singular.ToString()));

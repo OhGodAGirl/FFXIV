@@ -34,7 +34,7 @@ public sealed class DiagnosticGenerationContractTests
             Assert.Equal(0ul, controller.ActiveContentId);
             Assert.Equal(0, port.Captures);
             Assert.NotNull(withdrawalGeneration);
-            // Diagnostics schema operations.captureGeneration is an integer with minimum zero.
+            // The schema requires a nonnegative captureGeneration.
             Assert.InRange(withdrawalGeneration.Value, 0, long.MaxValue);
             Assert.InRange(controller.DiagnosticOperation(1).CaptureGeneration, 0, long.MaxValue);
             Assert.Null(controller.Publication.Current);

@@ -86,7 +86,7 @@ class PortableContractVerificationTests(unittest.TestCase):
             path.unlink()
 
     def test_canonical_legacy_fixture_is_validated_instead_of_a_private_duplicate(self):
-        # Arrange: legacy fixtures are not members of the active 1.2 checksum manifest.
+        # Arrange: add legacy fixtures outside the 1.2 manifest.
         path = self.root / 'tests/fixtures/Contracts/1.0/fixtures/valid/capabilities-valid.json'
         before = path.read_bytes()
         try:

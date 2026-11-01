@@ -22,8 +22,7 @@ public sealed class CollectionReadLifetimeRegressionTests
         var pendingRow = ReadOneUnpublishedRow(operation, reader);
         operation.Dispose();
 
-        // Match the repository's existing departing-cache lifetime test: collection
-        // is explicit, while the disposed owner deliberately remains strongly rooted.
+        // Force collection while keeping the disposed owner alive.
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();

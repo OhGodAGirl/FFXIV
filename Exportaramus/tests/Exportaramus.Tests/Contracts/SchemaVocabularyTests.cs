@@ -95,7 +95,7 @@ public sealed class SchemaVocabularyTests
         };
         var resources = Encoding.UTF8.GetBytes(schema.ToJsonString());
         Exception? failure = null;
-        // Mutation instrumentation enlarges evaluator stack frames; the tested depth limit remains 128.
+        // Mutation instrumentation uses larger stack frames. Keep the tested depth limit at 128.
         var thread = new Thread(() =>
         {
             try

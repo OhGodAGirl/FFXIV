@@ -69,7 +69,7 @@ class CurrentInputTests(unittest.TestCase):
             output = Path(directory); report = output / 'report.json'
             write(report, {'files': {scope.relative(path): {'source': path.read_bytes().decode('utf-8'), 'mutants': []}
                                     for path in included}})
-            # Act: this only tests instrumentation reconciliation, never a mutation score.
+            # Act: check instrumentation coverage, not the mutation score.
             with contextlib.redirect_stdout(io.StringIO()):
                 scope.main(['--mutation-report', str(report), '--mutation-scope', 'complete', '--output-dir', str(output / 'complete')])
                 scope.main(['--mutation-report', str(report), '--output-dir', str(output / 'provider')])
@@ -193,7 +193,7 @@ class CompleteRecordTests(unittest.TestCase):
         pristine = json.dumps(self.mutation)
         for proof in ('report', 'ledger', 'review'):
             with self.subTest(proof=proof):
-                # Arrange: artifact bytes exist, but their expected identity was omitted.
+                # Arrange: keep artifact bytes but omit the expected identity.
                 mutation = json.loads(pristine)
                 if proof == 'report':
                     mutation.pop('reportSha256')

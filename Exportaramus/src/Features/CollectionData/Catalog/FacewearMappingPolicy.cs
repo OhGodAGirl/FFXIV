@@ -15,7 +15,7 @@ public static class FacewearMappingPolicy
         return new(id, styleId, $"Facewear {id}", true);
     }
 
-    // Validate every mapped row, including variants after an owned variant.
+    // Validate all variants, even after finding one that is owned.
     public static bool Read(uint id, IEnumerable<FacewearRow> rows, Func<ushort, bool> isUnlocked)
     {
         bool found = false, owned = false;

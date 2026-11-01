@@ -88,8 +88,7 @@ public sealed class DiagnosticOutputBoundaryTests(ITestOutputHelper output)
         {
             RecentFailures = failures.ToImmutableArray()
         };
-        // Measure the actual accepted serializer output once. Expanding unescaped ASCII within
-        // schema-valid frame fields changes its canonical byte size one-for-one; hashes stay 64 bytes.
+        // Measure serialized output once. Each added ASCII character adds one byte; hashes stay at 64 bytes.
         var baseline = DiagnosticReportSerializer.Prepare(report).Utf8Bytes;
         var remaining = target - baseline;
         Assert.InRange(remaining, 0, 20 * 32 * 3 * 255);

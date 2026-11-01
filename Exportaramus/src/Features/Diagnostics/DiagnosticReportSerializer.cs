@@ -12,7 +12,7 @@ public static class DiagnosticReportSerializer
     private static readonly string[] ProhibitedNames = ["contentId", "characterName", "displayName", "world", "itemId", "itemIds", "quantity", "retainerId", "inventory", "environment", "commandLine", "clipboardText", "password", "token", "secret"];
     public static PreparedDiagnosticReport Prepare(DiagnosticReport report)
     {
-        // Only the current diagnostic report format is supported.
+
         if (report.SchemaVersion != "1.1") throw new InvalidDataException("DiagnosticSchemaInvalid");
         ValidateTypedStrings(report);
         if (report.ReportStatus == "Ready" && !report.IncompleteSections.IsEmpty || report.ReportStatus == "Partial" && report.IncompleteSections.IsEmpty)
@@ -94,7 +94,7 @@ public static class DiagnosticReportSerializer
     }
     private static void ValidateTypedStrings(DiagnosticReport report)
     {
-        // All dynamic text is scanned before serializing the allowlisted report model.
+        // Scan dynamic text before serializing the report.
         IEnumerable<string?> strings = [report.Format, report.SchemaVersion, report.ReportStatus, report.FingerprintSha256,
             report.Build.PluginVersion, report.Build.BuildConfiguration, report.Build.SourceRevision, report.Build.AssemblyInformationalVersion,
             report.Build.PackageSha256, report.Runtime.DalamudApiVersion, report.Runtime.DotnetRuntimeVersion, report.Runtime.OsVersion,

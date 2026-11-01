@@ -26,8 +26,8 @@ public sealed class DiagnosticDisposalPublicationRaceTests
             Assert.Throws<InvalidOperationException>(() => worker.WaitAsync(TimeSpan.FromSeconds(3)).GetAwaiter().GetResult());
             if (closeFirst) controller.Dispatch(DiagnosticsIntent.Close);
 
-            // Hold only the telemetry lock: Update detaches its completed worker before recording
-            // the failure. This schedules disposal before publication without changing any state.
+            // Hold the telemetry lock to pause Update after it detaches the worker. Dispose before
+            // publication resumes.
             Monitor.Enter(gate, ref held);
             update = Task.Factory.StartNew(controller.Update, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             Assert.True(SpinWait.SpinUntil(() => workerField.GetValue(controller) is null, TimeSpan.FromSeconds(3)), "Update must detach its completed worker before disposal.");

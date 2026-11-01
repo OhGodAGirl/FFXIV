@@ -1,6 +1,6 @@
 namespace Exportaramus.Features.Diagnostics;
 
-/// <summary>Owns one read-only report worker. Its source supplies immutable redacted metadata, never live services.</summary>
+/// <summary>Runs one report worker using immutable, redacted data. Do not pass live services to it.</summary>
 public sealed class DiagnosticsController : IAsyncDisposable
 {
     private readonly Func<CancellationToken, Task<DiagnosticReport>> source;

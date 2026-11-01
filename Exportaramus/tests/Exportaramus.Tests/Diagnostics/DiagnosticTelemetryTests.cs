@@ -217,8 +217,7 @@ public sealed class DiagnosticTelemetryTests
     }
     private static void CompleteFixtureCapture(CollectionReadOperation capture, int rowBudget)
     {
-        // The fixture has one catalog row per collection and seven physical sources.
-        // 128 steps allow every row/source transition even with a one-row slice.
+        // Allow 128 steps for one row per collection, seven physical sources and their transitions.
         var completed = false;
         for (var step = 0; step < 128 && !completed; step++) completed = capture.Advance(rowBudget);
         Assert.True(completed, "Fixture capture must finish within 128 bounded steps.");

@@ -1,6 +1,6 @@
 namespace Exportaramus.Features.Inventory;
 
-/// <summary>Converts a validated non-empty native slot without treating invalid zero stacks as empty.</summary>
+/// <summary>Rejects invalid zero stacks instead of treating them as empty slots.</summary>
 public static class InventorySlotPolicy
 {
     public static bool TryCreate(uint itemId, uint quantity, bool highQuality, bool crystalSlot, out InventoryItemQuantity? item)

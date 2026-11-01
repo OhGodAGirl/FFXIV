@@ -1,6 +1,6 @@
 namespace Exportaramus.Features.Inventory;
 
-/// <summary>Tracks immutable revisions while ignoring changes confined to non-Retainer locations.</summary>
+/// <summary>Tracks retainer changes only.</summary>
 public sealed class RetainerInventoryChangeObserver
 {
     private InventorySnapshot? previous;

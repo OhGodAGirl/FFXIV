@@ -15,7 +15,7 @@ public sealed class DiagnosticAsyncAllocationBoundaryTests
         var sourceThread = 0;
         var allocationThread = 0;
         var report = new DiagnosticReport { GeneratedAtUtc = new(2026, 9, 7, 0, 0, 0, DateTimeKind.Utc) };
-        // Warm preparation independently; the measured controller operation still prepares a new report.
+        // Warm preparation first. The measured operation still creates a new report.
         DiagnosticReportSerializer.Prepare(report);
         var allocator = new Thread(() =>
         {
@@ -33,8 +33,8 @@ public sealed class DiagnosticAsyncAllocationBoundaryTests
             sourceThread = Environment.CurrentManagedThreadId;
             requested.Set();
             if (!allocated.WaitOne(TimeSpan.FromSeconds(3))) throw new TimeoutException("The fixture allocator did not complete.");
-            // A completed source task keeps both timing endpoints on this actual Task.Run worker.
-            // Its thread-local counter cannot include the dedicated allocator's bytes.
+            // Complete the source task synchronously so both samples use the same worker thread. Its counter
+            // excludes the other allocator thread.
             return Task.FromResult(report);
         }, measurements, _ => { });
         allocator.Start();
@@ -87,8 +87,7 @@ public sealed class DiagnosticAsyncAllocationBoundaryTests
             Assert.NotNull(controller.View.Report);
             var reportMetric = Assert.Single(measurements.Snapshot());
             Assert.Equal("DiagnosticReport", reportMetric.Key);
-            // This metric is documented as a process-wide upper bound, including allocations
-            // made on other threads while its asynchronous operation remains outstanding.
+            // The async metric includes allocations from other threads during the operation.
             Assert.True(reportMetric.Value.AllocatedBytes.Maximum >= ownedPayloadBytes);
         }
         finally { release.TrySetResult(new() { GeneratedAtUtc = new(2026, 9, 7, 0, 0, 0, DateTimeKind.Utc) }); }

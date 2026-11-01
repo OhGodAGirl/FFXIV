@@ -1,4 +1,4 @@
-// Regression parity with Contracts/MutationValidationAllocationTests.cs, targeting the independently pinned 1.1 assembly.
+// Runs the Contracts/MutationValidationAllocationTests.cs cases against the 1.1 assembly.
 using System.Text;
 using System.Text.Json;
 using Exportaramus.ConsumerKit.V1_1;
@@ -47,7 +47,7 @@ public sealed class MutationValidationAllocationTests(ITestOutputHelper output)
         for (var index = 0; index < 8; index++) Assert.Equal(expected, CollectionDataSemanticValidator.ParseDocument(payload, 1048576, true).Code);
         var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
         output.WriteLine($"Eight rejected {defect} documents allocated {allocated} bytes after warmup.");
-        // Returning pooled JSON buffers keeps repeated failures below even two full input buffers.
+        // Returning JSON buffers to the pool keeps repeated failures below two input-buffer allocations.
         Assert.InRange(allocated, 0, 524288);
     }
 }

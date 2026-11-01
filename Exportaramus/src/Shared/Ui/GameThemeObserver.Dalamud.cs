@@ -11,8 +11,7 @@ internal sealed class GameThemeObserver(IGameConfig config)
 
     internal void Update(double seconds)
     {
-        // Called only from Framework.Update, never from construction or draw.
-        // A failed read retains the last prepared palette; first use defaults to Dark.
+        // Call from Framework.Update only. Keep the last palette on failure; default to Dark on first use.
         policy.Update(seconds);
     }
 }

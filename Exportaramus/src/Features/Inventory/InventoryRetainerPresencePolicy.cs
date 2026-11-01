@@ -3,7 +3,7 @@ using Exportaramus.Features.CollectionData.State;
 
 namespace Exportaramus.Features.Inventory;
 
-/// <summary>Projects complete, same-character Retainer observations without refreshing their read time.</summary>
+/// <summary>Uses complete retainer observations for this character. Preserves their read times.</summary>
 public static class InventoryRetainerPresencePolicy
 {
     public static CurrentItemPresenceState Capture(InventorySnapshot? snapshot, ulong contentId,

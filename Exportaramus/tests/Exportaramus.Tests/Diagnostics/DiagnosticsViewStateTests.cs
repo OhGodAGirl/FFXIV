@@ -11,7 +11,7 @@ public sealed class DiagnosticsViewStateTests
     [InlineData(true, true)]
     public void GenerateRequiresIdleWorkerWhileCopyDependsOnlyOnAcceptedReport(bool running, bool hasReport)
     {
-        // Arrange: a replacement worker may run while an earlier accepted report remains copyable.
+        // Arrange: keep the old report available while its replacement runs.
         var report = hasReport ? DiagnosticReportSerializer.Prepare(new DiagnosticReport
         {
             GeneratedAtUtc = new(2026, 10, 31, 12, 0, 0, DateTimeKind.Utc),

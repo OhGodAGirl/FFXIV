@@ -10,7 +10,7 @@ using CabinetRow = Lumina.Excel.Sheets.Cabinet;
 
 namespace Exportaramus.ApiContractTests;
 
-// Compile-only contract: never invoke native members in the offline executable.
+// Compile check only. Do not call native members from offline tests.
 internal static unsafe class ApiContractProbe
 {
     internal static void Verify(IDataManager data, IUnlockState unlock, IPlayerState player,

@@ -10,7 +10,7 @@ public sealed class InventoryPresentationIdentityTests
     [Fact]
     public void OutfitLowerBoundDoesNotCombineDifferentCharacters()
     {
-        // Arrange: the collection character has one piece; another character has the other.
+        // Arrange: give each character a different outfit piece.
         var data = SnapshotFixture.Create();
         var definition = data.Catalog.Collections["outfits"] with
         {
@@ -39,7 +39,7 @@ public sealed class InventoryPresentationIdentityTests
         // Act.
         var view = InventoryPresentation.Prepare(snapshot, bundle, SnapshotFixture.Now);
 
-        // Assert: identity mismatch cannot create an outfit ownership claim.
+        // Assert: do not combine pieces from different characters.
         Assert.Null(view.ConfirmedOutfits);
         Assert.Single(view.Locations);
         Assert.Equal(1, InventoryPresentation.Prepare(snapshot with

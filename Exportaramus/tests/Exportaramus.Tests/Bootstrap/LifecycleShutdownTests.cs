@@ -9,7 +9,7 @@ public sealed class LifecycleShutdownTests
     [Fact]
     public async Task ShutdownStartsEveryOwnerAndWaitsForItsLastWriteBeforeReleasingResources()
     {
-        // Arrange: each owner has unfinished work; later owners must start even while the first waits.
+        // Arrange: leave each shutdown task unfinished.
         var capture = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var inventory = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var diagnostics = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -25,13 +25,13 @@ public sealed class LifecycleShutdownTests
             () => order.Enqueue("resources")));
         try
         {
-            // Act: finish the capture/cache and report workers while the final configuration write remains pending.
+            // Act: finish capture, cache and report work; leave the settings write pending.
             await allStarted.Task.WaitAsync(Deadline);
             capture.SetResult();
             inventory.SetResult();
             diagnostics.SetResult();
 
-            // Assert: disposal cannot release resources until all owners, including the last writer, finish.
+            // Assert: wait for every task before releasing resources.
             Assert.False(disposed.IsCompleted);
             Assert.Equal(["capture", "inventory", "diagnostics", "configuration"], order);
             configuration.SetResult();
@@ -51,7 +51,7 @@ public sealed class LifecycleShutdownTests
     [Fact]
     public async Task ShutdownObservesFailuresAndStillWaitsForEveryIndependentOwner()
     {
-        // Arrange: one owner throws before returning a task, another faults asynchronously, and a third is pending.
+        // Arrange: one shutdown throws, one task faults and one stays pending.
         var finalWrite = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var released = false;
@@ -63,14 +63,14 @@ public sealed class LifecycleShutdownTests
             () => released = true));
         try
         {
-            // Act: allow the remaining owner to finish after the other two fail.
+            // Act: finish the pending task after the other two fail.
             await started.Task.WaitAsync(Deadline);
             Assert.False(disposed.IsCompleted);
             Assert.False(released);
             finalWrite.SetResult();
             await disposed.WaitAsync(Deadline);
 
-            // Assert: independent cleanup completes without escaping either failure.
+            // Assert: finish cleanup without rethrowing either error.
             Assert.True(released);
             LifecycleCleanup.Complete();
         }
@@ -84,7 +84,7 @@ public sealed class LifecycleShutdownTests
     [Fact]
     public void CompletedAndCancelledOwnersAreObservedOnTheCallingThread()
     {
-        // Arrange: the framework caller starts cancellation synchronously before any host resource is released.
+        // Arrange: start cancellation before releasing host resources.
         var caller = Environment.CurrentManagedThreadId;
         var threads = new List<int>();
         using var cancellation = new CancellationTokenSource();

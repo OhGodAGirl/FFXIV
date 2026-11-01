@@ -1,6 +1,6 @@
 namespace Exportaramus.Features.CollectionData.Catalog;
 
-// Framework-owned lifecycle; only immutable projections enter the worker.
+// Manage the lifecycle on the framework thread. Pass only immutable data to the worker.
 public sealed class CatalogPreparation(Func<ICatalogProjectionBuilder> createBuilder,
     Func<CatalogProjection, CancellationToken, Task<CollectionCatalog>> finalize) : IDisposable
 {

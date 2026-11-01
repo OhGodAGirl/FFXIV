@@ -10,9 +10,8 @@ public sealed class ReporterRateLimiter
         var globalNow = Refill(global, seconds, 1, 20);
         var reporterNow = reporters.TryGetValue(reporter, out var bucket) ? Refill(bucket, seconds, 0.5, 10) : new Bucket(10, seconds);
         if (globalNow.Tokens < 1 || reporterNow.Tokens < 1) return false;
-        // Fully refilled buckets are equivalent to absence and may be removed safely.
-        // Expire inactive labels on each acceptance. A label refills completely within 20 seconds;
-        // the global burst/rate admits at most 40 distinct labels in that interval.
+        // Remove full buckets: they behave like new buckets. Each refills in 20 seconds; the global limit
+        // allows at most 40 new labels in that time.
         foreach (var pair in reporters.ToArray())
             if (Refill(pair.Value, seconds, 0.5, 10).Tokens >= 10) reporters.Remove(pair.Key);
         global = new(globalNow.Tokens - 1, globalNow.At);

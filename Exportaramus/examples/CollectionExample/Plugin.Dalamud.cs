@@ -35,7 +35,7 @@ public sealed class Plugin : IDalamudPlugin
         this.chat = chat;
         this.log = log;
 
-        // Construct host bindings here; the worker invokes only Exportaramus' managed getters.
+        // Create host bindings here. Workers call only Exportaramus managed getters.
         var caps = pluginInterface.GetIpcSubscriber<string>("Exportaramus.Inventory.V1.GetCapabilities");
         var item = pluginInterface.GetIpcSubscriber<uint, string>("Exportaramus.Inventory.V1.GetItem");
         inventoryCapabilities = () => caps.InvokeFunc();
@@ -61,7 +61,7 @@ public sealed class Plugin : IDalamudPlugin
         var current = id == 0 ? null : id.ToString(CultureInfo.InvariantCulture);
         if (current == activeCharacter) return;
         activeCharacter = current;
-        // A queued result belongs to the character that requested it, even if login changes mid-read.
+        // Keep the requesting character's ID with the result; login may change during the read.
         characterGeneration++;
         requestedItem = null;
     }
@@ -95,7 +95,7 @@ public sealed class Plugin : IDalamudPlugin
             }
         }
 
-        // Keep at most one lookup in flight; consume its result on the framework thread before starting another.
+        // Run one lookup at a time. Collect the result on the framework thread before starting another.
         if (lookup is null && requestedItem is { } itemId && activeCharacter is { } character)
         {
             requestedItem = null;
@@ -173,8 +173,8 @@ public sealed class Plugin : IDalamudPlugin
         if (commandRegistered) commands.RemoveHandler(Command);
         requestedItem = null;
         characterGeneration++;
-        // Stop callbacks first, then settle work owned by this plugin before its assembly unloads.
-        // These workers do not wait for framework callbacks; adding such a dependency would make this wait unsafe.
+        // Stop callbacks, then wait for workers before unloading. Workers must not wait for framework
+        // callbacks or shutdown will deadlock.
         try { collections.DisposeAsync().AsTask().GetAwaiter().GetResult(); }
         catch (Exception error) { log.Error(error, "Collection cleanup failed."); }
         try { lookup?.GetAwaiter().GetResult(); }

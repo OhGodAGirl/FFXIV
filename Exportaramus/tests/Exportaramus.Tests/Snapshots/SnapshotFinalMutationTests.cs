@@ -113,8 +113,8 @@ public sealed class SnapshotFinalMutationTests
         {
             controller.Dispose();
             Assert.False(controller.ShutdownTask.IsCompleted);
-            // Invalidate replaces the departing source. ObserveAsync owns this final source
-            // until dependency shutdown settles, including any lazily allocated handle.
+            // ObserveAsync keeps the final source alive until shutdown finishes, including any lazily
+            // allocated handle.
             var source = Assert.IsType<CancellationTokenSource>(typeof(SnapshotController)
                 .GetField("scope", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(controller));
             var handle = source.Token.WaitHandle.SafeWaitHandle;

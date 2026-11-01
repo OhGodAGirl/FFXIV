@@ -253,7 +253,8 @@ public sealed class AtomicSnapshotStorage
         }
         if (!value.GetProperty("committed").GetBoolean())
         {
-            // Existence of the uniquely named backup (or consumed new-file temporary) records the atomic operation even if the process stopped before its next instruction.
+            // The backup or consumed temporary file shows that the atomic operation finished, even if the
+            // process stopped immediately afterward.
             if (!value.TryGetProperty("rollbackFailed", out var failed) || !failed.GetBoolean())
                 foreach (var file in files) file.Committed = File.Exists(file.Backup) || (!file.Existed && !File.Exists(file.Temporary) && File.Exists(file.Destination));
             if (files.Any(file => file.Committed))
@@ -306,7 +307,7 @@ public sealed class AtomicSnapshotStorage
             writer.WriteEndObject();
             writer.Flush();
         }
-        // Each path is generated from one fixed destination shape and a 32-digit token; 64 entries remain below the read-side 64 KiB limit.
+        // Paths use fixed prefixes and 32-digit tokens. Up to 64 entries fit within the 64 KiB read limit.
         int fileCount = files.Count;
         if (fileCount > 64) throw new InvalidDataException("Recovery record exceeds its limit.");
         var temporary = RecoveryPath + ".tmp";
@@ -332,20 +333,20 @@ public sealed class AtomicSnapshotStorage
                     file.Committed = false;
                     continue;
                 }
-                // An evidence file deliberately removed while unloaded must never be reconstructed from recovery state.
+                // Do not restore an evidence file removed while the plugin was unloaded.
                 if (!File.Exists(file.Destination) && file.Destination.EndsWith("reported-evidence.json", StringComparison.Ordinal))
                 {
                     file.Committed = false;
                     continue;
                 }
                 if (!File.Exists(file.Backup)) throw new IOException("Previous snapshot backup is unavailable.");
-                // A pruned history destination can reappear only after its prior rollback restore completed.
+                // A pruned history file may reappear only after its rollback restore finished.
                 if (file.Delete && File.Exists(file.Destination))
                 {
                     file.Committed = false;
                     continue;
                 }
-                // Keep the original backup replayable until durable rollback progress precedes cleanup.
+                // Keep the backup until rollback progress is saved to disk.
                 var attributes = File.GetAttributes(file.Backup);
                 if (File.Exists(file.Temporary)) PreparePrivateFile(file.Temporary);
                 files.Copy(file.Backup, file.Temporary, true);
@@ -380,7 +381,7 @@ public sealed class AtomicSnapshotStorage
         RecoveryState = "None";
     }
 
-    // Only exact owned temporary/backup paths reach this helper; destination attributes are preserved.
+    // Accept only this operation's temporary and backup paths. Preserve destination attributes.
     private static void PreparePrivateFile(string path) => File.SetAttributes(path, File.GetAttributes(path) & ~FileAttributes.ReadOnly);
 
     private sealed class PreparedFile(string destination, string temporary, string backup, bool existed, bool delete)

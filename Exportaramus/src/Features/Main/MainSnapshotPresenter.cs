@@ -6,12 +6,12 @@ using Exportaramus.Features.GuidedExport;
 
 namespace Exportaramus.Features.Main;
 
-/// <summary>Projects bounded snapshot metadata. Collection item arrays and payload strings are never scanned here.</summary>
+/// <summary>Reads snapshot metadata only. Do not scan item arrays or payload strings here.</summary>
 public static class MainSnapshotPresenter
 {
     private static bool IsComplete(AcceptedSnapshotBundle bundle)
     {
-        // Capture success and reader coverage are separate. Omitted/closed windows do not undo a successful read.
+        // Closed or omitted windows do not invalidate an earlier successful read.
         if (bundle.Data.State.CaptureType == CaptureType.Restored || bundle.Data.Collections.Count == 0) return false;
         foreach (var definition in MainPresenter.Collections)
         {

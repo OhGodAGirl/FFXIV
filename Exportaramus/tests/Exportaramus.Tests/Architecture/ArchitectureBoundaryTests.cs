@@ -88,7 +88,7 @@ public sealed class ArchitectureBoundaryTests
         Assert.Contains("Version == ReaderCompatibility.CurrentGameVersion", retainerAdapter);
         Assert.Contains("capturedAddon", retainerAdapter);
         Assert.Single(Regex.Matches(retainerAdapter, @"->InteractWithObject\("));
-        // Retainer exit uses the validated owner callback; only final window cleanup uses Close.
+        // Use the retainer callback to exit. Use Close only for final window cleanup.
         Assert.Single(Regex.Matches(retainerAdapter, @"->Close\("));
         Assert.Single(Regex.Matches(retainerAdapter, @"->FireCallbackInt\(-1\)"));
         Assert.Contains("callback.AgentInterface != (AgentInterface*)retainer", retainerAdapter);

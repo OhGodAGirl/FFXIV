@@ -63,7 +63,7 @@ public sealed class RecoveryLimitDecisionTests : IDisposable
         for (var index = 0; index < 85; index++)
             await File.WriteAllTextAsync(Path.Combine(folder, $"manual-snapshot-20260905-000000-{index:000}.json"), "{}");
 
-        // Three new outputs plus 61 obsolete history files produce exactly 64 journal entries.
+        // Three outputs and 61 old files fill the 64-entry journal limit.
         var result = await storage.CommitAsync(1, "{\"accepted\":true}", "{\"rich\":true}", null, true, false, SnapshotFixture.Now, default);
 
         Assert.Equal(25, result.HistoryCount);

@@ -1,6 +1,6 @@
 namespace Exportaramus.Shared.Ui;
 
-/// <summary>Bounds theme sampling and preserves prepared colors when observation fails.</summary>
+/// <summary>Limits theme polling and keeps the last colors if a read fails.</summary>
 public sealed class ThemeObservationPolicy(Func<uint?> read, Action<uint> apply)
 {
     private double nextRead;
@@ -22,7 +22,7 @@ public sealed class ThemeObservationPolicy(Func<uint?> read, Action<uint> apply)
         }
         catch (Exception)
         {
-            // A failed observation leaves the last prepared palette unchanged.
+
         }
     }
 }

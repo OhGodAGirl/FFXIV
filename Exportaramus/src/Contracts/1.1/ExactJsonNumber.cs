@@ -2,7 +2,7 @@ using System.Globalization;
 
 namespace Exportaramus.ConsumerKit.V1_1;
 
-/// <summary>Exact decimal token arithmetic with work proportional to token length, never exponent magnitude.</summary>
+/// <summary>Exact decimal arithmetic. Cost depends on token length, not exponent size.</summary>
 internal sealed class ExactJsonNumber
 {
     private readonly bool negative;
@@ -108,7 +108,7 @@ internal sealed class ExactJsonNumber
         return result[0] == '0' ? new string(result, 1, result.Length - 1) : new string(result);
     }
 
-    // Caller supplies larger > smaller; zero and sign are handled before this subtraction.
+    // The caller handles zero and sign and requires larger > smaller.
     private static string SubtractMagnitude(ReadOnlySpan<char> larger, ReadOnlySpan<char> smaller)
     {
         var result = new char[larger.Length];

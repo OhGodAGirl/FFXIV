@@ -40,7 +40,7 @@ public sealed class ControllerIncompleteWorkerTests
         }
         finally
         {
-            // Release the source before joining a potentially regressed synchronous Update.
+            // Release the source before waiting for Update, in case Update blocks.
             files.Release.TrySetResult();
             try
             {

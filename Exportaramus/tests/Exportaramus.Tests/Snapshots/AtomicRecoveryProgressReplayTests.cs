@@ -55,7 +55,7 @@ public sealed class AtomicRecoveryProgressReplayTests : IDisposable
         var retainedEvidenceBackup = Assert.Single(Directory.GetFiles(Path.GetDirectoryName(storage.EvidencePath(1))!, "reported-evidence.json.*.tmp.bak"));
         Assert.Equal("{\"oldReport\":true}", await File.ReadAllTextAsync(retainedEvidenceBackup));
 
-        // Only the unfinished compact restore becomes available; completed evidence must not be copied again.
+        // Retry only the unfinished compact restore. Do not recopy completed evidence.
         phase = 2;
         Assert.Equal("{\"old\":true}", await storage.ReadAsync(1, false, default));
         Assert.Equal(0, completedFileRetries);

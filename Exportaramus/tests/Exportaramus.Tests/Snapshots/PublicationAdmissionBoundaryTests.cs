@@ -54,7 +54,7 @@ public sealed class PublicationAdmissionBoundaryTests : IDisposable
         Assert.True(prepared.Bundle.CompactBytes > 0);
         Assert.DoesNotContain("FileWrite", measurements.Snapshot().Keys);
 
-        // A prior interrupted preparation has a valid journal and an uninstalled temporary payload.
+        // Leave a valid journal and an uncommitted temporary payload from an interrupted write.
         var recovery = Path.Combine(root, "state", "write-recovery.json");
         var relative = "snapshots/characters/123/collection-data.json";
         var temporary = relative + "." + new string('a', 32) + ".tmp";

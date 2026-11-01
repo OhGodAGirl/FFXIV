@@ -103,8 +103,7 @@ public sealed unsafe class CollectionReader : ICollectionReader
             var sheet = data.GameData.Excel.GetRawSheet("XBMPet");
             BeastReadPolicy.ValidateCatalog(sheet.Count, sheet.HasRow(0), sheet.HasRow);
             beastCount = manager->NumUnlockedPets;
-            // The pointer exists only within this call. The cache contains owned IDs,
-            // never a native object, and is invalidated for every capture operation.
+            // Cache IDs, not native pointers. Clear the cache before each capture.
             var address = (nint)manager;
             beastUnlocks = BeastReadPolicy.Read(true, beastCount,
                 value => ((XBMManager*)address)->IsPetUnlocked(value),
@@ -200,7 +199,7 @@ public sealed unsafe class CollectionReader : ICollectionReader
             throw new SourceReadException(ReasonCode.MappingValidationFailed);
         var nativeRow = ExdModule.GetItemRowById(itemId);
         if (nativeRow == null) throw new SourceReadException(ReasonCode.NotLoadedThisSession);
-        // The game may request its server-owned cache on the first query. Pending is never unowned.
+        // The first query may request data from the server. Pending does not mean unowned.
         var result = initial->IsItemActionUnlocked(nativeRow);
         if (initial != UIState.Instance() || state != PlayerState.Instance() || !state->IsLoaded)
             throw new SourceReadException(ReasonCode.CaptureFailed);

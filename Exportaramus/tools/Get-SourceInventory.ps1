@@ -23,7 +23,7 @@ foreach ($root in $roots) {
     $pending.Push($directory)
     while ($pending.Count -gt 0) {
         foreach ($entry in Get-ChildItem -LiteralPath $pending.Pop() -Force) {
-            # Never traverse links/junctions into historical or external trees.
+            # Do not follow links or junctions.
             if (($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { continue }
             if ($entry.PSIsContainer) {
                 if ($entry.Name -notin $excludedDirectories) { $pending.Push($entry.FullName) }

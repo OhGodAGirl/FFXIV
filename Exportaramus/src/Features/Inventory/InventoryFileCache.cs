@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Exportaramus.Features.Inventory;
 
-/// <summary>Worker-only, character-scoped cache; unrelated collection output is never touched.</summary>
+/// <summary>Use this character's inventory cache only from a worker thread.</summary>
 public sealed class InventoryFileCache(string configurationDirectory, Func<string, Stream>? openRead = null, Action<string, string>? commitFile = null) : IInventoryCache
 {
     public const int MaximumBytes = 4 * 1024 * 1024;
@@ -26,7 +26,7 @@ public sealed class InventoryFileCache(string configurationDirectory, Func<strin
                 if (stream.Length > MaximumBytes) throw new InvalidDataException("InventoryCacheSizeLimit");
                 var bytes = new byte[checked((int)stream.Length)];
                 await stream.ReadExactlyAsync(bytes, cancellationToken).ConfigureAwait(false);
-                // Reject growth after the size check rather than reading an unbounded stream.
+                // Reject files that grow beyond the size limit during a read.
                 if (stream.ReadByte() != -1) throw new InvalidDataException("InventoryCacheChangedDuringRead");
                 parsed = Parse(bytes, contentId);
             }
@@ -46,7 +46,7 @@ public sealed class InventoryFileCache(string configurationDirectory, Func<strin
             prior = await LoadAsync(snapshot.ContentId, cancellationToken).ConfigureAwait(false);
         }
         catch (InvalidDataException) { prior = null; }
-        // Captures may precede startup restoration. Preserve unseen locations in the same cache only.
+        // Capture can run before restore. Keep this character's cached locations that have not been read yet.
         if (prior is not null) snapshot = InventoryPolicy.Restore(snapshot, prior);
         var bytes = JsonSerializer.SerializeToUtf8Bytes(new InventoryCacheDocument("1.0", snapshot), InventoryCacheJsonContext.Default.InventoryCacheDocument);
         if (bytes.Length > MaximumBytes) throw new InvalidDataException("InventoryCacheSizeLimit");

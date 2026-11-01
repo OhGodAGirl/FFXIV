@@ -10,7 +10,7 @@ public interface ICollectionDataTransport : IDisposable
     string Report(string contentId, uint itemId, string reporter);
 }
 
-/// <summary>Call TickAsync outside draw/events on a bounded discovery cadence. Notices only enqueue bounded hints.</summary>
+/// <summary>Call TickAsync periodically, outside draw and event handlers. Notices queue a refresh.</summary>
 public sealed class CollectionDataIpcClient : IAsyncDisposable
 {
     private readonly object sync = new();

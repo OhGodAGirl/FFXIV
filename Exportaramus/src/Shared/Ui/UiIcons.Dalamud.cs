@@ -3,7 +3,7 @@ using Dalamud.Bindings.ImGui;
 
 namespace Exportaramus.Shared.Ui;
 
-/// <summary>Product-owned vector line icons share one stroke weight and warm-gold treatment.</summary>
+/// <summary>Vector icons use a shared stroke width and color.</summary>
 internal static class UiIcons
 {
     internal static void Draw(string key, Vector2 origin, float size)

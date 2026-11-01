@@ -60,8 +60,8 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
         bellIds = data.GetExcelSheet<EObjName>(ClientLanguage.English)
             .Where(row => row.Singular.ExtractText().Equals("Summoning Bell", StringComparison.OrdinalIgnoreCase))
             .Select(row => row.RowId).ToImmutableHashSet();
-        // Local Addon 2378 is the inventory menu, with the filled-slot number as its first macro.
-        // Keep all localized text before that macro and require one unique matching menu entry.
+        // Addon 2378 contains the inventory menu label. Match the text before its first macro and require one
+        // matching entry.
         var template = data.GetExcelSheet<Addon>().GetRow(2378).Text.Data.Span;
         var macro = template.IndexOf((byte)2);
         inventoryPrefix = Encoding.UTF8.GetString(macro >= 0 ? template[..macro] : template).Trim();
@@ -175,7 +175,7 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
         var index = -1;
         for (var i = 0; i < roster.Length; i++) if (roster[i].RetainerId == retainerId) index = i;
         if (index < 0 || roster.Count(row => row.Name == roster[index].Name) != 1) return false;
-        // Resolve the displayed row independently of undocumented agent count/order fields.
+        // Use the displayed row; agent count and order fields are undocumented.
         var list = FindRetainerList(addon, roster[index].Name, out var displayedIndex);
         selectionStatus = "Waiting for an enabled Retainer row with the expected name.";
         if (list == null || list->GetItemDisabledState(displayedIndex) || !Ready(addon)) return false;
@@ -222,9 +222,8 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
             !module->AddonCallbackMapping.TryGetValue(in callbackId, out var callback, false) ||
             callback.AgentInterface != (AgentInterface*)retainer || callback.EventKind != 0)
             return false;
-        // On the validated client both Retainer layouts send -2 from Close(true), which
-        // removes the addon without clearing Entrust mode. The owned -1 callback runs
-        // the native exit path. Its return value is not a completion acknowledgement.
+        // Both tested layouts send -2 from Close(true), leaving Entrust mode active. Callback -1 runs the
+        // exit path. Wait for the window state to confirm completion.
         inventoryCloseRequested = true;
         _ = addon->FireCallbackInt(-1);
         return false;
@@ -243,7 +242,7 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
 
     public bool CloseOverviewAndInventory()
     {
-        // Only reached after the last retainer has returned to the overview.
+
         if (!RetainerContextCleared()) return false;
         foreach (var name in new[] { "Inventory", "InventoryLarge", "InventoryExpansion", "RetainerList" })
         {
@@ -283,8 +282,7 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
             if (node == null) continue;
             var componentNode = node->GetAsAtkComponentNode();
             if (componentNode == null || componentNode->Component == null) continue;
-            // TreeList inherits AtkComponentList at offset zero in the installed client structs.
-            // RetainerList can use this derived control rather than an exact List component.
+            // TreeList inherits AtkComponentList at offset 0. RetainerList may use either type.
             var componentType = componentNode->Component->GetComponentType();
             if (componentType is not (ComponentType.List or ComponentType.TreeList)) continue;
             var list = (AtkComponentList*)componentNode->Component;
@@ -342,7 +340,7 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
             selectionStatus = "Waiting for the active Retainer identity during dialogue.";
             return;
         }
-        // Match the user's observed Talk click: normal receiver, stage target, matching state.
+        // Use the observed Talk click parameters: normal receiver, stage target, matching state.
         var stage = AtkStage.Instance();
         if (stage == null)
         {

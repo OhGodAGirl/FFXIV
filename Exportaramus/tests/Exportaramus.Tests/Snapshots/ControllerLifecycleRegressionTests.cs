@@ -16,8 +16,7 @@ public sealed class ControllerLifecycleRegressionTests
             prepareCapabilities: work => Task.FromResult(work()));
         try
         {
-            // Establish an active character without starting an asynchronous restoration.
-            // Neither withdrawal event has subscribers in this fixture.
+            // Set an active character without starting restore. Leave withdrawal events unsubscribed.
             controller.Update(123, "Fixture", false, false, 0, SnapshotFixture.Now);
             Assert.Equal(123ul, controller.ActiveContentId);
             if (logoutFirst)
@@ -34,7 +33,7 @@ public sealed class ControllerLifecycleRegressionTests
             Assert.Equal("Disposed", controller.DiagnosticOperation(2).ControllerState);
             Assert.Empty(controller.Publication.GetSnapshot());
 
-            // This is a contract assertion in the test body, not an incidental cleanup call.
+            // Assert disposal here so cleanup cannot hide a failure.
             Assert.Null(Record.Exception(controller.Dispose));
             Assert.True(controller.ShutdownTask.IsCompletedSuccessfully);
             Assert.Equal("Disposed", controller.DiagnosticOperation(2).ControllerState);
@@ -86,8 +85,7 @@ public sealed class ControllerLifecycleRegressionTests
 
     private static async Task FinishWithoutReplacingBodyFailure(SnapshotController controller)
     {
-        // A mutation that breaks Dispose must remain attributed to the body assertion.
-        // The held read is released by its caller before reaching this cleanup helper.
+        // The caller releases the read first. Keep Dispose failures attached to the test assertion.
         try
         {
             controller.Dispose();

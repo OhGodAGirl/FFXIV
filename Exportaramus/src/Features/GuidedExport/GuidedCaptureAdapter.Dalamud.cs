@@ -8,7 +8,8 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace Exportaramus.Features.GuidedExport;
 
-/// <summary>Admits explicit development compatibility separately from supervised proof. Reacquires native objects for each action.</summary>
+/// <summary>Checks development compatibility and reacquires native objects before each action. In-game
+/// validation is separate.</summary>
 public sealed unsafe class GuidedCaptureAdapter
 {
     private readonly IPlayerState player;

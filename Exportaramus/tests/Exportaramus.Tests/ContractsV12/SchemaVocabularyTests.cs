@@ -1,4 +1,4 @@
-// Regression parity with Contracts/SchemaVocabularyTests.cs, targeting the independently pinned 1.2 assembly.
+// Runs the Contracts/SchemaVocabularyTests.cs cases against the 1.2 assembly.
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -96,7 +96,7 @@ public sealed class SchemaVocabularyTests
         };
         var resources = Encoding.UTF8.GetBytes(schema.ToJsonString());
         Exception? failure = null;
-        // Mutation instrumentation enlarges evaluator stack frames; the tested depth limit remains 128.
+        // Mutation instrumentation uses larger stack frames. Keep the tested depth limit at 128.
         var thread = new Thread(() =>
         {
             try

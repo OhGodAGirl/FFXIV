@@ -35,7 +35,7 @@ public sealed class ReportBackpressureDecisionTests
     {
         var limiter = new ReporterRateLimiter();
         for (var i = 0; i < 1000; i++) Assert.True(limiter.TryAccept("Reporter " + i, i * 2));
-        // Inspect retained storage to prove the documented resource bound, not just successful admission.
+        // Check retained storage against the resource limit.
         var field = typeof(ReporterRateLimiter).GetField("reporters", BindingFlags.Instance | BindingFlags.NonPublic)!;
         Assert.InRange(((IDictionary)field.GetValue(limiter)!).Count, 1, 40);
     }

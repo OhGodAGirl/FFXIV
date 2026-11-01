@@ -1,4 +1,4 @@
-// Regression parity with Contracts/MutationConsumerTests.cs, targeting the independently pinned 1.2 assembly.
+// Runs the Contracts/MutationConsumerTests.cs cases against the 1.2 assembly.
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;

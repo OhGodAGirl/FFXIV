@@ -37,7 +37,7 @@ public sealed class PromptCapturePolicyTests
     {
         var policy = new PromptCapturePolicy();
         policy.SetCharacter(123, 0);
-        policy.Take(15); // The independent fallback visits mounts.
+        policy.Take(15); // Fallback visits mounts.
         for (var i = 0; i < 1000; i++) policy.Hint("orchestrions", 123, 20 + i / 10000.0);
         Assert.DoesNotContain("orchestrions", policy.Take(20.249));
         Assert.Equal(1, policy.Take(20.25).Count(key => key == "orchestrions"));

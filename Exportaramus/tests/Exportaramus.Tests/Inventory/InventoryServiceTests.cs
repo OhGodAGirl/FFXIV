@@ -301,7 +301,7 @@ public sealed class InventoryServiceTests
         service.SetCharacter(1);
         await service.DisposeAsync();
         service.Pump();
-        // Check ownership synchronously: a queued task can fault before reaching the cache.
+        // Inspect the worker directly; a queued task may fail before calling the cache.
         var workerField = typeof(InventoryService).GetField("worker",
             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
         Assert.NotNull(workerField);

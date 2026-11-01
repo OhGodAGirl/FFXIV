@@ -64,7 +64,7 @@ public sealed class ReportedEvidenceQueue
             }
             if (!limiter.TryAccept(label, monotonicSeconds)) return "RateLimited";
             pending[key] = new(itemId, label, utcNow);
-            retained.Add(key); // Reserve accepted keys until the owned persistence attempt completes.
+            retained.Add(key); // Reserve accepted keys until the save finishes.
             return "Accepted";
         }
     }

@@ -16,7 +16,7 @@ public sealed class StoredStateMalformedValueTests
         // Act.
         var failure = Record.Exception(() => CollectionStateReader.Read(payload, 123, session, SnapshotFixture.Now));
 
-        // Assert: startup restoration recognizes this as invalid saved data and can continue.
+        // Assert: reject invalid saved data without stopping startup.
         Assert.IsType<InvalidDataException>(failure);
     }
 
@@ -32,7 +32,7 @@ public sealed class StoredStateMalformedValueTests
         // Act.
         var failure = Record.Exception(() => CollectionStateReader.ReadReports(payload, 123));
 
-        // Assert: malformed evidence cannot escape as a null-reference failure.
+        // Assert: reject malformed evidence without a null-reference error.
         Assert.IsType<InvalidDataException>(failure);
     }
 }

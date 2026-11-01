@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 
 namespace Exportaramus.Features.Diagnostics;
 
-/// <summary>Combines measured immutable metadata, retaining explicit incompleteness for unobserved domains.</summary>
+/// <summary>Combines measurements. Leaves unmeasured fields marked incomplete.</summary>
 public static class DiagnosticRuntimeEnricher
 {
     public static DiagnosticReportInput Apply(DiagnosticReportInput input, DiagnosticRuntime runtime,

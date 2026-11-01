@@ -257,7 +257,7 @@ def main():
             raise ValueError('Copied input hash differs: ' + relative)
     project = snapshot / 'tests/Exportaramus.Tests/Exportaramus.Tests.csproj'
     build_command = [dotnet, 'build', project, '-c', 'Release', '--no-restore', '--nologo', '-v:minimal']
-    # Exactly the configured offline test assembly and runsettings, without a test filter or fail-fast option.
+    # Run the configured assembly and settings without filtering tests or stopping at the first failure.
     test_command = [dotnet, 'test', project, '-c', 'Release', '--no-restore', '--nologo',
                     '--settings', snapshot / 'tests/coverage.runsettings', '--collect:XPlat Code Coverage']
     baseline = {'restore': execute([dotnet, 'restore', project, '--locked-mode', '--nologo'], snapshot,
@@ -330,7 +330,7 @@ def main():
     summary['restoredInputsUnchanged'] = not summary['changedInputs']
     summary['statusCounts'] = {status: sum(row['outcome'] == status for row in summary['results']) for status in ('Killed', 'Survived', 'Timeout', 'Error')}
     save(output / 'independent-mutation-summary.json', summary)
-    # Successful execution is distinct from an approved gate. Every non-killed outcome remains explicitly unresolved.
+    # A completed run is not a passing mutation result. Every non-killed mutant needs review.
     return 0 if summary['restoredInputsUnchanged'] and all(row['outcome'] == 'Killed' for row in summary['results']) else 1
 
 

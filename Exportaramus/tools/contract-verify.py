@@ -90,7 +90,7 @@ def verify_catalog(directory, registry, schemas, extra_keys=()):
                 catalog['minimum'] == min(ids) and catalog['maximum'] == max(ids) and
                 all(isinstance(value, int) and not isinstance(value, bool) and value > 0 for value in ids),
                 f'Invalid recognized-ID catalog: {catalog["key"]}')
-        # The additive Beasts catalog pins a compact JSON ID array; legacy catalogs pin comma-separated IDs.
+        # The Beasts catalog uses a JSON ID array; older catalogs use comma-separated IDs.
         encoded = json.dumps(ids, separators=(',', ':')) if catalog['key'] in extra_keys else ','.join(map(str, ids))
         require(hashlib.sha256(encoded.encode()).hexdigest() == catalog['idsSha256'],
                 f'Catalog checksum differs: {catalog["key"]}')

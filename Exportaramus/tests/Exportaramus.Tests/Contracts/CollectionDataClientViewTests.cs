@@ -15,7 +15,7 @@ public sealed class CollectionDataClientViewTests
         // Act.
         var withdrawn = V1.CollectionDataClientView.Empty(V1.CollectionDataAvailability.Unavailable, V1.CollectionDataValidationCode.ProviderUnavailable);
 
-        // Assert: a withdrawal cannot expose the old publication identity or revision.
+        // Assert: withdrawal clears the old publication identity and revision.
         Assert.Equal(V1.CollectionDataAvailability.Unavailable, withdrawn.Availability);
         Assert.Equal(V1.CollectionDataValidationCode.ProviderUnavailable, withdrawn.Failure);
         Assert.Null(withdrawn.Snapshot);

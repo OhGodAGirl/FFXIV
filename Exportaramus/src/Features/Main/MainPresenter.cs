@@ -5,7 +5,7 @@ namespace Exportaramus.Features.Main;
 
 public static class MainPresenter
 {
-    // Explicit frontend row-major order, independent of backend map or serializer ordering.
+    // UI row order does not follow map or serializer order.
     public static readonly ImmutableArray<(string Key, string Label, string Icon)> Collections =
     [
         ("aetherytes", "Aetherytes", "Diamond"), ("armoires", "Armoire", "Storage"), ("bardings", "Bardings", "Shield"),

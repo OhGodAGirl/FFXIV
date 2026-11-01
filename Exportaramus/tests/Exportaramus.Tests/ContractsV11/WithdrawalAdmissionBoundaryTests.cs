@@ -1,4 +1,4 @@
-// Regression parity with Contracts/WithdrawalAdmissionBoundaryTests.cs, targeting the independently pinned 1.1 assembly.
+// Runs the Contracts/WithdrawalAdmissionBoundaryTests.cs cases against the 1.1 assembly.
 using System.Text.Json.Nodes;
 using Exportaramus.ConsumerKit.V1_1;
 

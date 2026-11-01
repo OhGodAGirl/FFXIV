@@ -7,8 +7,8 @@ namespace Exportaramus.Tests.Diagnostics;
 [Collection(Exportaramus.Tests.Performance.OfflinePerformanceCollection.Name)]
 public sealed class DiagnosticAdmissionBudgetTests(ITestOutputHelper output)
 {
-    // Invalid metadata must be rejected before allocating canonical/output copies of a large report.
-    // The prepared object graph is outside the measurement; 64 KiB permits validation bookkeeping.
+    // Reject invalid metadata before copying the report. Exclude fixture setup from the measurement; allow 64
+    // KiB for validation.
     private const long AdmissionAllocationBudget = 64 * 1024;
     private static DiagnosticReport LargeReport()
     {
@@ -88,7 +88,7 @@ public sealed class DiagnosticAdmissionBudgetTests(ITestOutputHelper output)
 
     private void AssertAdmissionBudget(DiagnosticReport invalid)
     {
-        // Warm the exception and regex paths without counting JIT/static initialization.
+        // Warm exception and regex code before measuring allocations.
         Assert.Throws<InvalidDataException>(() => DiagnosticReportSerializer.Prepare(invalid));
         Assert.Throws<InvalidDataException>(() => DiagnosticReportSerializer.Prepare(invalid));
         Exception? error = null;

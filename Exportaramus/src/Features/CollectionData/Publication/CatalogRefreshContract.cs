@@ -5,7 +5,7 @@ using Exportaramus.Bootstrap;
 using Exportaramus.Features.CollectionData.Catalog;
 namespace Exportaramus.Features.CollectionData.Publication;
 
-// Additive September catalog receipt; the original contract and consumer kits remain frozen.
+// Extends the catalog without changing the original contract or consumer kits.
 public sealed record CatalogRefreshContract(ImmutableDictionary<string, ImmutableHashSet<uint>> Additions, ImmutableArray<CatalogItem> Outfits)
 {
     public const string GameDataVersion = "2026.09.01.0000.0000";

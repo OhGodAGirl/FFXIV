@@ -52,7 +52,7 @@ public sealed class BoundedCatalogProjection : ICatalogProjectionBuilder
             if (entry.Key == "@items")
             {
                 knownItems.Add(entry.Item.Id);
-                // Keep display metadata for the dynamic Dresser collection; publication selects only observed IDs.
+                // Keep Dresser display metadata; publish only observed IDs.
                 items.Add(("glamour_dresser", entry.Item));
             }
             else if (entry.Item.Id != 0) items.Add(entry);

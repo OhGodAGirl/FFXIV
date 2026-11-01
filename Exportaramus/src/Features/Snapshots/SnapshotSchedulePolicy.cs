@@ -74,7 +74,7 @@ public sealed class SnapshotSchedulePolicy
         };
         retryRequest = request;
         retryDue = now + delay;
-        // Move an already elapsed due time to its next normal cadence so it cannot bypass backoff.
+        // Advance overdue work to the next interval so it cannot bypass backoff.
         if (request == CaptureRequest.AutomaticFull && fullDue <= now) fullDue = now + FullInterval;
         if (presenceDue <= now) presenceDue = now + PresenceInterval;
     }

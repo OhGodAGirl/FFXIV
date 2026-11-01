@@ -19,8 +19,8 @@ public sealed class OwnedControllerLifetimeTests
         var controller = new SnapshotController(new Port(), storage, null, prepareCapabilities: work => Task.FromResult(work()));
         try
         {
-            // First queue completed fixture capabilities, then start restoration exactly once.
-            // Do not pump Update against a deliberately held read during fixture setup.
+            // Prepare capabilities, then start one restore. Do not call Update again while setup holds the
+            // read.
             controller.Update(123, "Fixture", false, false, 0, SnapshotFixture.Now);
             controller.Update(123, "Fixture", false, false, 0, SnapshotFixture.Now);
             await files.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));

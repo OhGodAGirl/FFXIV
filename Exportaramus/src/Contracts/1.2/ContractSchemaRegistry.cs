@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Exportaramus.ConsumerKit.V1_2;
 
-/// <summary>Offline Draft 2020-12 evaluator for every assertion vocabulary used by the pinned schemas.</summary>
+/// <summary>Validates JSON against the bundled Draft 2020-12 schemas.</summary>
 public sealed class ContractSchemaRegistry
 {
     private readonly Dictionary<string, JsonElement> schemas = new(StringComparer.Ordinal);

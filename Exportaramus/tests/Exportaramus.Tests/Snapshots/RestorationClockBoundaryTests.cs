@@ -19,7 +19,7 @@ public sealed class RestorationClockBoundaryTests
     [InlineData("1.2", true)]
     public async Task RestoredPublicationsMustValidateWithoutChangingTheirObservationTimes(string version, bool clockMovedBack)
     {
-        // Arrange: the saved snapshot is valid at its recorded capture time.
+        // Arrange: save a snapshot valid at its capture time.
         var fixture = SnapshotFixture.Create();
         var saved = version switch
         {
@@ -35,10 +35,10 @@ public sealed class RestorationClockBoundaryTests
         var now = SnapshotFixture.Now.AddHours(clockMovedBack ? -1 : 1);
         try
         {
-            // Act: restore using a clock either after or before the actual saved observation.
+            // Act: restore with a clock before or after the saved observation.
             await Pump(controller, now, 0, () => controller.Reports.Available && !controller.Busy);
 
-            // Assert: never publish invalid timestamps or refresh an observation by rewriting its time.
+            // Assert: reject invalid timestamps and preserve the observation time.
             Assert.Equal(saved, await storage.ReadAsync(123, false, default));
             if (clockMovedBack)
             {

@@ -7,7 +7,7 @@ using CabinetRow = Lumina.Excel.Sheets.Cabinet;
 
 namespace Exportaramus.Features.CollectionData.Capture;
 
-// Readiness observations do not establish supervised validation. Incompatible sources perform no native read.
+// Do not read incompatible sources. Readiness alone does not prove in-game behavior.
 public sealed unsafe class StorageReadinessObserver(CollectionReader reader, IDataManager data, IGameGui gui, IUnlockState unlocks)
 {
     private readonly StorageReadinessPolicy policy = new();

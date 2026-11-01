@@ -331,7 +331,7 @@ public sealed class SnapshotController : IDisposable
                 var data = CollectionDataAssembler.Assemble(catalog, restoredState);
                 try
                 {
-                    // Restoration must satisfy the same current contract checks as a new publication.
+                    // Apply the same contract checks to restored and newly captured data.
                     bundle = output.Prepare(data, string.Empty, nextRevision, null, false, false, token, evidenceHealthy).Bundle with
                     {
                         Export = PreparedFFXIVCollectExport.Unavailable("Sync to prepare FFXIV Collect output."),
@@ -360,7 +360,7 @@ public sealed class SnapshotController : IDisposable
     };
     private void StartPublication(RawCaptureBatch raw, DateTimeOffset now)
     {
-        // All normalization is owned by the background worker after the immutable native read completes.
+        // Normalize copied data on the worker after the native read finishes.
         StartWorker(state!, false, raw: raw, capturedAt: now);
     }
     private void StartReports(DateTimeOffset now)
@@ -432,7 +432,7 @@ public sealed class SnapshotController : IDisposable
                 };
             }
             var observed = !isTargeted ? default : raw!.Unlocks.Keys.Concat(raw.CurrentItemPresence.Keys).Order(StringComparer.Ordinal).ToImmutableArray();
-            // Unchanged fallback/hint probes do not churn timestamps, disk writes or notices.
+            // Skip timestamp updates, saves and notices when a probe finds no changes.
             if (isTargeted && previous is not null && !TargetedCaptureChangePolicy.HasChanges(previous.Data.State, candidate, raw!))
             {
                 return new WorkerResult(gen, id, candidate, null, false, reportsAvailable, Targeted: true, Observed: observed);

@@ -30,7 +30,7 @@ public sealed class ProductCollectTests
                 Items = [.. ids.Select(id => new CollectionItem(id, "Fixture", id == ids[0], collection.Items[0].OwnershipEvidence))]
             };
         }
-        // This fixture supplies accepted projection values to the stateless serializer. Derivation has separate tests.
+        // Test serialization with prepared values. Derivation is tested separately.
         return fixture with
         {
             Catalog = fixture.Catalog with
@@ -52,7 +52,7 @@ public sealed class ProductCollectTests
         Assert.Null(result.Error);
         Assert.Equal<string>(["beasts"], result.OmittedKeys);
         Assert.Equal(CollectionKeys.Collect.ToArray(), result.IncludedKeys.ToArray());
-        // The complete catalog fixture proves the fifteen original keys; its Beasts domain is deliberately incomplete.
+        // This fixture covers the original 15 keys. Its Beasts data is incomplete.
         Assert.NotNull(contract.Beasts);
         Assert.True(contract.Beasts.SupportsGameVersion(data.Catalog.GameDataVersion));
         using var document = JsonDocument.Parse(result.Json!);
