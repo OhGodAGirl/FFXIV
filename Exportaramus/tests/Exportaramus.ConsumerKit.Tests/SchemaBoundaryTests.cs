@@ -53,6 +53,10 @@ public sealed class SchemaBoundaryTests
     [InlineData("-0e-99999999999999999999", true)]
     [InlineData("100e-2", true)]
     [InlineData("1.0000000000000000000000000000001", false)]
+    [InlineData("100e-3", false)]
+    [InlineData("-100e-3", false)]
+    [InlineData("10e-2", false)]
+    [InlineData("-10e-2", false)]
     public void IntegerValidationDoesNotRoundFractions(string value, bool accepted) =>
         Assert.Equal(accepted, Validate("{\"type\":\"integer\"}", value));
 
