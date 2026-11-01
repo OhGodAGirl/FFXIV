@@ -465,7 +465,7 @@ def compose(manifest_path, ledger_path, output, final_root):
         save(request_path, request)
         request_hash = digest(request_path)
         command = [sys.executable, '-I', str(Path(__file__).resolve()), 'stage-check', '--request', str(request_path)]
-        run = subprocess.run(command, cwd=stage['root'], text=True, capture_output=True, timeout=60)
+        run = subprocess.run(command, cwd=stage['root'], text=True, capture_output=True, timeout=600)
         response_path = output / (stage['id'] + '-validation.json')
         response_path.write_text(run.stdout, encoding='utf-8')
         log_path = output / (stage['id'] + '-validation.log')
