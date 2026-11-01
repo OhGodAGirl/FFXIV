@@ -49,8 +49,25 @@ public sealed class SchemaCompositionTests
     [InlineData("\"$defs\":{\"a/b~c\":{\"const\":7}},\"$ref\":\"#/$defs/a~1b~0c\"", "8", false)]
     [InlineData("\"$ref\":\"missing.schema.json\"", "7", false)]
     [InlineData("\"$ref\":\"#\"", "7", false)]
-    public void ReferencesResolveEscapedNamesAndRejectMissingOrRecursiveTargets(string schema, string payload, bool accepted) =>
-        Assert.Equal(accepted, Validate(schema, payload));
+    public void ReferencesResolveEscapedNamesAndRejectMissingOrRecursiveTargets(string schema, string payload, bool accepted)
+    {
+        Exception? failure = null;
+        // Mutation instrumentation increases the stack used by recursive validation.
+        var worker = new Thread(() =>
+        {
+            try
+            {
+                Assert.Equal(accepted, Validate(schema, payload));
+            }
+            catch (Exception exception)
+            {
+                failure = exception;
+            }
+        }, 16 * 1024 * 1024);
+        worker.Start();
+        worker.Join();
+        if (failure is not null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+    }
 
     [Theory]
     [InlineData("0", "-1", false)]
