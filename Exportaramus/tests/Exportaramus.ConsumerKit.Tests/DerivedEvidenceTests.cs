@@ -270,4 +270,12 @@ public sealed class DerivedEvidenceTests
         Facts(root, "outfits").Add(Fact("achievements", OutfitItems[0], true));
         AssertInvalid(root);
     }
+    [Fact]
+    public void OutfitRejectsCollectionNameAsPresenceSource()
+    {
+        var root = Outfit(true);
+        AssertValid(root);
+        Facts(root, "outfits")[0]!["sourceKey"] = "armoires";
+        AssertInvalid(root);
+    }
 }
