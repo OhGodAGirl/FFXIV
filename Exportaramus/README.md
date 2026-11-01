@@ -123,38 +123,6 @@ The portable checks cover locked restore, compilation, package inspection, provi
 
 The [mutation policy](tests/mutation-policy.json) requires a score of 100 and complete instrumentation evidence. The mutation runner covers the provider, separately referenced 1.1 contracts, the canonical 1.2 ConsumerKit, and the example inventory reader. [Performance budgets](tests/performance-budget.json) distinguish offline measurements from performance that requires a supervised game session.
 
-### Mutation Testing In GitHub Actions
-
-The presentation timing benchmark runs in the required ordinary baseline, before instrumentation. Mutation execution excludes only tests marked `UninstrumentedPerformance`; its 0.1 ms budget remains unchanged. Failed campaigns retain per-target report counts and hashes in `partialResults`, with their total in `partialTotalMutants`. These diagnostic fields do not qualify an incomplete campaign or replace the canonical mutation totals.
-
-Open **Actions → Exportaramus Mutation Testing → Run workflow** in this repository. Choose the branch and a mode:
-
-- **full** (default): run the ordinary offline checks, then all four mutation targets with Stryker 4.16.0 and two workers. The mutation step is limited to five hours; the job has an additional thirty minutes for setup and saving results.
-- **setup-only**: verify dependencies, source scope, Stryker startup, and all three distinct baseline test suites without executing mutants. A successful setup-only run is not a passing mutation campaign.
-
-Runs are manual; pushes and pull requests continue to use the ordinary verification workflow. One mutation run per branch executes at a time. Reports, logs, source hashes, and baseline results are uploaded as an artifact for seven days, including when the campaign fails. A timeout, incomplete instrumentation, or unresolved mutation result fails the campaign; the workflow does not waive survivors or change the required score. Timed-out runs may have only partial reports. Download evidence needed for a review before the artifact expires.
-
-The workflow installs the SDK from `global.json`, .NET 8 for Stryker, the pinned Python dependencies, and the checksum-verified Dalamud build dependencies. It does not publish or install a plugin.
-
-To run locally after completing the verification setup above:
-
-```powershell
-dotnet tool install dotnet-stryker --version 4.16.0 --tool-path .tools/stryker
-$runner = @(Get-ChildItem .tools/stryker -Recurse -Force -Filter Stryker.CLI.dll)
-if ($runner.Count -ne 1) { throw 'Expected one pinned Stryker runner.' }
-./tests/test-mutation.ps1 -Runner $runner[0].FullName -Python .venv/Scripts/python.exe
-```
-
-Install .NET 8 alongside the project SDK if required by Stryker. Add `-SetupOnly` to verify the setup without running mutants. Results default to an ignored, unique directory under `development/mutation`; pass `-RunDirectory` to choose another new directory.
-
-To check package reproduction with the same source, SDK, configuration, and dependency bytes:
-
-```powershell
-pwsh -File tools/Verify-Reproducibility.ps1
-```
-
-This rebuilds and compares the package and every runtime file. It verifies reproduction in the current checkout and environment; it does not claim identical output across different machines or checkout paths.
-
 ### Directory Layout
 
 - `project/` — Project, solution, dependency locks, manifest, and build configuration.
@@ -171,11 +139,3 @@ The README, license, SDK selection, Git exclusions, and editor settings live at 
 ## License
 
 [MIT](LICENSE)
-
-### Repository Maintenance Checks
-
-Workflow Validation checks workflow syntax and expressions whenever Actions configuration changes. Exportaramus Publication Hygiene rejects tracked generated files, live snapshots, machine-specific paths, and private vault links. Deliberately invalid path fixtures retain explicit exceptions. This is not a general secret scanner. The ordinary quality gate continues to inspect the exact runtime package contents.
-
-Exportaramus Dependency Security audits NuGet dependencies (including transitive dependencies) and the pinned Python requirements on changes, weekly, and manually. Advisory lookup or restore failures fail the check. Reports are retained for seven days. These checks cover known package advisories, not downloaded Dalamud binaries.
-
-Dependabot proposes weekly grouped Actions, NuGet, and Python updates. Updates require review; no automatic merging is configured. The pinned Dalamud SDK is excluded from routine version updates and must be reviewed separately for API compatibility.
