@@ -2,6 +2,7 @@
 from pathlib import Path
 import hashlib
 import json
+import suite_binding
 import xml.etree.ElementTree as ET
 
 PLATFORM = 'reference/Compendium/1.0/CompendiumFileWatch.cs'
@@ -33,9 +34,9 @@ def verified_artifact(root, path, expected):
     return resolved
 
 
-def execution_counts(root, execution):
+def execution_counts(root, execution, target='provider'):
     command = execution['command']
-    if (len(command) < 3 or command[1] != 'test' or Path(command[2]).name != 'Exportaramus.Tests.csproj'
+    if (len(command) < 3 or command[1] != 'test' or Path(command[2]).name != Path(suite_binding.TARGETS[target][1]).name
             or any('filter' in item.lower() or item in ('--list-tests', '--no-build') for item in command)):
         raise ValueError('Independent execution must rebuild and run the full configured test project without selection.')
     trx = verified_artifact(root, execution['trx'], execution['trxSha256'])
@@ -112,8 +113,12 @@ def independently_killed(entry, before, report_hash, mutant, root, repair=None):
     replacement = verified_artifact(root, result['mutatedSource'], result['mutatedSourceSha256'])
     if replacement.read_bytes() != expected:
         raise ValueError('Independent execution did not use the exact source replacement.')
-    baseline = execution_counts(root, summary['baseline']['tests'])
-    actual = execution_counts(root, result['tests'])
+    target = suite_binding.verify_summary(summary, repair['repairedPaths'] if repair else before['files'], [entry['file']])
+    baseline = execution_counts(root, summary['baseline']['tests'], target)
+    actual = execution_counts(root, result['tests'], target)
+    from repair_bridge import case_names
+    if target != 'provider' and case_names(Path(summary['baseline']['tests']['trx']), passing=True) != case_names(Path(result['tests']['trx'])):
+        raise ValueError('Baseline and mutant test identities differ')
     if (summary['baseline']['tests']['exitCode'] != 0 or baseline['passed'] != baseline['executed'] or baseline['failed']
             or result['tests']['exitCode'] != 1 or actual['failed'] <= 0 or actual['executed'] != baseline['executed']
             or actual['passed'] + actual['failed'] != actual['executed']):

@@ -105,7 +105,7 @@ class StageChecks(unittest.TestCase):
     def test_v1_allowlist_remains_unchanged(self):
         self.assertEqual(6, len(bridge.BRIDGE_TOOL_FILES))
         self.assertNotIn('tools/multi_stage_review.py', bridge.BRIDGE_TOOL_FILES)
-        self.assertEqual({'tools/multi_stage_review.py', 'tools/test-multi-stage-review.py'},
+        self.assertEqual({'tools/multi_stage_review.py', 'tools/test-multi-stage-review.py', 'tools/suite_binding.py', 'tools/test-suite-binding.py'},
                          bridge.STAGED_BRIDGE_TOOL_FILES - bridge.BRIDGE_TOOL_FILES)
 
     def test_exact_mutation_rejects_changed_raw_fields(self):

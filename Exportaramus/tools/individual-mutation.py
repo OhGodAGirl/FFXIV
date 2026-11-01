@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import time
+import suite_binding
 import xml.etree.ElementTree as ET
 
 sys.dont_write_bytecode = True
@@ -196,6 +197,7 @@ def require_provider_mutants(rows):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dotnet', default='dotnet', help='Executable name on PATH or explicit .NET host path.')
+    parser.add_argument('--target', choices=tuple(suite_binding.TARGETS), default='provider')
     parser.add_argument('--root', required=True, type=Path)
     parser.add_argument('--inventory', required=True, type=Path)
     parser.add_argument('--report', required=True, type=Path)
@@ -227,6 +229,8 @@ def main():
     if repair and (digest(report_bytes) != repair['reportHash'] or inventory['sha256'] != repair['repairedInventory']['sha256'] or digest(inventory_bytes) != repair['bridge']['repairedInventory']['sha256']):
         raise ValueError('Executor inputs do not match the repair bridge.')
     paths = {entry['path']: entry['sha256'] for entry in inventory['files']}
+    if args.target != 'provider' and paths.get('tools/suite_binding.py') != digest(Path(suite_binding.__file__).read_bytes()):
+        raise ValueError('Suite validator must match frozen inventory')
     if len(paths) != len(inventory['files']):
         raise ValueError('Duplicate source inventory paths.')
     if paths.get('tools/individual-mutation.py') != digest(Path(__file__).read_bytes()):
@@ -238,8 +242,12 @@ def main():
         raise RuntimeError('Shared source/link reconciliation failed.')
     scope = json.loads((output / 'scope/coverage-manifest.json').read_bytes())
     mapping = {value['reportPath']: path for path, value in scope['mutationInstrumentationAudit']['instrumentedFiles'].items()}
+    if args.target != 'provider':
+        preliminary_binding = suite_binding.evaluate(root, args.target, dotnet, paths)
+        mapping = suite_binding.report_mapping(preliminary_binding, report, paths)
     selected = selected_mutants(report, mapping, paths, set(args.ids.split(',')) if args.ids else None, repair is not None)
-    require_provider_mutants(selected)
+    if args.target == 'provider':
+        require_provider_mutants(selected)
     shard = select_shard(selected, args.shard_index, args.shard_count)
     if not shard:
         raise ValueError('This shard is empty; choose fewer shards.')
@@ -255,16 +263,20 @@ def main():
         destination.write_bytes(content)
         if digest(destination.read_bytes()) != expected:
             raise ValueError('Copied input hash differs: ' + relative)
-    project = snapshot / 'tests/Exportaramus.Tests/Exportaramus.Tests.csproj'
-    build_command = [dotnet, 'build', project, '-c', 'Release', '--no-restore', '--nologo', '-v:minimal']
-    # Run the configured assembly and settings without filtering tests or stopping at the first failure.
-    test_command = [dotnet, 'test', project, '-c', 'Release', '--no-restore', '--nologo',
-                    '--settings', snapshot / 'tests/coverage.runsettings', '--collect:XPlat Code Coverage']
+    project = snapshot / suite_binding.TARGETS[args.target][1]
+    # Run every test in the selected canonical suite without filtering.
+    build_command = suite_binding.command(dotnet, 'build', snapshot, args.target)
+    test_command = suite_binding.command(dotnet, 'test', snapshot, args.target)
     baseline = {'restore': execute([dotnet, 'restore', project, '--locked-mode', '--nologo'], snapshot,
                                     output / 'restore.log', args.build_timeout_seconds)}
     if baseline['restore']['exitCode'] or baseline['restore']['timedOut']:
         save(output / 'baseline.json', baseline)
         raise RuntimeError('Locked baseline restore failed.')
+    binding = None
+    if args.target != 'provider':
+        binding = suite_binding.evaluate(snapshot, args.target, dotnet, paths)
+        if not {row[0] for row in selected} <= set(binding['productionSources']):
+            raise ValueError('Selected mutations do not belong to the canonical target')
     baseline['build'] = execute(build_command, snapshot, output / 'baseline-build.log', args.build_timeout_seconds)
     if baseline['build']['exitCode'] or baseline['build']['timedOut']:
         save(output / 'baseline.json', baseline)
@@ -273,9 +285,9 @@ def main():
     save(output / 'baseline.json', baseline)
     if classify(baseline['build'], baseline['tests'], args.expected_test_count) != 'Survived':
         raise RuntimeError('All configured baseline tests must pass with zero skipped/aborted/missing cases.')
-    baseline_cases = None
+    from repair_bridge import case_names
+    baseline_cases = case_names(Path(baseline['tests']['trx']), passing=True)
     if repair:
-        baseline_cases = case_names(Path(baseline['tests']['trx']), passing=True)
         if not preserves_cases(repair['originalCases'], baseline_cases) or baseline_cases != repair['repairedCases']:
             raise RuntimeError('The repaired full suite removed original test cases.')
     sdk = subprocess.check_output([str(dotnet), '--version'], cwd=snapshot, text=True).strip()
@@ -289,6 +301,8 @@ def main():
                'toolchain': {'dotnet': artifact(dotnet), 'sdkVersion': sdk,
                              'csc': artifact(sdk_compiler(dotnet, sdk, snapshot))},
                'reviewStatus': 'Supplemental exact execution evidence only; no automatic review approval.', 'results': []}
+    if binding:
+        summary['suiteBinding'] = binding
     if repair:
         summary.update(schemaVersion='1.1', repairBridge=repair['bridgePath'], repairBridgeSha256=repair['bridgeSha256'],
                        originalSourceSha256=repair['originalInventory']['sha256'])
@@ -314,7 +328,7 @@ def main():
             if value['build']['exitCode'] == 0 and not value['build']['timedOut']:
                 value['tests'] = run_tests(test_command, snapshot, directory / 'test-results', args.test_timeout_seconds)
             value['outcome'] = classify(value['build'], value['tests'], baseline['tests']['counts']['total'])
-            if repair and value['tests'] is not None and value['outcome'] in ('Killed', 'Survived'):
+            if value['tests'] is not None and value['outcome'] in ('Killed', 'Survived'):
                 if case_names(Path(value['tests']['trx'])) != baseline_cases:
                     value['outcome'] = 'Error'
             if value['outcome'] == 'Error':

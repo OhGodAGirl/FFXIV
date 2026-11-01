@@ -13,6 +13,7 @@ BRIDGE_TOOL_FILES = {
     "tools/Complete-QualityRecord.ps1", "tools/repair_bridge.py", "tools/test-repair-bridge.py",
 }
 STAGED_BRIDGE_TOOL_FILES = BRIDGE_TOOL_FILES | {
+    'tools/suite_binding.py', 'tools/test-suite-binding.py',
     "tools/multi_stage_review.py", "tools/test-multi-stage-review.py",
 }
 

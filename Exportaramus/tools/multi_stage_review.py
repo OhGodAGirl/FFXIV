@@ -63,7 +63,10 @@ def exact_mutation(entry, mutant):
     require(all(entry.get(key) == mutant.get(key) for key in FIELDS), 'Mutation ID/status/span/replacement is not exact.')
 
 
-def verify_command(execution, verb, snapshot, dotnet):
+def verify_command(execution, verb, snapshot, dotnet, target='provider'):
+    if target != 'provider':
+        import suite_binding
+        return suite_binding.verify_command(execution, verb, snapshot, dotnet, target)
     project = snapshot / 'tests/Exportaramus.Tests/Exportaramus.Tests.csproj'
     command = execution['command']
     require(len(command) >= 3 and Path(command[0]).resolve() == dotnet and command[1] == verb
@@ -92,7 +95,7 @@ def failure_rows(trx):
     return rows
 
 
-def validate_causality(review, entry, result, result_path, stage_id, root, paths):
+def validate_causality(review, entry, result, result_path, stage_id, root, paths, target='provider', binding=None):
     require(review.get('format') == 'exportaramus-mutation-causal-review' and review.get('schemaVersion') == '1.0'
             and review.get('reviewed') is True and review.get('reviewer', '').strip(), 'An identified causal review is required.')
     require(review.get('stageId') == stage_id and review.get('file') == entry['file']
@@ -116,7 +119,10 @@ def validate_causality(review, entry, result, result_path, stage_id, root, paths
             continue
         causal_count += 1
         path = item['testSource']['path']
-        require(path.startswith('tests/Exportaramus.Tests/') and path.endswith('.cs'), 'Causal test source must be a stage-owned test.')
+        import suite_binding
+        test_directory = Path(suite_binding.TARGETS[target][1]).parent.as_posix() + '/'
+        allowed = path.startswith(test_directory) if target == 'provider' else (binding is not None and path in binding['projects'][binding['testProject']]['Compile'] and path.startswith('tests/'))
+        require(allowed and path.endswith('.cs'), 'Causal test source must be a stage-owned test.')
         relative_artifact(root, item['testSource'], paths)
         if classification == 'CausalAssertion':
             require(re.search(r'\bAssert\.', messages[(item['testName'], item['messageSha256'])]),
@@ -225,6 +231,8 @@ def verify_summary(entry, repair, review_module, root, checked_snapshots=None, s
     require(result.get('originalSpan') == span, 'Executed original span differs.')
     mutant_path = review_module.verified_artifact(root, result['mutatedSource'], result['mutatedSourceSha256'])
     require(mutant_path.parent == result_path.parent and mutant_path.read_bytes() == mutated.encode('utf-8'), 'Mutated bytes are not the exact replacement.')
+    import suite_binding
+    target = suite_binding.verify_summary(summary, repair['repairedPaths'], [entry['file']])
     dotnet = bound(summary['toolchain']['dotnet'])
     if not cached:
         baseline = summary['baseline']
@@ -232,28 +240,28 @@ def verify_summary(entry, repair, review_module, root, checked_snapshots=None, s
                 and baseline['build']['exitCode'] == 0 and not baseline['build']['timedOut'], 'Stage execution baseline did not restore/build normally.')
         for execution in (baseline['restore'], baseline['build']):
             review_module.verified_artifact(root, execution['log'], execution['logSha256'])
-        counts = review_module.execution_counts(root, baseline['tests'])
+        counts = review_module.execution_counts(root, baseline['tests'], target)
         from repair_bridge import case_names
         require(baseline['tests']['exitCode'] == 0 and counts['failed'] == 0 and counts['passed'] == counts['executed']
                 and case_names(Path(baseline['tests']['trx']), passing=True) == repair['repairedCases'], 'Execution baseline does not contain the complete stage test multiset.')
         bound(summary['toolchain']['csc'])
         for execution, verb in ((baseline['restore'], 'restore'), (baseline['build'], 'build'), (baseline['tests'], 'test')):
-            verify_command(execution, verb, snapshot, dotnet)
+            verify_command(execution, verb, snapshot, dotnet, target)
         if summary_cache is not None:
             summary_cache[cache_key] = summary
     review_module.verified_artifact(root, result['build']['log'], result['build']['logSha256'])
-    verify_command(result['build'], 'build', snapshot, dotnet)
+    verify_command(result['build'], 'build', snapshot, dotnet, target)
     if result.get('tests') is not None:
-        verify_command(result['tests'], 'test', snapshot, dotnet)
+        verify_command(result['tests'], 'test', snapshot, dotnet, target)
     return summary, result, result_path
 
 
-def validate_kill(result, repair, review_module, root):
+def validate_kill(result, repair, review_module, root, target='provider'):
     from repair_bridge import case_names
     require(result.get('outcome') == 'Killed' and result['build']['exitCode'] == 0 and not result['build']['timedOut']
             and result.get('tests') is not None and result['tests']['exitCode'] == 1,
             'A kill requires normal successful compilation and a normal failing test process.')
-    counts = review_module.execution_counts(root, result['tests'])
+    counts = review_module.execution_counts(root, result['tests'], target)
     require(counts['failed'] > 0 and counts['passed'] + counts['failed'] == counts['executed']
             and case_names(Path(result['tests']['trx'])) == repair['repairedCases'],
             'A kill requires the complete stage test-case multiset with actual failures.')
@@ -357,9 +365,9 @@ def stage_child(request):
                     if key in operation:
                         execution_evidence.append({'path': operation[key], 'sha256': operation[key + 'Sha256']})
         if entry['classification'] == 'IndependentlyKilled':
-            validate_kill(result, repair, review_module, root)
+            validate_kill(result, repair, review_module, root, summary.get('suiteBinding', {}).get('target', 'provider'))
             causal = json.loads(bound(entry['causalReview'], final_root).read_bytes())
-            failures = validate_causality(causal, entry, result, result_path, stage['id'], root, repair['repairedPaths'])
+            failures = validate_causality(causal, entry, result, result_path, stage['id'], root, repair['repairedPaths'], summary.get('suiteBinding', {}).get('target', 'provider'), summary.get('suiteBinding'))
             findings.append({'file': entry['file'], 'id': entry['id'], 'classification': entry['classification'], 'failedRows': failures})
         else:
             require(entry['classification'] == 'IndividuallyNonViable' and mutant['status'] in ('CompileError', 'Ignored', 'Survived', 'Timeout'),
