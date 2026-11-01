@@ -52,6 +52,22 @@ class BridgeChecks(unittest.TestCase):
             path.write_text(json.dumps(value))
             with self.assertRaises(ValueError): bridge.validate_bridge(path,self.root)
 
+class ShutdownSynchronizationChecks(unittest.TestCase):
+    def test_only_exact_observed_post_replacement_preserves_all_other_test_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);before=root/'before.cs';before.write_text(bridge.OWNED_OLD_RACE+'\n'+bridge.OWNED_OLD_POST+'\nAssert.Same(controller.ShutdownTask, completed);')
+            path=bridge.OWNED_LIFETIME_TEST;after=root/path;after.parent.mkdir(parents=True)
+            after.write_text(before.read_text().replace(bridge.OWNED_OLD_RACE,bridge.OWNED_NEW_RACE).replace(bridge.OWNED_OLD_POST,bridge.OWNED_NEW_POST))
+            old={path:bridge.digest(before)};new={path:bridge.digest(after)}
+            change=dict(path=path,beforeSha256=old[path],afterSha256=new[path],beforeTest=dict(path=str(before),sha256=old[path]),kind='TestStrengthening',reason='Preserve shutdown assertion with deterministic observed-post race.',preservesExistingAssertions=True,preservesFixtureSemantics=True,noNewSkips=True,noRelaxedDeadlines=False,timingPolicy='NoAbsoluteOfflineTimingGates',noRelaxedExecutionDeadlines=True,preservesFunctionalAssertions=True,evidence=[dict(path=str(before),sha256=old[path])])
+            self.assertTrue(bridge.validate_differences(old,new,[change],root,multi_suite=True))
+            for field in ('preservesExistingAssertions','noRelaxedExecutionDeadlines','preservesFunctionalAssertions'):
+                bad=copy.deepcopy(change);bad[field]=False
+                with self.assertRaises(ValueError):bridge.validate_differences(old,new,[bad],root,multi_suite=True)
+            with self.assertRaises(ValueError):bridge.validate_differences(old,new,[change],root)
+            after.write_text(after.read_text().replace('Assert.Same','Assert.NotSame'));new[path]=change['afterSha256']=bridge.digest(after)
+            with self.assertRaises(ValueError):bridge.validate_differences(old,new,[change],root,multi_suite=True)
+
 class EntryPointChecks(unittest.TestCase):
     path = bridge.CONSUMER_PROBE_PROJECT
     before = b'<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><IsTestProject>true</IsTestProject></PropertyGroup><ItemGroup><ProjectReference Include="kit.csproj" /></ItemGroup></Project>'

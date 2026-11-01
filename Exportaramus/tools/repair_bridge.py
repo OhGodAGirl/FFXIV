@@ -130,6 +130,27 @@ def validate_consumer_probe_project_change(entry, original, repaired, root):
     return before
 
 
+OWNED_LIFETIME_TEST = 'tests/Exportaramus.Tests/Snapshots/OwnedControllerLifetimeTests.cs'
+OWNED_OLD_RACE = 'Task.WhenAny(controller.ShutdownTask, Task.Delay(TimeSpan.FromSeconds(1)))'
+OWNED_NEW_RACE = 'Task.WhenAny(controller.ShutdownTask, context.Posted.Task)'
+OWNED_OLD_POST = '        public override void Post(SendOrPostCallback callback, object? state) => callbacks.Enqueue((callback, state));'
+OWNED_NEW_POST = '        public TaskCompletionSource Posted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);\n        public override void Post(SendOrPostCallback callback, object? state)\n        {\n            callbacks.Enqueue((callback, state));\n            Posted.TrySetResult();\n        }'
+
+
+def validate_owned_shutdown_synchronization(change, original, repaired, root):
+    path = change['path']
+    before = artifact(change['beforeTest'], root)
+    after = root / path
+    if (path != OWNED_LIFETIME_TEST or digest(before) != original[path] or digest(after) != repaired[path]
+            or change.get('preservesExistingAssertions') is not True):
+        raise ValueError('Shutdown synchronization repair must bind the exact before/after test with all assertions preserved.')
+    old = before.read_text(encoding='utf-8').replace('\r\n', '\n')
+    new = after.read_text(encoding='utf-8').replace('\r\n', '\n')
+    if (old.count(OWNED_OLD_RACE) != 1 or old.count(OWNED_OLD_POST) != 1
+            or new != old.replace(OWNED_OLD_RACE, OWNED_NEW_RACE).replace(OWNED_OLD_POST, OWNED_NEW_POST)):
+        raise ValueError('Only the exact shutdown race-to-observed-post replacement is allowed.')
+
+
 def validate_differences(original, repaired, changes, root, tool_files=None, multi_suite=False):
     actual = {p for p in original.keys() | repaired.keys() if original.get(p) != repaired.get(p)}
     named = [entry['path'] for entry in changes]
@@ -156,6 +177,11 @@ def validate_differences(original, repaired, changes, root, tool_files=None, mul
             spec = importlib.util.spec_from_file_location('bridge_checksums', root / 'tools/contract-checksums.py')
             checker = importlib.util.module_from_spec(spec); spec.loader.exec_module(checker)
             checker.verify_canonical(root)
+        if test and path == OWNED_LIFETIME_TEST and entry.get('noRelaxedDeadlines') is False:
+            if not multi_suite:
+                raise ValueError('Shutdown synchronization repair requires multi-suite review.')
+            test_obligations(entry, multi_suite=True)
+            validate_owned_shutdown_synchronization(entry, original, repaired, root)
         if test and entry.get('preservesExistingAssertions') is not True:
             if not multi_suite:
                 raise ValueError('Test changes must explicitly preserve existing assertions.')
@@ -199,7 +225,7 @@ def test_obligations(change, multi_suite=False):
         return
     # The user removed fixed offline timing gates. This exception cannot change
     # executor process deadlines, production files, or arbitrary test files.
-    if not (multi_suite and change.get('path') == 'tests/Exportaramus.Tests/Diagnostics/DiagnosticWorkerTest.cs'
+    if not (multi_suite and change.get('path') in ('tests/Exportaramus.Tests/Diagnostics/DiagnosticWorkerTest.cs', OWNED_LIFETIME_TEST)
             and change.get('timingPolicy') == 'NoAbsoluteOfflineTimingGates'
             and change.get('noRelaxedExecutionDeadlines') is True
             and change.get('preservesFunctionalAssertions') is True):
