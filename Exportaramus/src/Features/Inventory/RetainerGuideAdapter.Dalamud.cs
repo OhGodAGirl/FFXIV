@@ -73,7 +73,7 @@ public sealed unsafe class RetainerGuideAdapter : IRetainerGuidePort, IDisposabl
     }
 
     public bool Active => controller.Active;
-    public string Message => controller.Message + (selectionStatus.Length > 0 ? " â€” " + selectionStatus : "");
+    public string Message => controller.Message + (selectionStatus.Length > 0 ? " — " + selectionStatus : "");
     public void Start()
     {
         if (!framework.IsInFrameworkUpdateThread) return;
