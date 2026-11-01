@@ -14,7 +14,7 @@ import xml.etree.ElementTree as ET
 sys.dont_write_bytecode = True
 TOOL_ROOT = Path(__file__).resolve().parent
 FIELDS = ('id', 'status', 'statusReason', 'mutatorName', 'location', 'replacement')
-EXECUTED = ('IndependentlyKilled', 'IndividuallyNonViable')
+EXECUTED = ('IndependentlyKilled', 'IndividuallyNonViable', 'IndependentlyEquivalent')
 CAUSAL = {'CausalAssertion', 'CausalContractFailure', 'CausalOperationDeadline'}
 PASSIVE = {'Unrelated', 'NotUsedForAdmission'}
 TOOL_FILES = {
@@ -163,6 +163,14 @@ def validate_strengthening(original, successor, changes, root, bridge_module, mu
         require(change.get('reviewed') is True and change.get('reviewer', '').strip(), 'Every predecessor diff needs independent review.')
         if change['kind'] == 'TestStrengthening':
             bridge_module.test_obligations(change, multi_suite=multi_suite)
+        elif change['kind'] == 'TestHarnessEntryPoint':
+            require(multi_suite and change.get('preservesExistingAssertions') is True,
+                    'Test harness entrypoint changes require the complete multi-suite bridge and preserved assertions.')
+            before = bound(change['beforeProject'], root)
+            after = root / change['path']
+            require(digest(before) == original[change['path']] and digest(after) == successor[change['path']]
+                    and bridge_module.is_consumer_probe_project_change(change['path'], before.read_bytes(), after.read_bytes()),
+                    'Only the exact ConsumerKit generated entrypoint switch is supported.')
 
 
 def local_module(name, tools):
@@ -273,6 +281,41 @@ def validate_kill(result, repair, review_module, root, target='provider'):
             'A kill requires the complete stage test-case multiset with actual failures.')
 
 
+def equivalence_execution_eligible(mutant):
+    return (mutant.get('status') in ('CompileError', 'NoCoverage')
+            or mutant.get('status') == 'Ignored' and mutant.get('statusReason') == 'Removed by block already covered filter')
+
+
+def validate_survival(result, repair, review_module, root, target='provider'):
+    from repair_bridge import case_names, stage_cases
+    require(result.get('outcome') == 'Survived' and result['build']['exitCode'] == 0
+            and not result['build'].get('timedOut') and result.get('tests') is not None
+            and result['tests']['exitCode'] == 0 and not result['tests'].get('timedOut'),
+            'Equivalence execution requires normal compilation and a complete passing mutant run.')
+    counts = review_module.execution_counts(root, result['tests'], target)
+    require(counts['failed'] == 0 and counts['passed'] == counts['executed']
+            and case_names(Path(result['tests']['trx']), passing=True) == stage_cases(repair, target)[1],
+            'Equivalence execution requires the exact complete passing stage case multiset.')
+
+
+def validate_equivalence(proof, entry, result, result_path, stage_id, root, paths):
+    require(equivalence_execution_eligible(result['mutant']), 'Raw status is not eligible for execution-backed equivalence.')
+    require(proof.get('format') == 'exportaramus-mutation-equivalence-review'
+            and proof.get('schemaVersion') == '1.0' and proof.get('reviewed') is True
+            and proof.get('reviewer', '').strip() and proof.get('reason', '').strip(),
+            'An explicit individual equivalence review and reasoning are required; survival alone is not evidence.')
+    require(proof.get('stageId') == stage_id and proof.get('file') == entry['file']
+            and proof.get('sourceSha256') == entry['sourceSha256'] == result['sourceSha256'],
+            'Equivalence review belongs to another stage or source.')
+    exact_mutation(proof['mutant'], result['mutant'])
+    require(bound(proof['result'], root) == result_path.resolve(), 'Equivalence review binds another exact result.')
+    require(relative_artifact(root, proof['source'], paths) == (root / entry['file']).resolve(),
+            'Equivalence proof must bind the exact reviewed production source.')
+    require(proof.get('evidence'), 'Equivalence proof must include individually reviewed source-bound evidence.')
+    for item in proof['evidence']:
+        relative_artifact(root, item, paths)
+
+
 def validate_nonviability(result, root):
     build = result['build']
     require(result.get('outcome') == 'Error' and result.get('errorKind') == 'CompilerRejected'
@@ -380,6 +423,13 @@ def stage_child(request):
             causal = json.loads(bound(entry['causalReview'], final_root).read_bytes())
             failures = validate_causality(causal, entry, result, result_path, stage['id'], root, repair['repairedPaths'], summary.get('suiteBinding', {}).get('target', 'provider'), summary.get('suiteBinding'))
             findings.append({'file': entry['file'], 'id': entry['id'], 'classification': entry['classification'], 'failedRows': failures})
+        elif entry['classification'] == 'IndependentlyEquivalent':
+            target = summary.get('suiteBinding', {}).get('target', 'provider')
+            validate_survival(result, repair, review_module, root, target)
+            proof = json.loads(bound(entry['equivalenceReview'], final_root).read_bytes())
+            validate_equivalence(proof, entry, result, result_path, stage['id'], root, repair['repairedPaths'])
+            findings.append({'file': entry['file'], 'id': entry['id'], 'classification': entry['classification'],
+                             'equivalenceReviewSha256': entry['equivalenceReview']['sha256']})
         else:
             require(entry['classification'] == 'IndividuallyNonViable' and mutant['status'] in ('CompileError', 'Ignored', 'Survived', 'Timeout', 'NoCoverage'),
                     'Unsupported actual compiler-rejection disposition.')
@@ -541,7 +591,7 @@ def compose(manifest_path, ledger_path, output, final_root):
         reportSha256=final['reportHash'], reviewLedger=str(ledger_path), reviewLedgerSha256=digest(ledger_path))
     for entry in entries:
         evidence.extend({'path': str((final_root / x['path']).resolve()), 'sha256': x['sha256']} for x in entry['evidence'])
-        for key in ('causalReview', 'environmentReview'):
+        for key in ('causalReview', 'environmentReview', 'equivalenceReview'):
             if key in entry:
                 evidence.append(entry[key])
     evidence.extend({'path': p, 'sha256': sha} for p, sha in approved.items())

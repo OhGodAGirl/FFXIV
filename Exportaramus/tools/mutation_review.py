@@ -71,6 +71,35 @@ def execution_counts(root, execution, target='provider'):
     return counts
 
 
+def equivalence_execution_eligible(mutant):
+    return (mutant.get('status') in ('CompileError', 'NoCoverage')
+            or mutant.get('status') == 'Ignored' and mutant.get('statusReason') == BLOCK_REASON)
+
+
+def independently_equivalent(entry, before, report_hash, mutant, root, repair=None):
+    if repair is None or not equivalence_execution_eligible(mutant):
+        raise ValueError('Execution-backed equivalence requires an eligible exact status and reviewed repair bridge.')
+    import sys
+    import multi_stage_review as stage
+    import repair_bridge
+    if repair['originalInventory']['sha256'] != before['sourceSha256'] or repair['reportHash'] != report_hash:
+        raise ValueError('Equivalence bridge belongs to another original inventory or report.')
+    summary, result, result_path = stage.verify_summary(entry, repair, sys.modules[__name__], root)
+    stage_id = entry.get('executionStage')
+    if not isinstance(stage_id, str) or not stage_id.strip():
+        raise ValueError('Equivalence execution stage is required.')
+    target = summary.get('suiteBinding', {}).get('target', 'provider')
+    stage.validate_survival(result, repair, sys.modules[__name__], root, target)
+    proof_path = verified_artifact(root, entry['equivalenceReview']['path'], entry['equivalenceReview']['sha256'])
+    stage.validate_equivalence(json.loads(proof_path.read_bytes()), entry, result, result_path,
+                               stage_id, root, repair['repairedPaths'])
+    verified_artifact(root, entry['independentExecution']['summary'], entry['independentExecution']['sha256'])
+    for relative, sha in repair['repairedPaths'].items():
+        if hashlib.sha256((Path(summary['snapshot']) / relative).read_bytes()).hexdigest() != sha:
+            raise ValueError('Equivalence execution snapshot changed during review.')
+    return True
+
+
 def independently_killed(entry, before, report_hash, mutant, root, repair=None):
     proof = entry['independentExecution']
     path = verified_artifact(root, proof['summary'], proof['sha256'])
@@ -174,6 +203,8 @@ def reconcile(ledger, before, report_hash, scope, report, root, repair=None):
             if kind == 'IndependentlyKilled' and (status == 'CompileError' or status == 'Ignored' and mutant.get('statusReason') == BLOCK_REASON
                     or repair is not None and status in ('Survived', 'Timeout', 'NoCoverage')):
                 allowed = independently_killed(entry, before, report_hash, mutant, root, repair)
+            if kind == 'IndependentlyEquivalent' and repair is not None and equivalence_execution_eligible(mutant):
+                allowed = independently_equivalent(entry, before, report_hash, mutant, root, repair)
             if not allowed:
                 raise ValueError('Classification cannot resolve this raw status or source.')
             for supporting in entry.get('supportingKilledMutantIds', []):

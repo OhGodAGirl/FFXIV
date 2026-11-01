@@ -52,6 +52,48 @@ class BridgeChecks(unittest.TestCase):
             path.write_text(json.dumps(value))
             with self.assertRaises(ValueError): bridge.validate_bridge(path,self.root)
 
+class EntryPointChecks(unittest.TestCase):
+    path = bridge.CONSUMER_PROBE_PROJECT
+    before = b'<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><IsTestProject>true</IsTestProject></PropertyGroup><ItemGroup><ProjectReference Include="kit.csproj" /></ItemGroup></Project>'
+
+    def after(self, value=b'false'):
+        return self.before.replace(b'<IsTestProject>', b'<GenerateProgramFile>' + value + b'</GenerateProgramFile><IsTestProject>')
+
+    def test_only_default_or_explicit_true_to_false_is_accepted(self):
+        self.assertTrue(bridge.is_consumer_probe_project_change(self.path, self.before, self.after()))
+        self.assertTrue(bridge.is_consumer_probe_project_change(self.path, self.after(b'true'), self.after()))
+        self.assertTrue(bridge.is_consumer_probe_project_change(self.path, self.before, self.after().replace(b'><', b'>\n  <')))
+        for before,after in [(self.before,self.before),(self.after(),self.after()),(self.before,self.after(b'true')),(self.before,self.after(b'False'))]:
+            with self.subTest(before=before,after=after):
+                self.assertFalse(bridge.is_consumer_probe_project_change(self.path,before,after))
+
+    def test_other_projects_and_any_other_semantic_change_are_rejected(self):
+        self.assertFalse(bridge.is_consumer_probe_project_change('tests/Exportaramus.Tests/Exportaramus.Tests.csproj',self.before,self.after()))
+        for after in [self.after().replace(b'net10.0',b'net9.0'),self.after().replace(b'kit.csproj',b'other.csproj'),self.after().replace(b'<ItemGroup>',b'<ItemGroup><Compile Remove="Existing.cs"/>'),self.after().replace(b'<ItemGroup>',b'<ItemGroup><PackageReference Include="Other" Version="1"/>'),self.after().replace(b'<IsTestProject>true',b'<IsTestProject>false')]:
+            with self.subTest(after=after):
+                self.assertFalse(bridge.is_consumer_probe_project_change(self.path,self.before,after))
+
+    def test_conditional_duplicate_nested_and_invalid_xml_are_rejected(self):
+        for after in [self.after().replace(b'<GenerateProgramFile>',b'<GenerateProgramFile Condition="x">'),self.after().replace(b'<PropertyGroup>',b'<PropertyGroup Condition="x">'),self.after().replace(b'</PropertyGroup>',b'<GenerateProgramFile>false</GenerateProgramFile></PropertyGroup>'),self.after().replace(b'false</GenerateProgramFile>',b'<Value>false</Value></GenerateProgramFile>'),self.after().replace(b'</GenerateProgramFile>',b'</GenerateProgramFile>unexpected'),b'<Project>',b'<!DOCTYPE Project []>'+self.after()]:
+            with self.subTest(after=after):
+                self.assertFalse(bridge.is_consumer_probe_project_change(self.path,self.before,after))
+
+    def test_bridge_requires_exact_artifacts_review_kind_and_multisuite(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);before=root/'before.csproj';before.write_bytes(self.before)
+            after=root/self.path;after.parent.mkdir(parents=True);after.write_bytes(self.after())
+            evidence=root/'review.txt';evidence.write_text('Reviewed only entry point suppression; all cases and compiled sources retained.')
+            old={self.path:bridge.digest(before)};new={self.path:bridge.digest(after)}
+            entry=dict(path=self.path,beforeSha256=old[self.path],afterSha256=new[self.path],kind='TestHarnessEntryPoint',reason='Custom process probe requires explicit Main; no source selection changes.',preservesExistingAssertions=True,beforeProject=dict(path=str(before),sha256=old[self.path]),evidence=[dict(path=str(evidence),sha256=bridge.digest(evidence))])
+            self.assertTrue(bridge.validate_differences(old,new,[entry],root,multi_suite=True))
+            with self.assertRaises(ValueError):bridge.validate_differences(old,new,[entry],root)
+            for mutate in [lambda e:e.update(kind='Tooling'),lambda e:e.update(preservesExistingAssertions=False),lambda e:e.update(evidence=[]),lambda e:e.update(reason=''),lambda e:e['beforeProject'].update(sha256='wrong')]:
+                changed=copy.deepcopy(entry);mutate(changed)
+                with self.subTest(changed=changed),self.assertRaises(ValueError):bridge.validate_differences(old,new,[changed],root,multi_suite=True)
+            after.write_bytes(self.after().replace(b'kit.csproj',b'other.csproj'));new={self.path:bridge.digest(after)};entry['afterSha256']=new[self.path]
+            with self.assertRaises(ValueError):bridge.validate_differences(old,new,[entry],root,multi_suite=True)
+
+
 class ProofChecks(unittest.TestCase):
     def setUp(self):
         self.fixture=existing.LedgerChecks()

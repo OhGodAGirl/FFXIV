@@ -84,6 +84,52 @@ def preserves_cases(original, repaired):
     return not (Counter(original) - Counter(repaired))
 
 
+CONSUMER_PROBE_PROJECT = 'tests/Exportaramus.ConsumerKit.Tests/Exportaramus.ConsumerKit.Tests.csproj'
+
+
+def is_consumer_probe_project_change(path, before, after):
+    """Allow only replacing the default test entry point with the reviewed probe Main."""
+    if path != CONSUMER_PROBE_PROJECT:
+        return False
+    def normalized(data, updated):
+        if b'<!DOCTYPE' in data.upper() or b'<!ENTITY' in data.upper():
+            raise ValueError('Project declarations are not eligible.')
+        tree = ET.fromstring(data)
+        if tree.tag != 'Project':
+            raise ValueError('Only the exact SDK project structure is eligible.')
+        properties = list(tree.iter('GenerateProgramFile'))
+        if (updated and len(properties) != 1) or len(properties) > 1:
+            raise ValueError('Entry point property is missing or duplicated.')
+        if properties:
+            prop = properties[0]
+            groups = [group for group in list(tree) if group.tag == 'PropertyGroup' and prop in list(group)]
+            if len(groups) != 1 or groups[0].attrib or prop.attrib or list(prop) or (prop.tail and prop.tail.strip()):
+                raise ValueError('Entry point property must be unconditional and simple.')
+            if prop.text != ('false' if updated else 'true'):
+                raise ValueError('Only default true to false is eligible.')
+            groups[0].remove(prop)
+        def shape(node):
+            text = node.text if node.text and node.text.strip() else ''
+            tail = node.tail if node.tail and node.tail.strip() else ''
+            return (node.tag, tuple(sorted(node.attrib.items())), text, tail, tuple(shape(child) for child in node))
+        return shape(tree)
+    try:
+        return normalized(before, False) == normalized(after, True)
+    except (ET.ParseError, ValueError, TypeError):
+        return False
+
+
+def validate_consumer_probe_project_change(entry, original, repaired, root):
+    path = entry['path']
+    before = artifact(entry['beforeProject'])
+    after = root / path
+    if entry['beforeProject']['sha256'] != original.get(path) or digest(after) != repaired.get(path):
+        raise ValueError('Entry point project artifacts must match both inventories.')
+    if entry.get('preservesExistingAssertions') is not True or not is_consumer_probe_project_change(path, before.read_bytes(), after.read_bytes()):
+        raise ValueError('Only the exact reviewed ConsumerKit entry point change is eligible.')
+    return before
+
+
 def validate_differences(original, repaired, changes, root, tool_files=None, multi_suite=False):
     actual = {p for p in original.keys() | repaired.keys() if original.get(p) != repaired.get(p)}
     named = [entry['path'] for entry in changes]
@@ -96,13 +142,16 @@ def validate_differences(original, repaired, changes, root, tool_files=None, mul
         if multi_suite:
             test = test or (path.startswith(('tests/Exportaramus.ConsumerKit.Tests/', 'tests/Exportaramus.InventoryReader.Mutation.Tests/')) and path.endswith('.cs'))
         manifest = multi_suite and path == 'project/ConsumerKit/1.2/SHA256SUMS'
+        harness = multi_suite and path == CONSUMER_PROBE_PROJECT and path in original
         tool = path in (BRIDGE_TOOL_FILES if tool_files is None else tool_files)
-        if not (test or tool or manifest) or path not in repaired:
+        if not (test or tool or manifest or harness) or path not in repaired:
             raise ValueError('Product/reference/resources/config/projects and deletions are immutable: ' + path)
         if entry.get('beforeSha256') != original.get(path) or entry.get('afterSha256') != repaired[path]:
             raise ValueError('Allowlisted change hashes do not match inventories.')
-        if not entry.get('reason', '').strip() or entry.get('kind') != ('TestStrengthening' if test else 'DerivedManifest' if manifest else 'Tooling'):
+        if not entry.get('reason', '').strip() or entry.get('kind') != ('TestStrengthening' if test else 'DerivedManifest' if manifest else 'TestHarnessEntryPoint' if harness else 'Tooling'):
             raise ValueError('Each exact change requires a substantive review and correct kind.')
+        if harness:
+            evidence.append(validate_consumer_probe_project_change(entry, original, repaired, root))
         if manifest:
             spec = importlib.util.spec_from_file_location('bridge_checksums', root / 'tools/contract-checksums.py')
             checker = importlib.util.module_from_spec(spec); spec.loader.exec_module(checker)

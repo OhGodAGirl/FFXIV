@@ -87,6 +87,26 @@ class StageChecks(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(ValueError):
                 stage.validate_strengthening({path: 'old'}, {path: 'new'}, [dict(change, **{key: False})], self.root, bridge)
 
+    def test_consumer_probe_entrypoint_is_exact_and_individually_reviewed(self):
+        path = 'tests/Exportaramus.ConsumerKit.Tests/Exportaramus.ConsumerKit.Tests.csproj'
+        before = self.artifact('development/before.csproj', '<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>')
+        after = self.artifact(path, '<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework><GenerateProgramFile>false</GenerateProgramFile></PropertyGroup></Project>')
+        change = dict(path=path, beforeSha256=before['sha256'], afterSha256=after['sha256'],
+                      kind='TestHarnessEntryPoint', reason='Run exact schema process probe with the same complete test suite.',
+                      beforeProject=before, evidence=[before], reviewed=True, reviewer='Independent', preservesExistingAssertions=True)
+        original, successor = {path: before['sha256']}, {path: after['sha256']}
+        stage.validate_strengthening(original, successor, [change], self.root, bridge, multi_suite=True)
+        with self.assertRaises(ValueError):
+            stage.validate_strengthening(original, successor, [change], self.root, bridge)
+        for field in ('reviewed', 'preservesExistingAssertions'):
+            with self.assertRaises(ValueError):
+                stage.validate_strengthening(original, successor, [dict(change, **{field: False})], self.root, bridge, multi_suite=True)
+        changed = Path(after['path'])
+        changed.write_text(changed.read_text().replace('net10.0', 'net9.0'))
+        change['afterSha256'] = successor[path] = stage.digest(changed)
+        with self.assertRaises(ValueError):
+            stage.validate_strengthening(original, successor, [change], self.root, bridge, multi_suite=True)
+
     def test_product_reference_config_scope_and_deletion_cannot_be_allowlisted(self):
         for path in ('src/A.cs', 'reference/A.cs', 'data/schema.json', 'Directory.Build.props',
                      'tests/coverage.runsettings', 'tests/Exportaramus.Tests/Exportaramus.Tests.csproj',
@@ -365,6 +385,88 @@ class StageChecks(unittest.TestCase):
         stage.save(folder / 'mutant-1/result.json', summary['results'][0])
         entry['independentExecution'] = dict(summary=str(path), sha256=stage.digest(path))
         return stage.verify_summary(entry, repair, legacy, self.root, set(), cache)
+
+    def equivalence_fixture(self):
+        fixture = self.execution_fixture()
+        entry, repair, summary, folder = fixture
+        entry.update(status='CompileError', classification='IndependentlyEquivalent', executionStage='test-stage')
+        result = summary['results'][0]
+        result['mutant']['status'] = 'CompileError'
+        result['outcome'] = 'Survived'
+        tests = result['tests']
+        trx = Path(tests['trx'])
+        doc = ET.parse(trx)
+        for row in doc.findall('.//UnitTestResult'):
+            row.set('outcome', 'Passed')
+            for child in list(row):
+                row.remove(child)
+        doc.find('.//ResultSummary').set('outcome', 'Completed')
+        doc.find('.//Counters').set('passed', '2')
+        doc.find('.//Counters').set('failed', '0')
+        doc.write(trx)
+        tests.update(exitCode=0, trxSha256=stage.digest(trx), counts=dict(total=2, executed=2, passed=2, failed=0, notExecuted=0))
+        _, result, result_path = self.check_execution(fixture)
+        source = dict(path='src/A.cs', sha256=entry['sourceSha256'])
+        proof = dict(format='exportaramus-mutation-equivalence-review', schemaVersion='1.0', reviewed=True,
+                     reviewer='Individual reviewer', reason='Exact reviewed source equivalence rationale.',
+                     stageId='test-stage', file=entry['file'], sourceSha256=entry['sourceSha256'],
+                     mutant=copy.deepcopy(result['mutant']), result=dict(path=str(result_path), sha256=stage.digest(result_path)),
+                     source=source, evidence=[source])
+        path = self.root / 'development/equivalence-review.json'
+        stage.save(path, proof)
+        entry['equivalenceReview'] = dict(path=str(path), sha256=stage.digest(path))
+        return fixture, proof, result_path
+
+    def test_execution_backed_equivalence_requires_complete_passing_replay_and_proof(self):
+        fixture, proof, result_path = self.equivalence_fixture()
+        entry, repair, summary, _ = fixture
+        result = summary['results'][0]
+        stage.validate_survival(result, repair, legacy, self.root)
+        stage.validate_equivalence(proof, entry, result, result_path, 'test-stage', self.root, repair['repairedPaths'])
+        self.assertTrue(legacy.independently_equivalent(entry, dict(sourceSha256='originalhash'), repair['reportHash'], result['mutant'], self.root, repair))
+        with self.assertRaises(ValueError):
+            legacy.independently_equivalent(entry, dict(sourceSha256='originalhash'), repair['reportHash'], result['mutant'], self.root)
+
+    def test_execution_equivalence_rejects_unreviewed_or_mismatched_source_proof(self):
+        fixture, proof, result_path = self.equivalence_fixture()
+        entry, repair, summary, _ = fixture
+        changes = [lambda p: p.update(reviewed=False), lambda p: p.update(reason=''),
+                   lambda p: p.update(stageId='other'), lambda p: p.update(sourceSha256='other'),
+                   lambda p: p['mutant'].update(replacement='other'), lambda p: p.update(evidence=[]),
+                   lambda p: p['source'].update(path='../outside.cs'), lambda p: p['result'].update(sha256='other')]
+        for change in changes:
+            altered = copy.deepcopy(proof)
+            change(altered)
+            with self.subTest(change=change), self.assertRaises((ValueError, FileNotFoundError)):
+                stage.validate_equivalence(altered, entry, summary['results'][0], result_path, 'test-stage', self.root, repair['repairedPaths'])
+
+    def test_execution_equivalence_rejects_failure_timeout_partial_and_substituted_cases(self):
+        fixture, _, _ = self.equivalence_fixture()
+        entry, repair, summary, _ = fixture
+        original = copy.deepcopy(summary['results'][0])
+        for change in (lambda r: r.update(outcome='Killed'), lambda r: r['build'].update(exitCode=1),
+                       lambda r: r['tests'].update(timedOut=True), lambda r: r['tests'].update(exitCode=1),
+                       lambda r: r['tests']['counts'].update(executed=1)):
+            changed = copy.deepcopy(original)
+            change(changed)
+            with self.assertRaises(ValueError):
+                stage.validate_survival(changed, repair, legacy, self.root)
+        trx = Path(original['tests']['trx'])
+        doc = ET.parse(trx)
+        doc.find('.//UnitTestResult').set('testName', 'substituted')
+        doc.write(trx)
+        original['tests']['trxSha256'] = stage.digest(trx)
+        with self.assertRaises(ValueError):
+            stage.validate_survival(original, repair, legacy, self.root)
+
+    def test_execution_equivalence_status_scope_is_explicit(self):
+        for status in ('CompileError', 'NoCoverage'):
+            self.assertTrue(stage.equivalence_execution_eligible(dict(status=status)))
+            self.assertTrue(legacy.equivalence_execution_eligible(dict(status=status)))
+        for status in ('Killed', 'Timeout', 'RuntimeError', 'Pending', 'Survived', 'Ignored'):
+            self.assertFalse(stage.equivalence_execution_eligible(dict(status=status)))
+            self.assertFalse(legacy.equivalence_execution_eligible(dict(status=status)))
+        self.assertTrue(stage.equivalence_execution_eligible(dict(status='Ignored', statusReason=legacy.BLOCK_REASON)))
 
     def test_exact_stage_summary_baseline_and_mutation_binding_pass(self):
         fixture = self.execution_fixture()

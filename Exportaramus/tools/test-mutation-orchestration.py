@@ -242,6 +242,26 @@ class LedgerChecks(unittest.TestCase):
         self.entry['classification'] = 'Equivalent'
         self.assertTrue(self.resolve()[2])
 
+    def test_execution_equivalence_requires_bridge_and_strict_replay_for_original_status(self):
+        for status in ('CompileError', 'NoCoverage', 'Ignored'):
+            self.mutant['status'] = self.entry['status'] = status
+            self.mutant['statusReason'] = self.entry['statusReason'] = review.BLOCK_REASON if status == 'Ignored' else None
+            self.entry['classification'] = 'Equivalent'
+            self.assertTrue(self.resolve()[2])
+            self.entry['classification'] = 'IndependentlyEquivalent'
+            self.assertTrue(self.resolve()[2])
+            with patch.object(review, 'independently_equivalent', return_value=False) as check:
+                self.assertTrue(review.reconcile(self.ledger, self.before, 'report', self.scope, self.report, self.root, repair={'bound': True})[2])
+                check.assert_called_once()
+            with patch.object(review, 'independently_equivalent', return_value=True) as check:
+                self.assertEqual({('src/a.cs', '7')}, review.reconcile(self.ledger, self.before, 'report', self.scope, self.report, self.root, repair={'bound': True})[0])
+                check.assert_called_once()
+        for status in ('Timeout', 'RuntimeError', 'Pending', 'Killed', 'Survived'):
+            self.mutant['status'] = self.entry['status'] = status
+            with patch.object(review, 'independently_equivalent', return_value=True) as check:
+                self.assertTrue(review.reconcile(self.ledger, self.before, 'report', self.scope, self.report, self.root, repair={'bound': True})[2])
+                check.assert_not_called()
+
     def test_timeouts_uncovered_and_runtime_errors_cannot_be_waived(self):
         for status in ('Timeout', 'NoCoverage', 'RuntimeError', 'Pending', 'Killed'):
             self.mutant['status'] = self.entry['status'] = status
