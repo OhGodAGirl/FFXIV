@@ -51,6 +51,12 @@ function Get-UniqueBoundArtifact([string]$Name) {
 }
 $coveragePath = Get-UniqueBoundArtifact 'summary.json'
 $coverage = Get-Content -LiteralPath $coveragePath -Raw | ConvertFrom-Json
+if ($null -eq $coverage.performance) { throw 'Uninstrumented performance evidence is required.' }
+Assert-BoundEvidence $coverage.performance.trx $coverage.performance.trxSha256
+$performance = Read-VerificationPerformance -Trx $coverage.performance.trx
+foreach ($field in @('total','passed','failed','skipped')) {
+    if ($performance[$field] -ne $coverage.performance.tests.$field) { throw "Performance summary differs from its TRX: $field" }
+}
 $packagePath = Get-UniqueBoundArtifact 'package-inspection.json'
 $package = Get-Content -LiteralPath $packagePath -Raw | ConvertFrom-Json
 $scopePath = Get-UniqueBoundArtifact 'coverage-manifest.json'

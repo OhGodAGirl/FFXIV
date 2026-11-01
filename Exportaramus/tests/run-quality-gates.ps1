@@ -40,6 +40,7 @@ try {
         $summaryPath = [string]$result[-1]
         $coverage = Get-Content -LiteralPath $summaryPath -Raw | ConvertFrom-Json
         Add-Evidence $summaryPath
+        Add-Evidence $coverage.performance.trx
         foreach ($component in @($coverage, $coverage.consumerClient, $coverage.inventoryReader)) { Add-Evidence $component.report; Add-Evidence $component.trx }
     }
     Invoke-Gate 'SchemasFixturesMappingsAndKit' {

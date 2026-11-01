@@ -7,7 +7,11 @@ if (!$OutputDirectory) { $OutputDirectory = Join-Path $projectRoot 'development/
 $run = New-VerificationRun -ProjectRoot $projectRoot -OutputDirectory $OutputDirectory -Name 'complete'
 Push-Location $projectRoot
 try {
-    & $dotnetTool test tests/Exportaramus.Tests/Exportaramus.Tests.csproj -c $Configuration --no-restore --settings tests/coverage.runsettings --collect 'XPlat Code Coverage' --results-directory "$run/provider" --logger 'trx;LogFileName=offline.trx'
+    $performanceTrx = "$run/performance/performance.trx"
+    & $dotnetTool test tests/Exportaramus.Tests/Exportaramus.Tests.csproj -c $Configuration --no-restore --filter 'Category=UninstrumentedPerformance' --results-directory "$run/performance" --logger 'trx;LogFileName=performance.trx'
+    Assert-VerificationExit 'Uninstrumented performance tests'
+    $performance = Read-VerificationPerformance -Trx $performanceTrx
+    & $dotnetTool test tests/Exportaramus.Tests/Exportaramus.Tests.csproj -c $Configuration --no-restore --filter 'Category!=UninstrumentedPerformance' --settings tests/coverage.runsettings --collect 'XPlat Code Coverage' --results-directory "$run/provider" --logger 'trx;LogFileName=offline.trx'
     Assert-VerificationExit 'Complete provider tests'
     $provider = Read-VerificationCoverage -Run "$run/provider" -Trx "$run/provider/offline.trx"
     if (!$CollectorPath) {
@@ -25,6 +29,7 @@ try {
     $client = Read-VerificationCoverage -Run "$run/consumer" -Trx "$run/consumer/consumer-kit.trx" -TypePrefix 'Exportaramus.ConsumerKit.V1_2.CollectionDataIpcClient'
     $reader = Read-VerificationCoverage -Run "$run/consumer" -Trx "$run/consumer/consumer-kit.trx" -TypePrefix 'CollectionExample.InventoryItemReader'
     $provider.consumerClient = $client; $provider.inventoryReader = $reader
+    $provider.performance = @{ tests=$performance; trx=$performanceTrx; trxSha256=(Get-FileHash -LiteralPath $performanceTrx -Algorithm SHA256).Hash.ToLowerInvariant() }
     $provider.interpretation = 'Provider and canonical contract assemblies require 100% lines/branches. The separate consumer client and example reader also require 100%; shared canonical contract sources are covered by the provider run.'
     $summary = Join-Path $run 'summary.json'
     $provider | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $summary -Encoding utf8

@@ -102,7 +102,14 @@ class CompleteRecordTests(unittest.TestCase):
         self.consumer = self.coverage('consumer', ['Exportaramus.ConsumerKit.V1_2.CollectionDataIpcClient', 'CollectionExample.InventoryItemReader'])
         client = dict(self.consumer, linesCovered=1, linesValid=1, branchesCovered=2, branchesValid=2)
         reader = dict(client)
-        summary = dict(self.provider, consumerClient=client, inventoryReader=reader)
+        performance = self.coverage('performance', ['Benchmark'])
+        performance_trx = Path(performance['trx'])
+        document = ET.parse(performance_trx)
+        for element in list(document.getroot()):
+            if element.tag == 'UriAttachment': document.getroot().remove(element)
+        document.write(performance_trx)
+        self.performance = dict(trx=str(performance_trx), trxSha256=digest(performance_trx), tests=performance['tests'])
+        summary = dict(self.provider, consumerClient=client, inventoryReader=reader, performance=self.performance)
         self.summary_path = self.evidence / 'summary.json'
         package = self.evidence / 'package.zip'; package.write_bytes(b'isolated fixture package')
         self.package = {'status': 'Passed', 'package': str(package), 'packageSha256': digest(package), 'version': 'fixture'}
@@ -112,6 +119,7 @@ class CompleteRecordTests(unittest.TestCase):
                          write(self.evidence / 'coverage-manifest.json', scope)]
         for component in (self.provider, self.consumer):
             self.bindings += [{'path': component[name], 'sha256': component[name + 'Sha256']} for name in ('report', 'trx')]
+        self.bindings.append({'path': self.performance['trx'], 'sha256': self.performance['trxSha256']})
         self.gate_path = self.evidence / 'gate-execution.json'
         names = ('LockedRestore', 'FormattingAndAnalyzers', 'Build', 'PackageInspection', 'ProviderAndConsumerTestsAndStrictCoverage',
                  'SchemasFixturesMappingsAndKit', 'DecisionScopeInventory', 'PortableToolingTests')
@@ -171,6 +179,16 @@ class CompleteRecordTests(unittest.TestCase):
         self.assertFalse(record['loaded'])
         self.assertFalse(record['releaseApproved'])
         self.assertFalse((self.root / 'development/current').exists())
+
+    def test_missing_performance_evidence_cannot_qualify(self):
+        summary = json.loads(self.summary_path.read_bytes())
+        summary.pop('performance')
+        binding = write(self.summary_path, summary)
+        self.gate['evidence'] = [binding if item['path'] == str(self.summary_path) else item for item in self.gate['evidence']]
+        write(self.gate_path, self.gate)
+        result = self.invoke()
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn('Uninstrumented performance evidence is required', result.stderr)
 
     def test_provider_only_mutation_cannot_qualify_client_and_reader(self):
         # Arrange.

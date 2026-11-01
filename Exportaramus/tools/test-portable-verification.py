@@ -77,6 +77,29 @@ $b = New-VerificationRun -ProjectRoot $PSScriptRoot -Name sample
             self.assertTrue(Path(result[key]).is_dir())
             self.assertTrue(Path(result[key]).resolve().is_relative_to((self.root / 'development/verification').resolve()))
 
+    def test_performance_receipt_requires_a_complete_uninstrumented_run(self):
+        self.trx()
+        self.ps('Read-VerificationPerformance -Trx "$PSScriptRoot/result.trx"', success=False)
+        path = self.root / 'result.trx'
+        document = ET.parse(path)
+        summary = document.getroot().find('ResultSummary')
+        summary.remove(summary.find('CollectorDataEntries'))
+        document.write(path)
+        self.ps('Read-VerificationPerformance -Trx "$PSScriptRoot/result.trx"')
+        summary.find('Counters').set('notExecuted', '1')
+        document.write(path)
+        self.ps('Read-VerificationPerformance -Trx "$PSScriptRoot/result.trx"', success=False)
+
+    def test_performance_and_coverage_commands_use_complementary_filters(self):
+        source = (self.root / 'tests/test-all.ps1').read_text(encoding='utf-8')
+        commands = [line for line in source.splitlines() if '& $dotnetTool test tests/Exportaramus.Tests/' in line]
+        self.assertEqual(2, len(commands))
+        self.assertIn("--filter 'Category=UninstrumentedPerformance'", commands[0])
+        self.assertNotIn('--collect', commands[0])
+        self.assertNotIn('--settings', commands[0])
+        self.assertIn("--filter 'Category!=UninstrumentedPerformance'", commands[1])
+        self.assertIn("--collect 'XPlat Code Coverage'", commands[1])
+
     def test_skips_and_zero_test_runs_cannot_pass(self):
         # Arrange, Act, Assert.
         for passed, skipped in [(1, 1), (0, 0)]:

@@ -53,6 +53,16 @@ function Read-VerificationTests {
     return [ordered]@{total=[long]$counts.total;passed=[long]$counts.passed;failed=[long]$counts.failed;skipped=[long]$counts.notExecuted}
 }
 
+function Read-VerificationPerformance {
+    param([Parameter(Mandatory)][string]$Trx)
+    $counts = Read-VerificationTests -Trx $Trx
+    [xml]$document = Get-Content -LiteralPath $Trx -Raw
+    if ($document.SelectNodes("//*[local-name()='CollectorDataEntries' or local-name()='UriAttachment']").Count -ne 0) {
+        throw "Performance measurements must run without coverage instrumentation: $Trx"
+    }
+    return $counts
+}
+
 function Read-VerificationCoverage {
     param([Parameter(Mandatory)][string]$Run, [Parameter(Mandatory)][string]$Trx, [string]$TypePrefix)
     $tests = Read-VerificationTests -Trx $Trx
