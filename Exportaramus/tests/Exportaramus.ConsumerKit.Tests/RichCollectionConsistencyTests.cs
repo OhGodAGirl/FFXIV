@@ -61,4 +61,39 @@ public sealed class RichCollectionConsistencyTests
         root["currentItemPresence"]!.AsObject().Remove("inventory");
         AssertAccepted(root, false);
     }
+
+    [Theory]
+    [InlineData("None")]
+    [InlineData("Restored")]
+    [InlineData("Derived")]
+    public void FreshBeastDataRequiresObservedProvenance(string provenance)
+    {
+        var root = Snapshot();
+        root["sourceHealth"]!["beasts"]!["provenanceType"] = provenance;
+        root["collections"]!["beasts"]!["provenanceType"] = provenance;
+        AssertAccepted(root, false);
+    }
+
+    [Theory]
+    [InlineData(100, 100)]
+    [InlineData(200, 100)]
+    [InlineData(0, 100)]
+    public void PresenceItemIdsMustBePositiveAndStrictlyIncreasing(int first, int second)
+    {
+        var root = Snapshot();
+        root["currentItemPresence"]!["inventory"]!["items"] = new JsonArray(
+            new JsonObject { ["itemId"] = 100, ["quantity"] = 1 }, new JsonObject { ["itemId"] = 200, ["quantity"] = 1 });
+        AssertAccepted(root, true);
+        root["currentItemPresence"]!["inventory"]!["items"]![0]!["itemId"] = first;
+        root["currentItemPresence"]!["inventory"]!["items"]![1]!["itemId"] = second;
+        AssertAccepted(root, false);
+    }
+
+    [Fact]
+    public void PresenceSourcesMustBeRecognized()
+    {
+        var root = Snapshot();
+        root["currentItemPresence"]!["unknown"] = root["currentItemPresence"]!["inventory"]!.DeepClone();
+        AssertAccepted(root, false);
+    }
 }
