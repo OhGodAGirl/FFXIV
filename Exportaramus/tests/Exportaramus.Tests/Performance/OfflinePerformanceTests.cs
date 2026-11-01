@@ -118,6 +118,7 @@ public sealed class OfflinePerformanceTests(ITestOutputHelper output)
         MainViewState Prepare() => MainSnapshotPresenter.Prepare(bundle, true, null, false, false, guided, SnapshotFixture.Now, true);
         for (var i = 0; i < 1000; i++) _ = Prepare();
         var samples = new double[100];
+        var collectionsBefore = new[] { GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2) };
         var before = GC.GetAllocatedBytesForCurrentThread();
         for (var sample = 0; sample < samples.Length; sample++)
         {
@@ -126,6 +127,9 @@ public sealed class OfflinePerformanceTests(ITestOutputHelper output)
             samples[sample] = Stopwatch.GetElapsedTime(start).TotalMilliseconds / 100;
         }
         var perPreparation = (GC.GetAllocatedBytesForCurrentThread() - before) / 10000;
+        var collections = new[] { GC.CollectionCount(0) - collectionsBefore[0], GC.CollectionCount(1) - collectionsBefore[1], GC.CollectionCount(2) - collectionsBefore[2] };
+        output.WriteLine($"Runtime={System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription}; OS={System.Runtime.InteropServices.RuntimeInformation.OSDescription}; architecture={System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture}; processors={Environment.ProcessorCount}; serverGC={System.Runtime.GCSettings.IsServerGC}; stopwatchFrequency={Stopwatch.Frequency}.");
+        output.WriteLine($"GC collections (gen0/gen1/gen2)={string.Join('/', collections)}; sample means in measurement order (ms)={System.Text.Json.JsonSerializer.Serialize(samples)}.");
         Array.Sort(samples);
         output.WriteLine($"Offline preparation p95={samples[94]:F6} ms; allocated={perPreparation} bytes/preparation. Preparation occurs on invalidation, not every frame.");
         Assert.Equal(23, Prepare().Rows.Length);
