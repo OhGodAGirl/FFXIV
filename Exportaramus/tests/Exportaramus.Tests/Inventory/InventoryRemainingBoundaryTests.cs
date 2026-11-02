@@ -62,20 +62,31 @@ public sealed class InventoryRemainingBoundaryTests
     {
         var cache = new Cache();
         var service = new InventoryService(cache);
-        service.SetCharacter(1);
-        service.Pump();
-        await Worker(service);
-        service.Pump();
-        Assert.True(service.AcceptLocation(1, new(InventoryLocationKind.Inventory), "Inventory", [new(100, 1, 0)], Now));
-        cache.HoldSave = true;
-        Task operation;
-        if (shutdown) operation = service.DisposeAsync().AsTask();
-        else { service.Pump(); operation = Worker(service); }
-        await cache.SaveStarted.Task;
-        cache.Save.SetResult();
-        await operation;
-        Assert.Equal(0, cache.Context.Posts);
-        if (!shutdown) { service.Pump(); await service.DisposeAsync(); }
+        try
+        {
+            service.SetCharacter(1);
+            service.Pump();
+            await Worker(service);
+            service.Pump();
+            Assert.True(service.AcceptLocation(1, new(InventoryLocationKind.Inventory), "Inventory", [new(100, 1, 0)], Now));
+            cache.HoldSave = true;
+            Task operation;
+            if (shutdown) operation = service.DisposeAsync().AsTask();
+            else { service.Pump(); operation = Worker(service); }
+            await Task.WhenAny(cache.SaveStarted.Task, operation).WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.True(cache.SaveStarted.Task.IsCompletedSuccessfully);
+            cache.Save.SetResult();
+            await operation;
+            Assert.Equal(0, cache.Context.Posts);
+            if (!shutdown) { service.Pump(); await service.DisposeAsync(); }
+        }
+        finally
+        {
+            cache.HoldRead = false;
+            cache.Read.TrySetResult(null);
+            cache.Save.TrySetResult();
+            await service.DisposeAsync();
+        }
     }
 
     private static Task Worker(InventoryService service) => Assert.IsAssignableFrom<Task>(typeof(InventoryService).GetField("worker", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(service));
