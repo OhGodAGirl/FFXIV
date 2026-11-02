@@ -190,6 +190,32 @@ def source_domains(old, final, replaced):
     return {k: v for k, v in old.items() if k not in replaced}, {k: v for k, v in final.items() if k not in replaced}
 
 
+FINAL_REPORT_TOOL_FILES = frozenset({
+    'tools/current_campaign.py', 'tools/test-current-campaign.py',
+    'tools/report_set_review.py', 'tools/test-report-set-review.py',
+})
+
+
+def validate_final_strengthening(original, successor, changes, root, bridge, stage):
+    """Review this layer's exact tools without expanding historical repair bridges."""
+    extra = [c for c in changes if c['path'] in FINAL_REPORT_TOOL_FILES]
+    evidence = bridge.validate_differences(
+        {p: h for p, h in original.items() if p in FINAL_REPORT_TOOL_FILES},
+        {p: h for p, h in successor.items() if p in FINAL_REPORT_TOOL_FILES},
+        extra, root, FINAL_REPORT_TOOL_FILES, multi_suite=True)
+    for change in extra:
+        path = change['path']
+        require(path in original and path in successor, 'Final report tools must already exist; no additions or deletions.')
+        require(change.get('reviewed') is True and change.get('reviewer', '').strip(),
+                'Final report tool changes require an identified independent review.')
+        require(digest(Path(root) / path) == successor[path], 'Final report tool bytes differ from inventory.')
+    stage.validate_strengthening(
+        {p: h for p, h in original.items() if p not in FINAL_REPORT_TOOL_FILES},
+        {p: h for p, h in successor.items() if p not in FINAL_REPORT_TOOL_FILES},
+        [c for c in changes if c['path'] not in FINAL_REPORT_TOOL_FILES], root, bridge, multi_suite=True)
+    return evidence
+
+
 def case_coverage(full_cases, instrumented_cases, performance_cases):
     require(Counter(instrumented_cases) + Counter(performance_cases) == Counter(full_cases), 'Coverage/performance cases do not exactly partition the full provider baseline.')
 
@@ -474,7 +500,7 @@ def compose(plan_path, output):
     a, b = source_domains(old_paths, final_paths, replaced)
     a, b, documentation_evidence = documentation_change(plan.get('documentationChanges', []), a, b)
     evidence.extend(documentation_evidence)
-    stage.validate_strengthening(a, b, plan['changesFromHistorical'], final_root, bridge, multi_suite=True)
+    evidence.extend(validate_final_strengthening(a, b, plan['changesFromHistorical'], final_root, bridge, stage))
     # Separate coverage checkout is permitted only when every input is exact.
     coverage_root = Path(plan['coverageRoot']).resolve()
     cov_inventory, cov_paths = bridge.inventory(bound(plan['coverageInventory']))
