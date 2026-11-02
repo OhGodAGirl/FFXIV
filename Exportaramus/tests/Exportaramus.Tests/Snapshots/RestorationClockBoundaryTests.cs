@@ -1,10 +1,10 @@
-using Exportaramus.Features.Diagnostics;
 using System.Collections.Immutable;
 using Exportaramus.Features.CollectionData.Capture;
 using Exportaramus.Features.CollectionData.Catalog;
 using Exportaramus.Features.CollectionData.Contracts;
 using Exportaramus.Features.CollectionData.Publication;
 using Exportaramus.Features.CollectionData.State;
+using Exportaramus.Features.Diagnostics;
 using Exportaramus.Features.Snapshots;
 
 namespace Exportaramus.Tests.Snapshots;
