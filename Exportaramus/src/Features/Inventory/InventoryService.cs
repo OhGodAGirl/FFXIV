@@ -18,6 +18,7 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
     private long revision;
     private bool restorePending;
     private bool disposed;
+    private bool pumping;
     private Task? disposal;
     private string? lastCacheFailure;
     private DateTimeOffset retryAt;
@@ -53,7 +54,9 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
         lock (sync)
         {
             if (!IsCurrent(contentId)) return false;
+            var observedGeneration = generation;
             var rosterObservedAt = observedAt ?? clock.GetUtcNow();
+            if (!IsCurrent(contentId) || generation != observedGeneration) return false;
             if (rosterObservedAt == default || snapshot!.RetainerRosterObservedAtUtc > rosterObservedAt) return false;
             var retainers = new Dictionary<ulong, InventoryRetainer>();
             foreach (var retainer in roster)
@@ -128,63 +131,91 @@ public sealed class InventoryService(IInventoryCache? cache = null, TimeProvider
     {
         lock (sync)
         {
-            if (disposed || cache is null || worker is { IsCompleted: false })
-                return;
-            if (worker is not null)
+            if (pumping) return;
+            pumping = true;
+            try
             {
-                try
+                if (disposed || cache is null || worker is { IsCompleted: false })
+                    return;
+                if (worker is not null)
                 {
-                    var saved = worker.GetAwaiter().GetResult();
-                    if (saved is not null && workerGeneration == generation && IsCurrent(workerCharacter))
+                    try
                     {
-                        var restored = InventoryPolicy.Restore(snapshot!, saved);
-                        Publish(restored);
+                        var saved = worker.GetAwaiter().GetResult();
+                        if (saved is not null && workerGeneration == generation && IsCurrent(workerCharacter))
+                        {
+                            var restored = InventoryPolicy.Restore(snapshot!, saved);
+                            Publish(restored);
+                        }
+                        if (workerWrite is not null && pendingWrites.TryGetValue(workerWrite.ContentId, out var pending)
+                            && ReferenceEquals(pending, workerWrite))
+                            pendingWrites.Remove(workerWrite.ContentId);
+                        if (workerWrite is not null)
+                        {
+                            writeFailed = false;
+                            retryAt = default;
+                        }
+                        else if (workerGeneration == generation)
+                        {
+                            restoreFailed = false;
+                            restoreRetryAt = default;
+                        }
+                        lastCacheFailure = null;
                     }
-                    if (workerWrite is not null && pendingWrites.TryGetValue(workerWrite.ContentId, out var pending)
-                        && ReferenceEquals(pending, workerWrite))
-                        pendingWrites.Remove(workerWrite.ContentId);
-                    if (workerWrite is not null)
+                    catch (Exception)
                     {
-                        writeFailed = false;
-                        retryAt = default;
+                        if (workerWrite is not null)
+                        {
+                            var retry = clock.GetUtcNow().AddSeconds(30);
+                            if (!disposed)
+                            {
+                                writeFailed = true;
+                                retryAt = retry;
+                            }
+                        }
+                        else if (workerGeneration == generation && IsCurrent(workerCharacter))
+                        {
+                            var retry = clock.GetUtcNow().AddSeconds(30);
+                            if (workerGeneration == generation && IsCurrent(workerCharacter))
+                            {
+                                restoreFailed = true;
+                                restorePending = true;
+                                restoreRetryAt = retry;
+                            }
+                        }
                     }
-                    else if (workerGeneration == generation)
-                    {
-                        restoreFailed = false;
-                        restoreRetryAt = default;
-                    }
-                    lastCacheFailure = null;
+                    worker = null;
+                    workerWrite = null;
                 }
-                catch (Exception)
+                if (disposed) return;
+                var dispatchGeneration = generation;
+                workerGeneration = generation;
+                workerCharacter = snapshot?.ContentId ?? 0;
+                if (restorePending)
                 {
-                    if (workerWrite is not null)
+                    var now = clock.GetUtcNow();
+                    if (disposed || generation != dispatchGeneration) return;
+                    if (restorePending && now >= restoreRetryAt)
                     {
-                        writeFailed = true;
-                        retryAt = clock.GetUtcNow().AddSeconds(30);
-                    }
-                    else if (workerGeneration == generation && IsCurrent(workerCharacter))
-                    {
-                        restoreFailed = true;
-                        restorePending = true;
-                        restoreRetryAt = clock.GetUtcNow().AddSeconds(30);
+                        restorePending = false;
+                        var identity = workerCharacter;
+                        worker = Task.Run(() => cache.LoadAsync(identity, lifetime.Token));
+                        return;
                     }
                 }
-                worker = null;
-                workerWrite = null;
+                if (pendingWrites.Count > 0)
+                {
+                    var now = clock.GetUtcNow();
+                    if (disposed || generation != dispatchGeneration) return;
+                    if (pendingWrites.Count == 0 || now < retryAt) return;
+                    var next = pendingWrites.First();
+                    workerWrite = next.Value;
+                    worker = Task.Run(async () => { await cache.SaveAsync(next.Value, lifetime.Token).ConfigureAwait(false); return (InventorySnapshot?)null; });
+                }
             }
-            workerGeneration = generation;
-            workerCharacter = snapshot?.ContentId ?? 0;
-            if (restorePending && clock.GetUtcNow() >= restoreRetryAt)
+            finally
             {
-                restorePending = false;
-                var identity = workerCharacter;
-                worker = Task.Run(() => cache.LoadAsync(identity, lifetime.Token));
-            }
-            else if (pendingWrites.Count > 0 && clock.GetUtcNow() >= retryAt)
-            {
-                var next = pendingWrites.First();
-                workerWrite = next.Value;
-                worker = Task.Run(async () => { await cache.SaveAsync(next.Value, lifetime.Token).ConfigureAwait(false); return (InventorySnapshot?)null; });
+                pumping = false;
             }
         }
     }
