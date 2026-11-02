@@ -1,0 +1,203 @@
+{
+  "minimumLineCoverage": 100,
+  "minimumBranchCoverage": 100,
+  "includedProductionFiles": [
+    "src/Features/GlamourPlates/CollectionProviderPolicy.cs",
+    "src/Features/GlamourPlates/CollectionSourceResolver.cs",
+    "src/Features/GlamourPlates/CollectionViewPlanner.cs",
+    "src/Features/GlamourPlates/PlateLibrary.cs",
+    "src/Features/GlamourPlates/PlateLoadPlanner.cs",
+    "src/Features/GlamourPlates/PlateResultPolicy.cs",
+    "src/Features/GlamourPlates/PlateRules.cs",
+    "src/Features/GlamourPlates/SavedPlateQuery.cs",
+    "src/Features/Main/CompanionPlacementPolicy.cs",
+    "src/Features/Main/EquipmentSummaryPolicy.cs",
+    "src/Features/Main/MainController.cs",
+    "src/Features/Main/MainLayoutPolicy.cs",
+    "src/Shared/Operations/OwnedOperationRegistry.cs",
+    "src/Shared/Operations/OwnedTeardown.cs",
+    "src/Shared/Ui/PluginMotion.cs",
+    "src/Features/GlamourPlates/ExportaramusProjection.cs",
+    "src/Features/GlamourPlates/OutfitPreviewPolicy.cs",
+    "src/Features/Examine/ExaminedOutfitPolicy.cs",
+    "src/Features/Diagnostics/DiagnosticJournal.cs",
+    "src/Features/Examine/ExamineTabPlacement.cs",
+    "src/Features/GlamourPlates/PlateDyePlanner.cs",
+    "src/Features/Examine/ExamineButtonTheme.cs",
+    "src/Features/Main/DyePaletteOrder.cs",
+    "src/Shared/CollectionData/CollectionDataContracts.cs",
+    "src/Features/GlamourPlates/Models.cs",
+    "src/Adapters/GameIconCatalogState.cs",
+    "src/Adapters/CollectionData/ExportaramusConsumer.cs",
+    "src/Features/Examine/ExamineReadPolicy.cs",
+    "src/Features/Examine/ExaminePresentation.cs",
+    "src/Features/Main/DrawerSession.cs",
+    "src/Features/Main/LibrarySearchState.cs",
+    "src/Features/Main/IconChoiceFilter.cs",
+    "src/Features/Main/OutfitInteraction.cs",
+    "src/Shared/Ui/BoundedIconCache.cs",
+    "src/Shared/Ui/UiText.cs",
+    "src/Features/GlamourPlates/NativeCollectionProjection.cs",
+    "src/Features/GlamourPlates/NativeDyeStatePolicy.cs",
+    "src/Bootstrap/CollectionCoordinator.cs",
+    "src/Bootstrap/CommandDispatcher.cs",
+    "src/Bootstrap/CommandExecutionCoordinator.cs",
+    "src/Bootstrap/CommandPreviewPolicy.cs",
+    "src/Bootstrap/EditorLifecycle.cs",
+    "src/Bootstrap/ExamineSaveCoordinator.cs",
+    "src/Bootstrap/PreviewCoordinator.cs",
+    "src/Bootstrap/ThemeObserver.cs",
+    "src/Features/GlamourPlates/PlateApplyExecution.cs",
+    "src/Features/GlamourPlates/PlateCaptureExecution.cs",
+    "src/Features/GlamourPlates/PlateDyeExecution.cs",
+    "src/Features/GlamourPlates/PlatePreviewExecution.cs",
+    "src/Bootstrap/ConfigurationStore.cs",
+    "src/Bootstrap/RuntimeUiPolicy.cs",
+    "src/Features/GlamourPlates/DyePreparation.cs",
+    "src/Bootstrap/IconCatalogPublication.cs",
+    "src/Shared/Operations/OwnedResourcePair.cs"
+  ],
+  "excludedProductionFiles": [
+    {
+      "path": "src/Bootstrap/PluginIdentity.cs",
+      "reason": "Compile-time identity constants produce no executable coverage sequence points; identity contracts are tested directly."
+    },
+    {
+      "path": "src/Features/GlamourPlates/EquipSlotCategoryAdapter.cs",
+      "reason": "Thin Lumina EquipSlotCategory field adapter; all slot decisions are extracted into PlateRules."
+    },
+    {
+      "path": "src/Bootstrap/Plugin.cs",
+      "reason": "Dalamud composition, event subscriptions and native snapshot capture. Production-used CommandDispatcher, CommandExecutionCoordinator, CommandPreviewPolicy, CollectionCoordinator, EditorLifecycle, PreviewCoordinator, ExamineSaveCoordinator and ThemeObserver own the tested orchestration; live subscription wiring remains unproven offline."
+    },
+    {
+      "path": "src/Bootstrap/Configuration.cs",
+      "reason": "Dalamud persisted configuration DTO with no decision behavior."
+    },
+    {
+      "path": "src/Features/GlamourPlates/NativeCollectionValidator.cs",
+      "reason": "MirageManager/UIState pointer and Lumina field copying. NativeCollectionProjection covers set expansion, ownership filtering, dye mapping and snapshot ordering; native memory reads remain live-only."
+    },
+    {
+      "path": "src/Features/GlamourPlates/NativePlateEditor.cs",
+      "reason": "Native pointer/API port implementation. PlateApplyExecution, PlateCaptureExecution and PlatePreviewExecution exercise sequencing, guards, readbacks and cleanup through the same production ports. Actual native calls require live acceptance."
+    },
+    {
+      "path": "src/Features/GlamourPlates/Ports.cs",
+      "reason": "Runtime port contracts plus the mutable persistence transport container; it contains no product decisions or mechanism implementation."
+    },
+    {
+      "path": "src/Features/Main/MainCommand.cs",
+      "reason": "Immutable command message records only; dispatch and product policy are included through MainController."
+    },
+    {
+      "path": "src/Features/Main/MainViewState.cs",
+      "reason": "Immutable render-state records and one empty-state value; view construction and product decisions are included through MainController."
+    },
+    {
+      "path": "src/Features/Main/MainWindow.cs",
+      "reason": "ImGui window composition and game texture retrieval. DrawerSession, BoundedIconCache and UiText cover lifecycle, bounded reference caching and text buffers. Renderer and texture API need live acceptance."
+    },
+    {
+      "path": "src/Shared/Ui/PluginTheme.cs",
+      "reason": "Direct ImGui style-stack adapter containing only fixed visual tokens and push/pop calls."
+    },
+    {
+      "path": "src/Adapters/NativeEditorBounds.cs",
+      "reason": "Thin native pointer-to-value geometry adapter; placement decisions are separately included."
+    },
+    {
+      "path": "src/Features/Main/MainWindow.Collection.cs",
+      "reason": "Direct ImGui renderer; layout and equipment policies are separately included."
+    },
+    {
+      "path": "src/Features/Main/MainWindow.Equipment.cs",
+      "reason": "Direct ImGui renderer; layout and equipment policies are separately included."
+    },
+    {
+      "path": "src/Features/Main/MainWindow.Layout.cs",
+      "reason": "ImGui layout adapter. MainLayoutPolicy, OutfitInteraction and UiText test geometry, action guards, feedback and text fitting; visual output remains live-only."
+    },
+    {
+      "path": "src/Shared/Ui/NativePanelChrome.cs",
+      "reason": "Direct draw-list decoration and source glyph rendering."
+    },
+    {
+      "path": "src/Shared/Ui/PrimaryActionButton.cs",
+      "reason": "Direct ImGui control and decoration; no product decisions."
+    },
+    {
+      "path": "src/Adapters/CollectionData/CollectionDataGateBindings.cs",
+      "reason": "Dalamud binding adapted from pinned kit; no product policy."
+    },
+    {
+      "path": "src/Adapters/NativeExamineReader.cs",
+      "reason": "Bounded native pointer and inventory/window field copying. ExamineReadPolicy covers readiness, before/after identity, equipment matching, occlusion and diagnostics; native structure validity remains live-only."
+    },
+    {
+      "path": "src/Features/Examine/ExamineSaveWindow.cs",
+      "reason": "ImGui attached button renderer. ExaminePresentation tests visibility, placement, enablement and messages; actual game theme textures/rendering need live acceptance."
+    },
+    {
+      "path": "src/Features/Diagnostics/DiagnosticsWindow.cs",
+      "reason": "Secondary ImGui window reads managed snapshots and copies JSON to the clipboard; report behavior is tested independently; live clipboard verification pending."
+    },
+    {
+      "path": "src/Features/Main/MainWindow.Dyes.cs",
+      "reason": "ImGui palette/swatch adapter. DrawerSession tests target lifetime, mutually exclusive drawers, filtering and all three clear scopes; actual widget input/rendering remains live-only."
+    },
+    {
+      "reason": "Native inventory and dye API port implementation. PlateDyeExecution exercises allocation application, context guards and exact readback; native API acceptance remains live-only.",
+      "path": "src/Features/GlamourPlates/NativePlateEditor.Dyes.cs"
+    },
+    {
+      "path": "src/Adapters/GameIconCatalog.cs",
+      "reason": "Lumina row and resource lookup adapter. GameIconCatalogState covers bounds, categories, ordering, deduplication, validation and lifecycle. Live sheet/resource availability remains unproven offline."
+    },
+    {
+      "path": "src/Features/Main/MainWindow.Library.cs",
+      "reason": "ImGui presentation/focus adapter. LibrarySearchState, IconChoiceFilter and DrawerSession test search acknowledgement, filtering/cache and clicked-row command binding. MainController tests library mutations; clipping remains visual acceptance."
+    },
+    {
+      "path": "src/Contracts/1.2/CollectionDataContracts.cs",
+      "reason": "Vendor-owned pinned Exportaramus Consumer Kit 1.2 source, qualified by exact-byte provenance and consumer fixture/integration tests; not plugin-owned decision mutation scope."
+    },
+    {
+      "path": "src/Contracts/1.2/Consumer/CollectionDataGateBindings.Dalamud.cs",
+      "reason": "Vendor-owned pinned Exportaramus Consumer Kit 1.2 source, qualified by exact-byte provenance and consumer fixture/integration tests; not plugin-owned decision mutation scope."
+    },
+    {
+      "path": "src/Contracts/1.2/CollectionDataGates.cs",
+      "reason": "Vendor-owned pinned Exportaramus Consumer Kit 1.2 source, qualified by exact-byte provenance and consumer fixture/integration tests; not plugin-owned decision mutation scope."
+    },
+    {
+      "path": "src/Contracts/1.2/Consumer/CollectionDataIpcClient.cs",
+      "reason": "Vendor-owned pinned Exportaramus Consumer Kit 1.2 source, qualified by exact-byte provenance and consumer fixture/integration tests; not plugin-owned decision mutation scope."
+    },
+    {
+      "path": "src/Contracts/1.2/CollectionDataJsonContext.cs",
+      "reason": "Vendor-owned pinned Exportaramus Consumer Kit 1.2 source, qualified by exact-byte provenance and consumer fixture/integration tests; not plugin-owned decision mutation scope."
+    },
+    {
+      "path": "src/Contracts/1.2/CollectionDataSemanticValidator.cs",
+      "reason": "Vendor-owned pinned Exportaramus Consumer Kit 1.2 source, qualified by exact-byte provenance and consumer fixture/integration tests; not plugin-owned decision mutation scope."
+    },
+    {
+      "path": "src/Contracts/1.2/ContractSchemaRegistry.cs",
+      "reason": "Vendor-owned pinned Exportaramus Consumer Kit 1.2 source, qualified by exact-byte provenance and consumer fixture/integration tests; not plugin-owned decision mutation scope."
+    },
+    {
+      "path": "src/Contracts/1.2/ExactJsonNumber.cs",
+      "reason": "Vendor-owned pinned Exportaramus Consumer Kit 1.2 source, qualified by exact-byte provenance and consumer fixture/integration tests; not plugin-owned decision mutation scope."
+    },
+    {
+      "path": "src/Bootstrap/ConfigurationStore.Dalamud.cs",
+      "reason": "Constructor bridge binds the tested ConfigurationStore load/save delegates to IDalamudPluginInterface."
+    },
+    {
+      "path": "src/Adapters/ExamineView.cs",
+      "reason": "Copied immutable Examine transport record; all interpretation is covered through ExamineReadPolicy and ExaminePresentation."
+    }
+  ]
+}
+

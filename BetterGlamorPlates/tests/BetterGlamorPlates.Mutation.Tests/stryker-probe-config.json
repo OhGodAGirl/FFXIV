@@ -1,0 +1,24 @@
+{
+  "stryker-config": {
+    "project": "BetterGlamorPlates.MutationTarget.csproj",
+    "configuration": "Release",
+    "target-framework": "net10.0-windows7.0",
+    "test-runner": "vstest",
+    "mutation-level": "Standard",
+    "coverage-analysis": "perTest",
+    "concurrency": 1,
+    "reporters": [
+      "json",
+      "cleartext"
+    ],
+    "report-file-name": "probe-report",
+    "thresholds": {
+      "high": 100,
+      "low": 100,
+      "break": 100
+    },
+    "mutate": [
+      "**/MutationProbe.cs"
+    ]
+  }
+}

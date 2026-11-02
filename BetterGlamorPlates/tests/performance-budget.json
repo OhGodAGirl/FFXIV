@@ -1,0 +1,230 @@
+{
+  "schemaVersion": 1,
+  "status": "measured",
+  "pluginVersion": "1.0.1.0",
+  "sourceState": "Repository verification with ConsumerKit 1.2; ordinary Release tests. No live performance or new full mutation qualification claimed.",
+  "context": {
+    "gamePatch": "2026.10.06.0000.0000",
+    "dalamudApiLevel": 15,
+    "measurementTool": ".NET 10 Release xUnit harness; Stopwatch.GetTimestamp/GetElapsedTime and GC.GetAllocatedBytesForCurrentThread; isolated performance collection"
+  },
+  "scenarios": [
+    {
+      "name": "collection-view-2000",
+      "kind": "deterministic pure decision microbenchmark",
+      "context": "2,000 compatible collection entries filtered, deduplicated, sorted, and materialized on .NET 10 Release",
+      "sampleCount": 64,
+      "iterationsPerSample": 8,
+      "baseline": {
+        "meanMilliseconds": 1.050732,
+        "p95Milliseconds": 2.3585,
+        "allocatedBytesPerOperation": 280165
+      },
+      "candidate": {
+        "meanMilliseconds": 0.849388,
+        "p95Milliseconds": 1.628013,
+        "allocatedBytesPerOperation": 345040
+      },
+      "budget": {
+        "maxMeanMilliseconds": 4.0,
+        "maxP95Milliseconds": 5.0,
+        "maxAllocatedBytesPerOperation": 400000
+      },
+      "result": "pass"
+    },
+    {
+      "name": "plate-load-plan-12x2000",
+      "kind": "deterministic pure decision microbenchmark",
+      "context": "twelve populated saved slots validated against one immutable 2,000-entry snapshot on .NET 10 Release",
+      "sampleCount": 64,
+      "iterationsPerSample": 32,
+      "baseline": {
+        "meanMilliseconds": 0.099372,
+        "p95Milliseconds": 0.1546,
+        "allocatedBytesPerOperation": 1649
+      },
+      "candidate": {
+        "meanMilliseconds": 0.13527699999999998,
+        "p95Milliseconds": 0.35786599999999996,
+        "allocatedBytesPerOperation": 1376
+      },
+      "budget": {
+        "maxMeanMilliseconds": 1.0,
+        "maxP95Milliseconds": 2.0,
+        "maxAllocatedBytesPerOperation": 8000
+      },
+      "result": "pass"
+    },
+    {
+      "name": "plate-duplicate-12",
+      "kind": "deterministic pure decision microbenchmark",
+      "context": "deep copy of twelve populated saved slots with caller-supplied UTC time and identifier on .NET 10 Release",
+      "sampleCount": 64,
+      "iterationsPerSample": 4096,
+      "baseline": {
+        "meanMilliseconds": 0.000669,
+        "p95Milliseconds": 0.000767,
+        "allocatedBytesPerOperation": 808
+      },
+      "candidate": {
+        "meanMilliseconds": 0.000157,
+        "p95Milliseconds": 0.000298,
+        "allocatedBytesPerOperation": 824
+      },
+      "budget": {
+        "maxMeanMilliseconds": 0.05,
+        "maxP95Milliseconds": 0.1,
+        "maxAllocatedBytesPerOperation": 4000
+      },
+      "result": "pass"
+    },
+    {
+      "iterationsPerSample": 16,
+      "sampleCount": 64,
+      "name": "plate-dyes-24x3360",
+      "context": "24 channel changes against 140 stacks represented for 24 shared colours; final stack supplies all required material",
+      "budget": {
+        "maxAllocatedBytesPerOperation": 20000,
+        "maxP95Milliseconds": 5.0,
+        "maxMeanMilliseconds": 5.0
+      },
+      "result": "pass",
+      "kind": "deterministic pure decision microbenchmark",
+      "candidate": {
+        "meanMilliseconds": 0.317516,
+        "p95Milliseconds": 0.819825,
+        "allocatedBytesPerOperation": 3656
+      },
+      "baseline": {
+        "meanMilliseconds": 0.25929800000000003,
+        "p95Milliseconds": 0.336,
+        "allocatedBytesPerOperation": 3656
+      },
+      "baselineContext": "First measured stabilization baseline, same candidate; not a before/after comparison."
+    },
+    {
+      "name": "library-select-1000",
+      "kind": "managed decision microbenchmark",
+      "sampleCount": 64,
+      "iterationsPerSample": 4,
+      "candidate": {
+        "meanMilliseconds": 1.812984,
+        "p95Milliseconds": 3.3749000000000002,
+        "allocatedBytesPerOperation": 1174737
+      },
+      "budget": {
+        "maxAllocatedBytesPerOperation": 8000000,
+        "maxP95Milliseconds": 50,
+        "maxMeanMilliseconds": 50
+      },
+      "result": "pass",
+      "baseline": {
+        "meanMilliseconds": 2.02087,
+        "p95Milliseconds": 2.5286750000000002,
+        "allocatedBytesPerOperation": 1174720
+      },
+      "baselineContext": "First measured stabilization baseline, same candidate; not a before/after comparison.",
+      "context": "Managed controller selection including rollback snapshot and view rebuild, twelve occupied slots per outfit; fake persistence."
+    },
+    {
+      "name": "companion-icon-drawer-placement",
+      "kind": "managed decision microbenchmark",
+      "sampleCount": 64,
+      "iterationsPerSample": 4096,
+      "candidate": {
+        "meanMilliseconds": 3.7E-05,
+        "p95Milliseconds": 1.9E-05,
+        "allocatedBytesPerOperation": 40
+      },
+      "budget": {
+        "maxAllocatedBytesPerOperation": 64,
+        "maxP95Milliseconds": 0.05,
+        "maxMeanMilliseconds": 0.05
+      },
+      "result": "pass",
+      "baseline": {
+        "meanMilliseconds": 3.8E-05,
+        "p95Milliseconds": 1.4999999999999999E-05,
+        "allocatedBytesPerOperation": 40
+      },
+      "baselineContext": "First measured stabilization baseline, same candidate; not a before/after comparison.",
+      "context": "Placement from native/viewport bounds with436-unit icon drawer; result boxing included."
+    },
+    {
+      "name": "library-select-100",
+      "kind": "managed decision microbenchmark",
+      "sampleCount": 64,
+      "iterationsPerSample": 4,
+      "candidate": {
+        "meanMilliseconds": 0.087154,
+        "p95Milliseconds": 0.11585,
+        "allocatedBytesPerOperation": 179722
+      },
+      "budget": {
+        "maxAllocatedBytesPerOperation": 1000000,
+        "maxP95Milliseconds": 10,
+        "maxMeanMilliseconds": 10
+      },
+      "result": "pass",
+      "baseline": {
+        "meanMilliseconds": 0.27251600000000004,
+        "p95Milliseconds": 0.337175,
+        "allocatedBytesPerOperation": 180009
+      },
+      "baselineContext": "First measured stabilization baseline, same candidate; not a before/after comparison.",
+      "context": "Managed controller selection including rollback snapshot and view rebuild, twelve occupied slots per outfit; fake persistence."
+    },
+    {
+      "name": "dye-palette-255",
+      "kind": "managed decision microbenchmark",
+      "sampleCount": 64,
+      "iterationsPerSample": 64,
+      "candidate": {
+        "meanMilliseconds": 0.057457999999999995,
+        "p95Milliseconds": 0.069553,
+        "allocatedBytesPerOperation": 9960
+      },
+      "budget": {
+        "maxAllocatedBytesPerOperation": 32000,
+        "maxP95Milliseconds": 1,
+        "maxMeanMilliseconds": 1
+      },
+      "result": "pass",
+      "baseline": {
+        "meanMilliseconds": 0.047765,
+        "p95Milliseconds": 0.053236,
+        "allocatedBytesPerOperation": 9960
+      },
+      "baselineContext": "First measured stabilization baseline, same candidate; not a before/after comparison.",
+      "context": "Sort255 RGB dye options; no game resources."
+    }
+  ],
+  "caches": [
+    {
+      "name": "MainWindow icon texture cache",
+      "maximumEntries": 256,
+      "scope": "one MainWindow instance",
+      "maximumLifetimeSeconds": null,
+      "maximumLifetime": "plugin/window lifetime, with FIFO eviction above 256 entries",
+      "invalidation": "eviction on capacity; all local keys are released when the window is disposed; shared texture wrappers remain provider-owned"
+    },
+    {
+      "name": "MainController visible collection view",
+      "maximumEntries": 2000,
+      "scope": "one immutable MainViewState",
+      "maximumLifetimeSeconds": null,
+      "maximumLifetime": "until the next command rebuilds view state",
+      "invalidation": "every controller command rebuilds the view; refresh, filter, slot, plate, and item changes replace the prior view"
+    },
+    {
+      "name": "Game item icon catalog",
+      "maximumEntries": 65536,
+      "scope": "one plugin instance",
+      "maximumLifetime": "plugin lifetime",
+      "invalidation": "Disposed with plugin;256 rows per update,100000 source row limit;one final sort;drawer uses clipped rows and the256-entry texture cache."
+    }
+  ],
+  "cachePolicy": "Plugin-owned collections are numerically bounded. No time-based or unbounded cache is permitted in Draw or recurring update paths.",
+  "liveValidationRequired": true,
+  "measuredAtUtc": "2026-11-01T18:11:15.9792673-08:00"
+}

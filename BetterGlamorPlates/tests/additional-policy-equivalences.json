@@ -1,0 +1,41 @@
+{
+  "entries": [
+    {
+      "path": "src/Features/GlamourPlates/CollectionViewPlanner.cs",
+      "sourceSha256": "9F0020E4FA061471853125C066210FD885E77CDD96D23B787ECADA45FF1B4306",
+      "mutator": "Equality mutation",
+      "replacement": "result.Count >= MaximumVisibleItems",
+      "startLine": 68,
+      "startColumn": 13,
+      "endLine": 68,
+      "endColumn": 47,
+      "rationale": "Only changed case is result.Count=2000. RemoveRange(2000,0) is valid and changes no list contents. No enumerator or version is exposed; the result is copied into a new array.",
+      "reviewer": "portfolio_style_review"
+    },
+    {
+      "path": "src/Features/GlamourPlates/OutfitPreviewPolicy.cs",
+      "sourceSha256": "1B2BDE0BEAE81908D6F456F37456F65AAC5E4639FFBC3D325885C2DDAC034644",
+      "mutator": "PostIncrementExpression to PostDecrementExpression mutation",
+      "replacement": "generation--",
+      "startLine": 94,
+      "startColumn": 9,
+      "endLine": 94,
+      "endColumn": 21,
+      "rationale": "Private generation is observed solely by equality against a snapshot. Incrementing or decrementing once per Cancel preserves exactly the same equality relation over any number of operations modulo64bit wraparound. No generation value or ordering is exposed.",
+      "reviewer": "portfolio_style_review"
+    },
+    {
+      "path": "src/Features/Main/MainLayoutPolicy.cs",
+      "sourceSha256": "C0548C1F9394C72B071B4ED848D7C47BB8040649D51E70C3A5F02DA2CD59DF96",
+      "mutator": "Equality mutation",
+      "replacement": "itemCount < 0",
+      "startLine": 57,
+      "startColumn": 12,
+      "endLine": 57,
+      "endColumn": 26,
+      "rationale": "Only changed case is itemCount=0. For columns<=0 both return0 via the second guard; for positive columns the expression (columns-1)/columns is0 and cannot overflow. Both return the same result.",
+      "reviewer": "portfolio_style_review"
+    }
+  ],
+  "schemaVersion": 1
+}

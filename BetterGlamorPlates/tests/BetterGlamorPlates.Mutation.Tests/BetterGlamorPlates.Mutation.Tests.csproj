@@ -1,0 +1,85 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <AssemblyName>BetterGlamorPlates.Mutation.Tests</AssemblyName>
+    <RootNamespace>BetterGlamorPlates.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BetterGlamorPlates.MutationTarget\BetterGlamorPlates.MutationTarget.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\BetterGlamorPlates.Tests\Features\GlamourPlates\CollectionSourceResolverTests.cs"
+             Link="CollectionSourceResolverTests.cs" />
+    <Compile Include="..\BetterGlamorPlates.Tests\Features\GlamourPlates\CollectionProviderPolicyTests.cs"
+             Link="CollectionProviderPolicyTests.cs" />
+    <Compile Include="..\BetterGlamorPlates.Tests\Features\GlamourPlates\CollectionViewPlannerTests.cs"
+             Link="CollectionViewPlannerTests.cs" />
+    <Compile Include="..\BetterGlamorPlates.Tests\Features\GlamourPlates\PlateLibraryTests.cs"
+             Link="PlateLibraryTests.cs" />
+    <Compile Include="..\BetterGlamorPlates.Tests\Features\GlamourPlates\PlateLoadPlannerTests.cs"
+             Link="PlateLoadPlannerTests.cs" />
+    <Compile Include="..\BetterGlamorPlates.Tests\Features\GlamourPlates\PlateRulesTests.cs"
+             Link="PlateRulesTests.cs" />
+    <Compile Include="..\BetterGlamorPlates.Tests\Features\Main\MainControllerTests.cs"
+             Link="MainControllerTests.cs" />
+    <Compile Include="..\BetterGlamorPlates.Tests\LifecycleStressTests.cs"
+             Link="LifecycleStressTests.cs" />
+    <Compile Include="..\BetterGlamorPlates.Tests\PluginMotionTests.cs"
+             Link="PluginMotionTests.cs" />
+    <Compile Include="..\BetterGlamorPlates.Tests\TestFakes.cs"
+             Link="TestFakes.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Features/GlamourPlates/PlateResultPolicyTests.cs" Link="Features/GlamourPlates/PlateResultPolicyTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Features/Main/BaselineControllerTests.cs" Link="Features/Main/BaselineControllerTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Features/Main/EquipmentSummaryPolicyTests.cs" Link="Features/Main/EquipmentSummaryPolicyTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Features/Main/CompanionPlacementPolicyTests.cs" Link="Features/Main/CompanionPlacementPolicyTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Features/Main/MainLayoutPolicyTests.cs" Link="Features/Main/MainLayoutPolicyTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Features/GlamourPlates/SavedPlateQueryTests.cs" Link="Features/GlamourPlates/SavedPlateQueryTests.cs" />
+    <Compile Include="MutationProbeTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Features/GlamourPlates/PartialPlateLoadTests.cs"
+             Link="Features/GlamourPlates/PartialPlateLoadTests.cs" />
+  </ItemGroup>
+<ItemGroup><Compile Include="../BetterGlamorPlates.Tests/Features/GlamourPlates/PlateDyePlannerTests.cs" Link="Features/GlamourPlates/PlateDyePlannerTests.cs" /></ItemGroup><ItemGroup><Compile Include="../BetterGlamorPlates.Tests/Features/Main/LocalDyeTests.cs" Link="Features/Main/LocalDyeTests.cs" /><Compile Include="../BetterGlamorPlates.Tests/Features/Main/ApprovedUiTests.cs" Link="Features/Main/ApprovedUiTests.cs" /><Compile Include="../BetterGlamorPlates.Tests/Features/Main/DyePaletteOrderTests.cs" Link="Features/Main/DyePaletteOrderTests.cs" /><Compile Include="../BetterGlamorPlates.Tests/Features/Examine/ExamineButtonThemeTests.cs" Link="Features/Examine/ExamineButtonThemeTests.cs" /><Compile Include="../BetterGlamorPlates.Tests/Features/Examine/ExaminedOutfitPolicyTests.cs" Link="Features/Examine/ExaminedOutfitPolicyTests.cs" /><Compile Include="../BetterGlamorPlates.Tests/Features/Examine/ExamineTabPlacementTests.cs" Link="Features/Examine/ExamineTabPlacementTests.cs" /><Compile Include="../BetterGlamorPlates.Tests/Features/Diagnostics/DiagnosticJournalTests.cs" Link="Features/Diagnostics/DiagnosticJournalTests.cs" /><Compile Include="../BetterGlamorPlates.Tests/Features/GlamourPlates/OutfitPreviewPolicyTests.cs" Link="Features/GlamourPlates/OutfitPreviewPolicyTests.cs" /><Compile Include="../BetterGlamorPlates.Tests/Features/GlamourPlates/OutfitPreviewRequestTests.cs" Link="Features/GlamourPlates/OutfitPreviewRequestTests.cs" /></ItemGroup><ItemGroup><Compile Include="../BetterGlamorPlates.Tests/StabilizationRegressionTests.cs" Link="StabilizationRegressionTests.cs" /></ItemGroup><ItemGroup><Compile Include="../BetterGlamorPlates.Tests/ProjectionBoundaryTests.cs" Link="ProjectionBoundaryTests.cs" /><None Include="../../tests/fixtures/Contracts/1.2/fixtures/**/*.json" Link="Fixtures/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" /></ItemGroup><ItemGroup><Compile Include="../BetterGlamorPlates.Tests/PolicyMutationRegressionTests.cs" Link="PolicyMutationRegressionTests.cs" /><Compile Include="../BetterGlamorPlates.Tests/Features/Diagnostics/DiagnosticJournalBoundaryTests.cs" Link="DiagnosticJournalBoundaryTests.cs" /></ItemGroup><ItemGroup><Compile Include="../BetterGlamorPlates.Tests/Features/Main/PaletteAndExamineBoundaryTests.cs" Link="PaletteAndExamineBoundaryTests.cs" /></ItemGroup><ItemGroup>
+  <Compile Include="../BetterGlamorPlates.Tests/Features/Main/MainControllerBoundaryTests.cs" Link="MainControllerBoundaryTests.cs" />
+  <Compile Include="../BetterGlamorPlates.Tests/Features/Main/MainControllerEvidenceTests.cs" Link="MainControllerEvidenceTests.cs" />
+</ItemGroup><ItemGroup><Compile Include="../BetterGlamorPlates.Tests/ValueContractTests.cs" Link="ValueContractTests.cs" /></ItemGroup><ItemGroup><Compile Include="../BetterGlamorPlates.Tests/Features/Main/MainControllerTransitionTests.cs" Link="MainControllerTransitionTests.cs" /></ItemGroup>  <ItemGroup>
+    <Compile Include="../BetterGlamorPlates.Tests/InitialModelStateTests.cs" Link="InitialModelStateTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../BetterGlamorPlates.Tests/Bootstrap/CollectionCoordinatorTests.cs" Link="Bootstrap/CollectionCoordinatorTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Bootstrap/CommandDispatcherTests.cs" Link="Bootstrap/CommandDispatcherTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Bootstrap/CommandExecutionCoordinatorTests.cs" Link="Bootstrap/CommandExecutionCoordinatorTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Bootstrap/CommandPreviewPolicyTests.cs" Link="Bootstrap/CommandPreviewPolicyTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Bootstrap/ConfigurationStoreTests.cs" Link="Bootstrap/ConfigurationStoreTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Bootstrap/EditorLifecycleTests.cs" Link="Bootstrap/EditorLifecycleTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Bootstrap/ExamineSaveCoordinatorTests.cs" Link="Bootstrap/ExamineSaveCoordinatorTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Bootstrap/PreviewCoordinatorTests.cs" Link="Bootstrap/PreviewCoordinatorTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Bootstrap/ThemeObserverTests.cs" Link="Bootstrap/ThemeObserverTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Features/GlamourPlates/GameIconCatalogStateTests.cs" Link="Features/GlamourPlates/GameIconCatalogStateTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Features/GlamourPlates/ExportaramusConsumerLifecycleTests.cs" Link="Features/GlamourPlates/ExportaramusConsumerLifecycleTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Features/GlamourPlates/NativeCollectionProjectionTests.cs" Link="Features/GlamourPlates/NativeCollectionProjectionTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Features/Main/DrawerSessionTests.cs" Link="Features/Main/DrawerSessionTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Features/Main/SearchProjectionTests.cs" Link="Features/Main/SearchProjectionTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Features/Main/OutfitInteractionTests.cs" Link="Features/Main/OutfitInteractionTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/Features/Examine/ExaminePresentationTests.cs" Link="Features/Examine/ExaminePresentationTests.cs" />
+    <Compile Include="../BetterGlamorPlates.Tests/UiBoundaryTests.cs" Link="UiBoundaryTests.cs" />
+  </ItemGroup>
+<PropertyGroup><DalamudLibPath Condition="'$(DalamudLibPath)' == '' and '$(DALAMUD_HOME)' != ''">$(DALAMUD_HOME)/</DalamudLibPath><DalamudLibPath Condition="'$(DalamudLibPath)' == ''">$(AppData)/XIVLauncher/addon/Hooks/dev/</DalamudLibPath></PropertyGroup><ItemGroup><Reference Include="Dalamud" HintPath="$(DalamudLibPath)Dalamud.dll" Private="true" /></ItemGroup><ItemGroup><Compile Include="../BetterGlamorPlates.Tests/Bootstrap/RuntimeUiPolicyTests.cs" Link="Bootstrap/RuntimeUiPolicyTests.cs" /></ItemGroup><ItemGroup><Compile Include="../BetterGlamorPlates.Tests/PlateApplyExecutionTests.cs" Link="PlateApplyExecutionTests.cs" /><Compile Include="../BetterGlamorPlates.Tests/PlateCaptureExecutionTests.cs" Link="PlateCaptureExecutionTests.cs" /><Compile Include="../BetterGlamorPlates.Tests/PlateDyeExecutionTests.cs" Link="PlateDyeExecutionTests.cs" /><Compile Include="../BetterGlamorPlates.Tests/PlatePreviewExecutionTests.cs" Link="PlatePreviewExecutionTests.cs" /><Compile Include="../BetterGlamorPlates.Tests/DyePreparationTests.cs" Link="DyePreparationTests.cs" /></ItemGroup><ItemGroup><Compile Include="../BetterGlamorPlates.Tests/Bootstrap/IconCatalogPublicationTests.cs" Link="Bootstrap/IconCatalogPublicationTests.cs" /><Compile Include="../BetterGlamorPlates.Tests/OwnedResourcePairTests.cs" Link="OwnedResourcePairTests.cs" /></ItemGroup><ItemGroup><Compile Include="../BetterGlamorPlates.Tests/Features/GlamourPlates/ExamineReadPolicyTests.cs" Link="ExamineReadPolicyTests.cs" /></ItemGroup><ItemGroup><Compile Include="../BetterGlamorPlates.Tests/Features/GlamourPlates/NativeDyeStatePolicyTests.cs" Link="Features/GlamourPlates/NativeDyeStatePolicyTests.cs" /></ItemGroup><ItemGroup><Compile Include="../BetterGlamorPlates.Tests/Features/Main/OutfitWorkflowTests.cs" Link="Features/Main/OutfitWorkflowTests.cs" /></ItemGroup></Project>
+
+
+

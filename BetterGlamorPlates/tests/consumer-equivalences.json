@@ -1,0 +1,65 @@
+{
+  "entries": [
+    {
+      "sourceSha256": "9E4C9A3B6E44B5E7F5E6A2CE5E7D23590A12970B0AE77811D67745B69E42EF93",
+      "endColumn": 28,
+      "endLine": 62,
+      "startLine": 62,
+      "rationale": "The pinned client Changed method validates only payload UTF-8 length and non-nullness, then sets pending. Both empty string and {} satisfy that same bound; Changed never parses their contents.",
+      "reviewer": "catalog_consumer_tests; parent independent review required",
+      "startColumn": 24,
+      "path": "src/Adapters/CollectionData/ExportaramusConsumer.cs",
+      "replacement": "\"\"",
+      "mutator": "String mutation"
+    },
+    {
+      "sourceSha256": "9E4C9A3B6E44B5E7F5E6A2CE5E7D23590A12970B0AE77811D67745B69E42EF93",
+      "endColumn": 34,
+      "endLine": 97,
+      "startLine": 97,
+      "rationale": "After disposal, invalidation without its guard only changes private generation and pending and writes latest=null again. Disposed is permanent and dominates all refresh/queue guards, so no projected state or public work can change. No external calls occur in Invalidate.",
+      "reviewer": "catalog_consumer_tests; parent independent review required",
+      "startColumn": 27,
+      "path": "src/Adapters/CollectionData/ExportaramusConsumer.cs",
+      "replacement": ";",
+      "mutator": "Statement mutation"
+    },
+    {
+      "sourceSha256": "9E4C9A3B6E44B5E7F5E6A2CE5E7D23590A12970B0AE77811D67745B69E42EF93",
+      "endColumn": 25,
+      "endLine": 98,
+      "startLine": 98,
+      "rationale": "Generation is an equality-only token. Decrementing instead of incrementing creates the same distinct active epochs with the same 64-bit wrap period. Dispose also changes generation, but disposed is independently checked first and permanently prevents acceptance.",
+      "reviewer": "catalog_consumer_tests; parent independent review required",
+      "startColumn": 13,
+      "path": "src/Adapters/CollectionData/ExportaramusConsumer.cs",
+      "replacement": "generation--",
+      "mutator": "PostIncrementExpression to PostDecrementExpression mutation"
+    },
+    {
+      "sourceSha256": "9E4C9A3B6E44B5E7F5E6A2CE5E7D23590A12970B0AE77811D67745B69E42EF93",
+      "endColumn": 26,
+      "endLine": 117,
+      "startLine": 117,
+      "rationale": "The disposal generation update is redundant to the permanent disposed flag. Refresh completion rejects disposed before comparing generation, and every future refresh request is rejected at entry.",
+      "reviewer": "catalog_consumer_tests; parent independent review required",
+      "startColumn": 13,
+      "path": "src/Adapters/CollectionData/ExportaramusConsumer.cs",
+      "replacement": ";",
+      "mutator": "Statement mutation"
+    },
+    {
+      "sourceSha256": "9E4C9A3B6E44B5E7F5E6A2CE5E7D23590A12970B0AE77811D67745B69E42EF93",
+      "endColumn": 25,
+      "endLine": 117,
+      "startLine": 117,
+      "rationale": "Direction of the disposal generation update is unobservable: disposed is already permanently true and independently rejects every pending or future refresh before epoch equality matters.",
+      "reviewer": "catalog_consumer_tests; parent independent review required",
+      "startColumn": 13,
+      "path": "src/Adapters/CollectionData/ExportaramusConsumer.cs",
+      "replacement": "generation--",
+      "mutator": "PostIncrementExpression to PostDecrementExpression mutation"
+    }
+  ],
+  "schemaVersion": 1
+}
