@@ -35,6 +35,19 @@ class SuiteChecks(unittest.TestCase):
     def evaluate(self):
         with patch.object(suite.subprocess, 'check_output', side_effect=self.msbuild):
             return suite.evaluate(self.root, 'consumerkit12', 'dotnet', self.paths)
+    def test_timeout_without_trx_still_requires_exact_mutant_command(self):
+        args = suite.command('dotnet', 'test', self.root, 'provider', self.root/'results', 'mutant')
+        execution = {'command': args, 'workingDirectory': str(self.root), 'timedOut': True}
+        suite.verify_command(execution, 'test', self.root, 'dotnet', 'provider', 'mutant')
+        for changes in ({'timedOut': False}, {'timedOut': 'true'},
+                        {'command': args + ['--filter', 'Some.Test']},
+                        {'command': args + ['--results-directory', 'other']},
+                        {'command': args[:-4]}, {'workingDirectory': str(self.root.parent)}):
+            with self.assertRaises(ValueError):
+                suite.verify_command(dict(execution, **changes), 'test', self.root, 'dotnet', 'provider', 'mutant')
+        with self.assertRaises(ValueError):
+            suite.verify_command(execution, 'test', self.root, 'dotnet', 'provider', 'baseline')
+
     def test_evaluated_references_bind_complete_target(self):
         self.assertEqual(['src/client.cs'], self.evaluate()['productionSources'])
     def test_missing_production_reference_rejected(self):

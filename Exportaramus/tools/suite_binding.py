@@ -33,7 +33,22 @@ def command(dotnet, verb, snapshot, target, results=None, phase="baseline"):
 
 
 def verify_command(execution, verb, snapshot, dotnet, target, phase="baseline"):
-    results = Path(execution['trx']).parent if verb == 'test' else None
+    results = None
+    if verb == 'test':
+        if execution.get('trx'):
+            results = Path(execution['trx']).parent
+        elif phase == 'mutant' and execution.get('timedOut') is True:
+            # An unaccepted timeout can lack a TRX while its recorded invocation
+            # still belongs to the batch. Validate that invocation exactly.
+            args = execution.get('command', [])
+            if not isinstance(args, list) or args.count('--results-directory') != 1:
+                raise ValueError('Timed-out execution lacks a unique results directory')
+            index = args.index('--results-directory')
+            if index + 1 >= len(args) or not isinstance(args[index + 1], str) or not args[index + 1]:
+                raise ValueError('Timed-out execution lacks a results directory value')
+            results = Path(args[index + 1])
+        else:
+            raise ValueError('Execution requires a TRX unless it is a recorded mutant timeout')
     if (Path(execution['workingDirectory']).resolve() != Path(snapshot).resolve()
             or execution['command'] != command(dotnet, verb, snapshot, target, results, phase)):
         raise ValueError('Execution does not use the exact canonical suite, tool, working directory and arguments')

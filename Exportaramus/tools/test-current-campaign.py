@@ -9,6 +9,14 @@ class CurrentCampaignTests(unittest.TestCase):
         change={'path':'tools/individual-mutation.py','beforeSha256':'old','afterSha256':'new','reviewed':True,'reviewer':'reviewer','reviewEvidence':{}}
         with patch.object(current.report_set, 'read', return_value=dict(change, reason='Exact reviewed validator change')):
             current.tool_transition({'src/a.cs':'a','tools/individual-mutation.py':'old'}, {'src/a.cs':'a','tools/individual-mutation.py':'new'}, [change])
+    def test_suite_command_validator_requires_exact_review(self):
+        path='tools/suite_binding.py'
+        change={'path':path,'beforeSha256':'old','afterSha256':'new','reviewed':True,'reviewer':'reviewer','reviewEvidence':{}}
+        with patch.object(current.report_set,'read',return_value=dict(change,reason='Exact command validation for unaccepted incomplete timeout records.')):
+            current.tool_transition({path:'old'},{path:'new'},[change])
+        with self.assertRaises(ValueError):current.tool_transition({path:'old'},{path:'new'},[])
+        with self.assertRaises(ValueError):current.tool_transition({path:'old'},{},[change])
+
     def test_deleted_tool_rejected(self):
         with self.assertRaises(ValueError):current.tool_transition({'tools/individual-mutation.py':'a'}, {},[{'path':'tools/individual-mutation.py','beforeSha256':'a','afterSha256':None,'reviewed':True,'reviewer':'reviewer'}])
     def test_production_change_rejected(self):
