@@ -1,3 +1,4 @@
+using Exportaramus.Features.Diagnostics;
 using System.Collections.Immutable;
 using Exportaramus.Features.CollectionData.Capture;
 using Exportaramus.Features.CollectionData.Catalog;
@@ -31,7 +32,8 @@ public sealed class RestorationClockBoundaryTests
         var storage = new AtomicSnapshotStorage(directory);
         await storage.CommitAsync(123, saved, null, null, false, false, SnapshotFixture.Now, default);
         var port = new Port();
-        using var controller = new SnapshotController(port, storage, null);
+        var measurements = new DiagnosticMeasurements();
+        using var controller = new SnapshotController(port, storage, null, measurements);
         var now = SnapshotFixture.Now.AddHours(clockMovedBack ? -1 : 1);
         try
         {
@@ -46,7 +48,8 @@ public sealed class RestorationClockBoundaryTests
                 Assert.Empty(controller.Publication.GetSnapshot());
                 Assert.Empty(controller.Publication.GetSnapshotV11());
                 Assert.Empty(controller.Publication.GetSnapshotV12());
-                Assert.NotNull(controller.Error);
+                Assert.Contains("Sync Now", Assert.IsType<string>(controller.Error), StringComparison.Ordinal);
+                Assert.Contains(measurements.Failures, failure => failure.Component == "Storage" && failure.Operation == "Restore" && failure.Code == "StoredSnapshotInvalid" && failure.ExceptionType == nameof(InvalidDataException));
                 controller.RequestFull();
                 await Pump(controller, now.AddSeconds(1), 1, () => controller.Publication.Current is not null && !controller.Busy);
                 Assert.Equal(1, port.BeginCount);
