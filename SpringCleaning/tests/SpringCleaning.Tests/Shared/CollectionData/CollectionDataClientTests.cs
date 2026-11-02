@@ -166,21 +166,33 @@ public sealed class CollectionDataClientTests
     [InlineData("failed")]
     public async Task LateWorkerCannotPublishAcrossInvalidation(string action)
     {
-        using var entered = new ManualResetEventSlim(); using var release = new ManualResetEventSlim();
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var release = new ManualResetEventSlim();
         var transport = new Transport(); using var client = new CollectionDataClient(transport);
-        transport.BeforeRead = () => { entered.Set(); Assert.True(release.Wait(TimeSpan.FromSeconds(3))); if (action == "failed") throw new IOException(); };
-        var worker = Task.Run(() => client.Refresh(42, ProviderFixture.Now));
+        transport.BeforeRead = () =>
+        {
+            entered.SetResult();
+            release.Wait();
+            if (action == "failed") throw new IOException();
+        };
+        // The provider call deliberately blocks; keep it off the test runner's thread pool.
+        var worker = Task.Factory.StartNew(() => client.Refresh(42, ProviderFixture.Now),
+            CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         try
         {
-            Assert.True(entered.Wait(TimeSpan.FromSeconds(3)));
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(30));
             Assert.Equal(CollectionDataFailure.Busy, client.Refresh(42, ProviderFixture.Now).Failure);
             if (action is "changed" or "failed") transport.Changed();
             else if (action == "withdrawn") transport.Withdrawn();
             else if (action == "character") client.ClearCharacter();
             else client.Dispose();
         }
-        finally { release.Set(); }
-        var result = await worker.WaitAsync(TimeSpan.FromSeconds(3));
+        finally
+        {
+            release.Set();
+            await worker.WaitAsync(TimeSpan.FromSeconds(30));
+        }
+        var result = await worker;
         Assert.False(result.Accepted);
         Assert.Null(client.Latest);
     }

@@ -84,22 +84,24 @@ public sealed class ReleaseClientBoundaryTests
     [InlineData(true)]
     public async Task FailedReadAfterCharacterClearCannotInvalidateTheNewPresentationScope(bool changedNotice)
     {
-        using var entered = new ManualResetEventSlim();
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using var release = new ManualResetEventSlim();
         var transport = new CollectionDataClientTests.Transport();
         using var client = new CollectionDataClient(transport);
         Assert.True(client.Refresh(42, ProviderFixture.Now).Accepted);
         transport.BeforeRead = () =>
         {
-            entered.Set();
-            Assert.True(release.Wait(TimeSpan.FromSeconds(3)));
+            entered.SetResult();
+            release.Wait();
             throw new IOException("Late provider failure");
         };
-        var worker = Task.Run(() => client.Refresh(42, ProviderFixture.Now));
+        // The provider call deliberately blocks; keep it off the test runner's thread pool.
+        var worker = Task.Factory.StartNew(() => client.Refresh(42, ProviderFixture.Now),
+            CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         long clearedEpoch;
         try
         {
-            Assert.True(entered.Wait(TimeSpan.FromSeconds(3)));
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(30));
             client.ClearCharacter();
             if (changedNotice)
                 transport.Changed();
@@ -108,9 +110,10 @@ public sealed class ReleaseClientBoundaryTests
         finally
         {
             release.Set();
+            await worker.WaitAsync(TimeSpan.FromSeconds(30));
         }
 
-        var result = await worker.WaitAsync(TimeSpan.FromSeconds(3));
+        var result = await worker;
 
         Assert.Equal(CollectionDataFailure.ProviderUnavailable, result.Failure);
         Assert.Null(client.Latest);
