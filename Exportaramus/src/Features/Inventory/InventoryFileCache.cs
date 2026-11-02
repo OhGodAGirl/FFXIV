@@ -6,6 +6,17 @@ namespace Exportaramus.Features.Inventory;
 /// <summary>Use this character's inventory cache only from a worker thread.</summary>
 public sealed class InventoryFileCache(string configurationDirectory, Func<string, Stream>? openRead = null, Action<string, string>? commitFile = null) : IInventoryCache
 {
+    private readonly Func<string, FileStream>? openWrite;
+    private readonly Func<string, CancellationToken, Task<byte[]>>? readBack;
+
+    internal InventoryFileCache(string directory, Func<string, Stream>? read, Action<string, string>? commit,
+        Func<string, FileStream>? write, Func<string, CancellationToken, Task<byte[]>>? readback)
+        : this(directory, read, commit)
+    {
+        openWrite = write;
+        readBack = readback;
+    }
+
     public const int MaximumBytes = 4 * 1024 * 1024;
     public string CharacterPath(ulong contentId)
     {
@@ -56,14 +67,16 @@ public sealed class InventoryFileCache(string configurationDirectory, Func<strin
         var temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
-            await using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous))
+            await using (var stream = openWrite is null
+                ? new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous)
+                : openWrite(temporary))
             {
                 await stream.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
                 await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
                 stream.Flush(true);
             }
             cancellationToken.ThrowIfCancellationRequested();
-            var written = await File.ReadAllBytesAsync(temporary, cancellationToken).ConfigureAwait(false);
+            var written = await (readBack is null ? File.ReadAllBytesAsync(temporary, cancellationToken) : readBack(temporary, cancellationToken)).ConfigureAwait(false);
             _ = Parse(written, snapshot.ContentId);
             cancellationToken.ThrowIfCancellationRequested();
             if (commitFile is not null) commitFile(temporary, path);
