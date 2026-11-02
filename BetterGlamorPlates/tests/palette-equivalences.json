@@ -1,0 +1,77 @@
+{
+  "entries": [
+    {
+      "path": "src/Features/Main/DyePaletteOrder.cs",
+      "sourceSha256": "47EB599C8B13169A6AE67EC6391067CB1F7D6550863B206BA28DC64B8CB84F62",
+      "mutator": "Bitwise mutation",
+      "replacement": "color >>> 16",
+      "startLine": 13,
+      "startColumn": 19,
+      "endLine": 13,
+      "endColumn": 30,
+      "rationale": "color is uint: right shift >> and unsigned right shift >>> both zero-fill for every input.",
+      "reviewer": "portfolio_style_review"
+    },
+    {
+      "path": "src/Features/Main/DyePaletteOrder.cs",
+      "sourceSha256": "47EB599C8B13169A6AE67EC6391067CB1F7D6550863B206BA28DC64B8CB84F62",
+      "mutator": "Bitwise mutation",
+      "replacement": "color >>> 8",
+      "startLine": 14,
+      "startColumn": 19,
+      "endLine": 14,
+      "endColumn": 29,
+      "rationale": "color is uint: right shift >> and unsigned right shift >>> both zero-fill for every input.",
+      "reviewer": "portfolio_style_review"
+    },
+    {
+      "path": "src/Features/Main/DyePaletteOrder.cs",
+      "sourceSha256": "47EB599C8B13169A6AE67EC6391067CB1F7D6550863B206BA28DC64B8CB84F62",
+      "mutator": "Arithmetic mutation",
+      "replacement": "-(max + min) * 2",
+      "startLine": 19,
+      "startColumn": 25,
+      "endLine": 19,
+      "endColumn": 41,
+      "rationale": "Lightness is used only as a sort key. Replacing division by 2 with multiplication by 2 scales every key by positive 4. Values lie in [-4,0], with no overflow or underflow; ordering and ties are unchanged.",
+      "reviewer": "portfolio_style_review"
+    },
+    {
+      "path": "src/Features/Main/DyePaletteOrder.cs",
+      "sourceSha256": "47EB599C8B13169A6AE67EC6391067CB1F7D6550863B206BA28DC64B8CB84F62",
+      "mutator": "Equality mutation",
+      "replacement": "delta <= 0.08f",
+      "startLine": 20,
+      "startColumn": 13,
+      "endLine": 20,
+      "endColumn": 26,
+      "rationale": "Each normalized channel is a byte divided by255. Delta differences nearest0.08 are20/255 and21/255, separated by much more than float rounding. Delta cannot equal0.08f, so strict vs inclusive comparison gives the same result.",
+      "reviewer": "portfolio_style_review"
+    },
+    {
+      "path": "src/Features/Examine/ExamineButtonTheme.cs",
+      "sourceSha256": "3A413D3B3BAE3AAE996032A3003777AD9848A5AE05F6D5A943855ECBA0357D05",
+      "mutator": "Arithmetic mutation",
+      "replacement": "new Vector4(.045f, .045f, .045f, 0) / direction",
+      "startLine": 27,
+      "startColumn": 26,
+      "endLine": 27,
+      "endColumn": 73,
+      "rationale": "direction is exclusively +1 or -1. Vector multiplication and division by either value produce identical components, including signed zero.",
+      "reviewer": "portfolio_style_review"
+    },
+    {
+      "path": "src/Features/Examine/ExamineButtonTheme.cs",
+      "sourceSha256": "3A413D3B3BAE3AAE996032A3003777AD9848A5AE05F6D5A943855ECBA0357D05",
+      "mutator": "Arithmetic mutation",
+      "replacement": "new Vector4(.08f, .08f, .08f, 0) / direction",
+      "startLine": 28,
+      "startColumn": 26,
+      "endLine": 28,
+      "endColumn": 70,
+      "rationale": "direction is exclusively +1 or -1. Vector multiplication and division by either value produce identical components, including signed zero.",
+      "reviewer": "portfolio_style_review"
+    }
+  ],
+  "schemaVersion": 1
+}

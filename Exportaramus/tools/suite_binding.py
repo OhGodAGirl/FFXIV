@@ -115,12 +115,15 @@ def validate_coverage_only_settings(snapshot):
         raise ValueError('Only coverage-only runsettings may be omitted from mutant execution')
 
 
-def verify_summary(summary, paths, selected_sources):
+def verify_summary(summary, paths, selected_sources, validator_inventory=None):
+    # A measured-native caller may separately bind the reviewed current validator.
+    # All executed source, project and settings inputs still use paths below.
+    validator_paths = paths if validator_inventory is None else validator_inventory
     policy = summary.get('testCoveragePolicy')
     if policy not in (None, 'baseline-only-v1'):
         raise ValueError('Unknown execution coverage policy')
     if policy == 'baseline-only-v1':
-        if paths.get('tools/suite_binding.py') != hashlib.sha256(Path(__file__).read_bytes()).hexdigest():
+        if validator_paths.get('tools/suite_binding.py') != hashlib.sha256(Path(__file__).read_bytes()).hexdigest():
             raise ValueError('Coverage policy validator does not match the frozen inventory')
         target = summary.get('suiteBinding', {}).get('target', 'provider')
         snapshot = Path(summary['snapshot']).resolve()
@@ -139,7 +142,7 @@ def verify_summary(summary, paths, selected_sources):
         if any(p.startswith('src/Contracts/1.2/Consumer/') or p == 'examples/CollectionExample/InventoryItemReader.cs' for p in selected_sources):
             raise ValueError('Non-provider evidence requires explicit suite binding')
         return 'provider'
-    expected_hash = paths.get('tools/suite_binding.py')
+    expected_hash = validator_paths.get('tools/suite_binding.py')
     if not expected_hash or expected_hash != hashlib.sha256(Path(__file__).read_bytes()).hexdigest():
         raise ValueError('Suite validator does not match the frozen inventory')
     dotnet = Path(summary['toolchain']['dotnet']['path']).resolve()

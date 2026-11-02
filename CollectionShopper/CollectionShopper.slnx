@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="CollectionShopper.csproj" />
+  <Project Path="project/Contracts/1.2/CollectionShopper.Exportaramus.csproj" />
+  <Project Path="tests/CollectionShopper.Decisions/CollectionShopper.Decisions.csproj" />
+  <Project Path="tests/CollectionShopper.Performance/CollectionShopper.Performance.csproj" />
+  <Project Path="tests/CollectionShopper.Tests/CollectionShopper.Tests.csproj" />
+</Solution>

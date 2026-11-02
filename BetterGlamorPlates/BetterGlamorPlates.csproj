@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <Version>1.0.1.0</Version>
+    <Author>OhGodAGirl</Author>
+    <Name>Better Glamour Plates</Name>
+    <ProductName>Better Glamour Plates</ProductName>
+    <Punchline>Plan Glamour Plates from your Exportaramus collection.</Punchline>
+    <Description>Better Glamour Plates is an in-game glamour companion that takes FFXIV’s glamour system beyond the Glamour Dresser. Browse your Dresser and Armoire in one searchable wardrobe; create, name, and save unlimited outfits; preview looks with any dye—or none at all; save other players’ glamours straight from Examine; and load any outfit into a native Glamour Plate with a single click.</Description>
+    <RepoUrl>https://github.com/OhGodAGirl/FFXIV</RepoUrl>
+    <Tags>glamour;plates;dresser;armoire;qol</Tags>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="images\icon.png"
+             Condition="Exists('images\icon.png')"
+             CopyToOutputDirectory="PreserveNewest"
+             TargetPath="images\icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="BetterGlamorPlates.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="tests\**\*.cs" />
+    <Compile Remove="development\**\*.cs" />
+    <Compile Remove="publish\**\*.cs" />
+    <Compile Remove="github\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="src/Contracts/**/*.cs" />
+    <Compile Remove="project/**/*.cs" />
+
+    <ProjectReference Include="project/Contracts/1.2/BetterGlamorPlates.Exportaramus.csproj" />
+  </ItemGroup>
+</Project>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

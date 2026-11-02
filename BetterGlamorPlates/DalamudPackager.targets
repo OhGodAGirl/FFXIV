@@ -1,0 +1,39 @@
+<Project>
+  <!-- Generate the manifest with the SDK, then package only approved payload files.
+       The SDK's recursive output scan can include old plugin folders and ZIPs. -->
+  <Target Name="PackageBetterGlamorPlates" AfterTargets="Build">
+        <DalamudPackager ProjectDir="$(ProjectDir)"
+                         OutputPath="$(OutputPath)"
+                         AssemblyName="$(AssemblyName)"
+                         MakeZip="false"
+                         Author="$(Author)"
+                         Name="$(Name)"
+                         MinimumDalamudVersion="$(MinimumDalamudVersion)"
+                         Punchline="$(Punchline)"
+                         Description="$(Description)"
+                         ApplicableVersion="$(ApplicableVersion)"
+                         RepoUrl="$(RepoUrl)"
+                         Tags="$(Tags)"
+                         CategoryTags="$(CategoryTags)"
+                         DalamudApiLevel="$(DalamudApiLevel)"
+                         LoadRequiredState="$(LoadRequiredState)"
+                         LoadSync="$(LoadSync)"
+                         CanUnloadAsync="$(CanUnloadAsync)"
+                         LoadPriority="$(LoadPriority)"
+                         ImageUrls="$(ImageUrls)"
+                         IconUrl="$(IconUrl)"
+                         Changelog="$(Changelog)"
+                         AcceptsFeedback="$(AcceptsFeedback)"
+                         FeedbackMessage="$(FeedbackMessage)" />
+    <ItemGroup Condition="'$(Configuration)' == 'Release'">
+      <ReleasePayload Include="$(OutputPath)BetterGlamorPlates.dll;$(OutputPath)BetterGlamorPlates.deps.json;$(OutputPath)BetterGlamorPlates.json;$(OutputPath)BetterGlamorPlates.xml;$(OutputPath)BetterGlamorPlates.Exportaramus.dll;$(OutputPath)BetterGlamorPlates.Exportaramus.pdb" />
+    </ItemGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+      <PackageScratch>$(IntermediateOutputPath)package-bgp/</PackageScratch>
+    </PropertyGroup>
+    <Copy Condition="'$(Configuration)' == 'Release'" SourceFiles="@(ReleasePayload)" DestinationFolder="$(PackageScratch)" />
+    <Copy Condition="'$(Configuration)' == 'Release'" SourceFiles="$(OutputPath)images/icon.png" DestinationFolder="$(PackageScratch)images/" />
+    <MakeDir Condition="'$(Configuration)' == 'Release'" Directories="$(OutputPath)BetterGlamorPlates" />
+    <ZipDirectory Condition="'$(Configuration)' == 'Release'" SourceDirectory="$(PackageScratch)" DestinationFile="$(OutputPath)BetterGlamorPlates/latest.zip" Overwrite="true" />
+  </Target>
+</Project>

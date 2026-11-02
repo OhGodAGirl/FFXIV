@@ -10,6 +10,27 @@ public sealed class AtomicStorageTests : IDisposable
     private readonly DateTimeOffset now = DateTimeOffset.Parse("2026-09-06T00:00:00Z");
 
     [Fact]
+    public async Task InProgressPayloadWritesAndPublicationExposePendingRecovery()
+    {
+        var observed = new List<string>();
+        AtomicSnapshotStorage storage = null!;
+        var payloadDirectory = Path.GetFullPath(Path.Combine(root, "snapshots"));
+        storage = new AtomicSnapshotStorage(root, new FaultFiles
+        {
+            BeforeOpenWrite = path =>
+            {
+                if (path.StartsWith(payloadDirectory, StringComparison.Ordinal)) observed.Add("write:" + storage.RecoveryState);
+            },
+            BeforeMove = (source, destination) =>
+            {
+                if (destination.StartsWith(payloadDirectory, StringComparison.Ordinal)) observed.Add("publish:" + storage.RecoveryState);
+            },
+        });
+        await storage.CommitAsync(1, "{}", null, null, false, false, now, default);
+        Assert.Equal(new[] { "write:Pending", "publish:Pending" }, observed);
+    }
+
+    [Fact]
     public async Task WritesCanonicalAndExactCharacterStateWithoutBom()
     {
         var storage = new AtomicSnapshotStorage(root);
@@ -102,8 +123,20 @@ public sealed class AtomicStorageTests : IDisposable
         await File.WriteAllTextAsync(temporary, "{\"new\":true}");
         File.Replace(temporary, path, temporary + ".bak");
         WriteRecovery(false, (path, temporary, true, false));
-        var recovered = new AtomicSnapshotStorage(root);
+        var rolledBackJournalStates = new List<bool>();
+        var recovered = new AtomicSnapshotStorage(root, new FaultFiles
+        {
+            BeforeDelete = _ =>
+            {
+                var journal = Path.Combine(root, "state", "write-recovery.json");
+                if (!File.Exists(journal)) return;
+                using var record = JsonDocument.Parse(File.ReadAllBytes(journal));
+                rolledBackJournalStates.Add(record.RootElement.GetProperty("committed").GetBoolean());
+            },
+        });
         Assert.Equal("{\"old\":true}", await recovered.ReadAsync(1, false, default));
+        Assert.NotEmpty(rolledBackJournalStates);
+        Assert.All(rolledBackJournalStates, committed => Assert.False(committed));
         Assert.Equal("Recovered", recovered.RecoveryState);
         Assert.False(File.Exists(temporary + ".bak"));
         Assert.False(File.Exists(Path.Combine(root, "state", "write-recovery.json")));
@@ -245,7 +278,8 @@ public sealed class AtomicStorageTests : IDisposable
         await Assert.ThrowsAsync<IOException>(() => storage.CommitAsync(1, "{\"new\":true}", "{}", null, false, false, now, default));
         Assert.Equal("Failed", storage.RecoveryState);
         Assert.True(File.Exists(Path.Combine(root, "state", "write-recovery.json")));
-        await Assert.ThrowsAsync<IOException>(() => new AtomicSnapshotStorage(root).ReadAsync(1, false, default));
+        var recoveryError = await Assert.ThrowsAsync<IOException>(() => new AtomicSnapshotStorage(root).ReadAsync(1, false, default));
+        Assert.Equal("Previous snapshot backup is unavailable.", recoveryError.Message);
     }
 
     [Fact]
@@ -356,7 +390,27 @@ public sealed class AtomicStorageTests : IDisposable
                 break;
         }
         await File.WriteAllTextAsync(recovery, json.ToJsonString());
-        await Assert.ThrowsAsync<InvalidDataException>(() => storage.ReadAsync(1, false, default));
+        var observedStates = new List<string>();
+        var ownerThread = Environment.CurrentManagedThreadId;
+        EventHandler<System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs> observe = (_, args) =>
+        {
+            if (Environment.CurrentManagedThreadId == ownerThread && args.Exception is InvalidDataException)
+                observedStates.Add(storage.RecoveryState);
+        };
+        AppDomain.CurrentDomain.FirstChanceException += observe;
+        InvalidDataException error;
+        try { error = await Assert.ThrowsAsync<InvalidDataException>(() => storage.ReadAsync(1, false, default)); }
+        finally { AppDomain.CurrentDomain.FirstChanceException -= observe; }
+        Assert.NotEmpty(observedStates);
+        Assert.All(observedStates, state => Assert.Contains(state, new[] { "None", "Pending", "Recovered", "Failed" }));
+        Assert.Equal(defect switch
+        {
+            "size" => "Recovery record exceeds its limit.",
+            "format" or "version" => "Recovery record has an unsupported format.",
+            "empty" or "count" => "Recovery file count is invalid.",
+            "delete" or "deleteMissing" or "deleteCanonical" => "Recovery deletion scope is invalid.",
+            _ => "Recovery paths are invalid.",
+        }, error.Message);
         Assert.Equal("Failed", storage.RecoveryState);
         Assert.Equal("keep", await File.ReadAllTextAsync(path));
     }
@@ -384,6 +438,12 @@ public sealed class AtomicStorageTests : IDisposable
         public Action<string, string>? BeforeMove;
         public Action<string, string, string?>? BeforeReplace;
         public Action<string>? BeforeDelete;
+        public Action<string>? BeforeOpenWrite;
+        public FileStream OpenWrite(string path, FileMode mode, int bufferSize, FileOptions options)
+        {
+            BeforeOpenWrite?.Invoke(path);
+            return new FileStream(path, mode, FileAccess.Write, FileShare.None, bufferSize, options);
+        }
         public Func<string, Stream>? Read;
         public Stream OpenRead(string path) => Read?.Invoke(path) ?? new AtomicFileOperations().OpenRead(path);
         public void Replace(string source, string destination, string? backup)

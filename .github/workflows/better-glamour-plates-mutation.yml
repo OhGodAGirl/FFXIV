@@ -1,0 +1,54 @@
+name: Better Glamour Plates Mutation Testing
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: better-glamour-plates-mutation-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  mutation:
+    runs-on: windows-2025
+    timeout-minutes: 330
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: BetterGlamorPlates
+    env:
+      DOTNET_NOLOGO: '1'
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: BetterGlamorPlates/global.json
+          dotnet-version: '8.0.x'
+      - name: Prepare pinned build dependencies
+        run: |
+          ./tools/Get-BuildDependencies.ps1 -Destination "$env:RUNNER_TEMP/dalamud"
+          "DALAMUD_HOME=$env:DALAMUD_HOME" >> $env:GITHUB_ENV
+      - name: Full mutation campaign
+        run: ./tests/test-mutation.ps1
+      - name: Restore and verify ordinary artifacts
+        if: always()
+        run: |
+          dotnet restore BetterGlamorPlates.slnx --locked-mode
+          if ($LASTEXITCODE -ne 0) { throw 'Locked restore failed.' }
+          dotnet build BetterGlamorPlates.slnx -c Release --no-restore -t:Rebuild
+          if ($LASTEXITCODE -ne 0) { throw 'Normal rebuild failed.' }
+          dotnet test BetterGlamorPlates.slnx -c Release --no-build --no-restore --logger 'trx;LogFileName=after-mutation.trx' --results-directory tests/TestResults/after-mutation
+          if ($LASTEXITCODE -ne 0) { throw 'Normal tests failed.' }
+          ./tests/test-smoke.ps1 -BundlePath bin/Release -PackagePath bin/Release/BetterGlamorPlates/latest.zip
+      - name: Preserve mutation results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: better-glamour-plates-mutation
+          path: |
+            BetterGlamorPlates/tests/TestResults/mutation
+            BetterGlamorPlates/tests/TestResults/after-mutation
+            BetterGlamorPlates/tests/mutation-policy.json
+          if-no-files-found: warn
+          retention-days: 14

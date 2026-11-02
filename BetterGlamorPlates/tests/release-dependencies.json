@@ -1,0 +1,599 @@
+{
+  "providerVersion": "1.0.0.3",
+  "providerRepository": "https://github.com/OhGodAGirl/FFXIV",
+  "providerCommit": null,
+  "provenanceNote": "Exact ConsumerKit 1.2 inputs are identified by the original SHA256SUMS inventory and per-file hashes. This inventory does not assert a publicly released provider commit. Only contract source, schemas, resources and fixtures are retained; the original full inventory remains available.",
+  "contractVersion": "1.2",
+  "kitManifestSha256": "BEFC9209298BFD552E6361C8BDC5030DC2FBBF93464ACC3F9908DE0B05E16172",
+  "kitFileCount": 147,
+  "providerFiles": [
+    {
+      "file": "data/Contracts/1.2/resources/derived-inputs.json",
+      "sha256": "427CB8FB922EB82E5134C6FFEE604FA6012AA6B40FBEDE0DF38E6F90D8291D22"
+    },
+    {
+      "file": "data/Contracts/1.2/resources/derived-inputs.schema.json",
+      "sha256": "05B81AD693BA4947F1809EBA6946465EE2CC4890B68C05A1A074168080EE8971"
+    },
+    {
+      "file": "data/Contracts/1.2/resources/ffxiv-collect-import.schema.json",
+      "sha256": "DD251C98DA9F6869B98CE0DE17292895EE86316E396D7FC9AD6780EED5D939B7"
+    },
+    {
+      "file": "data/Contracts/1.2/resources/identifier-mappings.json",
+      "sha256": "847B4D36D43487F8DD7B477FC1748F2C9F72BB3D646F1E0D95B388A187CFE90E"
+    },
+    {
+      "file": "data/Contracts/1.2/resources/recognized-ids.json",
+      "sha256": "08FA5DCB9FE89A458B0ED66633BCAAA4DF9C4F182D90C1D378D6D516B49F4000"
+    },
+    {
+      "file": "data/Contracts/1.2/schemas/capabilities.schema.json",
+      "sha256": "C36556D6A97C4728EAAFCE72D7874A5B6259F74426C6F4E050897A36E7058F76"
+    },
+    {
+      "file": "data/Contracts/1.2/schemas/collection-data.schema.json",
+      "sha256": "A9FBD3BD24D2A3FB62E304EE7EC7DE7967521403148F7CA132B6B32E5F60A29E"
+    },
+    {
+      "file": "data/Contracts/1.2/schemas/common.schema.json",
+      "sha256": "E4932B6F078D3A9CE13C7651408DB6CC151A827A9C35171B5EB867F4AE2717C2"
+    },
+    {
+      "file": "data/Contracts/1.2/schemas/exportaramus-snapshot.schema.json",
+      "sha256": "52506ABB4BC769768CF0511CCB272AA4B146623307D404CB8A0BC1039F4CE2D6"
+    },
+    {
+      "file": "data/Contracts/1.2/schemas/snapshot-changed.schema.json",
+      "sha256": "FFD5284FF61C831E8F50C7BF1C1287E91D4D2D07092144D333D96514F847CE1E"
+    },
+    {
+      "file": "data/Contracts/1.2/schemas/snapshot-withdrawn.schema.json",
+      "sha256": "4D20E4255451072D388905ABFA5C07EB43AD69C8ADB246F7FDDAD85E2CF9E1AF"
+    },
+    {
+      "file": "examples/CollectionExample/.gitignore",
+      "sha256": "E41C93FA2B2E9253897A2AF0962216CD9963DD5F2F547A42978EA3C1821BBB9F"
+    },
+    {
+      "file": "examples/CollectionExample/CollectionExample.csproj",
+      "sha256": "D709A135DC047C2E150F7E26733B6CAA7322EF2FF6FC7B206BF246D2CFE68A9D"
+    },
+    {
+      "file": "examples/CollectionExample/InventoryItemReader.cs",
+      "sha256": "198ECF7C46A5474BE01136CC82A13FF09C8FB934AA89D3A29B9F9636399D1DF9"
+    },
+    {
+      "file": "examples/CollectionExample/packages.lock.json",
+      "sha256": "BEF2F28D5D0C082DB7E9C7BC666ACB2F5B1A760FC28E66F11E7B72D5A89CD879"
+    },
+    {
+      "file": "examples/CollectionExample/Plugin.Dalamud.cs",
+      "sha256": "E2A1C995DB7F452BC6747AA0665F60725A602DB21857AB7A5D84A713E872C6BD"
+    },
+    {
+      "file": "examples/CollectionExample/README.md",
+      "sha256": "B7DC5FAB99DDE69CD49DD2E785AA01A380D6DA14A2A7F29A244B36B364B3BDC8"
+    },
+    {
+      "file": "project/ConsumerKit/1.2/Exportaramus.ConsumerKit.V1_2.csproj",
+      "sha256": "4CE5723B07F1865AA923382BE67B48DE1708982A5F301F28EF2BC3674573AD1D"
+    },
+    {
+      "file": "project/ConsumerKit/1.2/packages.lock.json",
+      "sha256": "A4364D81A6DE2707D66FBCED18FBBC926C882AB96E1D1AEBBB17E871285B9D75"
+    },
+    {
+      "file": "src/Contracts/1.2/CollectionDataContracts.cs",
+      "sha256": "0E38B312D1161044F6409F9E767411356D19CF929AF8E33E649017076BAECB04"
+    },
+    {
+      "file": "src/Contracts/1.2/CollectionDataGates.cs",
+      "sha256": "2F16D28DA5E8D615EFA4228947746C468EE7B54D9D4F0D0B9CD99D47CA11A256"
+    },
+    {
+      "file": "src/Contracts/1.2/CollectionDataJsonContext.cs",
+      "sha256": "E7F995BC355C8EC5B9D44DA162F8BDEDDB49A6EBA03D11BBC16B8BFEEB23E45F"
+    },
+    {
+      "file": "src/Contracts/1.2/CollectionDataSemanticValidator.cs",
+      "sha256": "0C58B02DE447B91B80A2C039225168CC79E74FD948FC7A90EA3DBDEA87D93B2E"
+    },
+    {
+      "file": "src/Contracts/1.2/Consumer/CollectionDataGateBindings.Dalamud.cs",
+      "sha256": "AC5B0801D0E8159A0960F5F319F0AA614BD43AE309EA003D3B1D2F77332CE786"
+    },
+    {
+      "file": "src/Contracts/1.2/Consumer/CollectionDataIpcClient.cs",
+      "sha256": "A2D18E43A4C66BDFDCDAC0F2DF3B4C65A96E3060349C86EC4593956CE6CC07C2"
+    },
+    {
+      "file": "src/Contracts/1.2/ContractSchemaRegistry.cs",
+      "sha256": "6B5CE34328967F4CB6F0FF5B4D23A1E062DD996566B52F23EB7BD4D09918806A"
+    },
+    {
+      "file": "src/Contracts/1.2/ExactJsonNumber.cs",
+      "sha256": "25D1D29B467F6EB47A73510061383FDF2BF0A70D0ABAE27C1D081DD7C2CE08FA"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/CanonicalArrayTests.cs",
+      "sha256": "00EE997A36DF335F48494B16FC5372763BF168DF06E94C24CF8CB73D625B3B9A"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/ChangedNoticeValidationTests.cs",
+      "sha256": "3C4C29E6C40D39937DE660C41002CCD0755D61E8AEE05AC6D9E5093E1E21D9DC"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/ClientCleanupBoundaryTests.cs",
+      "sha256": "C61D36A78732D721F01CE7BC2368CF4F2A06AFA6F247110B32F123B619091864"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/ClientLifetimeTests.cs",
+      "sha256": "D6704E0EAB5C6A8853BEA62D4D09B6E76DF4E99CE4DE1643A3BD6378FB250262"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/CompactCollectionValidationTests.cs",
+      "sha256": "CE0D8784A3466C03EDBE1BA7F5785B40AEF5F009CF5DA42BD397E5E66DA9EC24"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/ContractAdditionalBoundaryTests.cs",
+      "sha256": "2B88883177447D12BFB80CC80CEE6ECF46AFEB0DD29599E89D6E365166540AB3"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/ContractFixture.cs",
+      "sha256": "FF5C2614B8835EB9E1B15D792B733DD0D848FE042DE64EECE526AC36EB60B81E"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/DeferredWorker.cs",
+      "sha256": "FD9983E0E61B6CA5659B7BD84533BE4644B19299CEB29DCAC59FEA080689BC25"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/DerivedEvidenceTests.cs",
+      "sha256": "7625CF95CCB0223523D3751D4CAD986F8640D30B14FB677629E51267B7E3ACAC"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/DirectSemanticBoundaryTests.cs",
+      "sha256": "31CB52A7DCBEA4E2EE406AE95C037507464EB3A72883329F86CF18CCA76EE31F"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/DocumentParsingTests.cs",
+      "sha256": "19DCA1D55DF8311CADD0A521CE765465451EF703762F47E7F974B0AC49D551B7"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/DocumentResourceTests.cs",
+      "sha256": "CFD67880E91908652DF55185548D66256FEF8B5DD62CCBE1405E26942A6770FA"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/DresserEntryValidationTests.cs",
+      "sha256": "18C41EC8E22D70D525D9B5E30F20ACE693D6E1584267E61A655A0C0C798244C2"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/Exportaramus.ConsumerKit.Tests.csproj",
+      "sha256": "C1BF3CC014B5F3CEE8A6EE89401EBD2A121F68BFFD7937CBC609A47FCE75EDEB"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/FactoryReentrancyTests.cs",
+      "sha256": "E00211A2BFC9B146A6A80FB0595E0059AC34B18B57DCBB91D97ED446839AE17C"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/FakeTransport.cs",
+      "sha256": "8F9FC5DF57FBAB8DC43EC4BB070E4244E198132AC51F293F9A56E4A0E62B95E4"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/FixtureAcceptanceTests.cs",
+      "sha256": "497E473DE8B84C287A2D464361F47C6F6ED981F8340ABB06513D46F231724FD8"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/capabilities-invalid-beasts-key-missing.json",
+      "sha256": "524EB903A74D375883202C1BA44C58BA6DDDA92037EDE478F571DD6FEF666E95"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/capabilities-invalid-beasts-missing.json",
+      "sha256": "23086FB26979AD2C7490FEA5E0D6F53E2274562972EAB5574D7F34E28476DC44"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/capabilities-invalid-beasts-quantity.json",
+      "sha256": "8AC5F6BC4C43BF49FD7C188DD9C0DB92C448CA87C7B3457C3DAF10AC07AA0E42"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/capabilities-invalid-gate.json",
+      "sha256": "28B8A6D431709F7B50B86F1299CB10C6C37E4C59B985E694D2DA8EB8928762EF"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/capabilities-invalid-hash.json",
+      "sha256": "91A24D5FF58C8651F966B089E5C8773CE14F979D2DE7A6C645A0FEFF04582E82"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/capabilities-invalid-version.json",
+      "sha256": "19AF1032612B52319CB0962702BF9F14E12AB85AA5B7B8DC5712E2723E4A4825"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-capability-datatype.json",
+      "sha256": "EBBE0FF709F0D713FA2254756AC0F845762B4DA167DBA57352F825CD3D18678F"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-capability-mismatch.json",
+      "sha256": "1960810D9CEBADB748CB6661D88E9D726453692200717D79F08DC1D74AA8B204"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-contentid-overflow.json",
+      "sha256": "F71F47D3123F7FD621585C24801E8BAAD76D4E659ED7263A330C038BFB5631EC"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-captureGeneration-2.json",
+      "sha256": "1B429B34F0CA1C7C5DEF958649C4B7B7838B83BAC06D4E182DB6B1BF578FE3CA"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-completeness-Partial.json",
+      "sha256": "1877983CE3AF20338B195F4BD25668137F8662841BA3A56CF8B2441D159260B7"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-completeness-Unknown.json",
+      "sha256": "F8A92C646FEAD9412B6D1C9CCF0EFCB06C97221AEAC4179331F7437C2CF18AD2"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-dataType-CurrentItemPresence.json",
+      "sha256": "5AB693A2830191BDC31A7F0A01A361D188481166063F4BFE46D82B369A0D3801"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-observedAtUtc-2026-09-07T12-00-00Z.json",
+      "sha256": "48DAE8D0D3660650F40FC23ED01157A2170785EDA61E270BA4626F060D8E3638"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-provenanceType-Derived.json",
+      "sha256": "1BF5E96D1BC34B52BC8D524C28AECEC7A011EDCB18F12A59BDA3A9229FEC86B0"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-provenanceType-Reported.json",
+      "sha256": "10C133EBF69EFDA151CEEAEEC1AD904F2B3932A530032BC0906B72B14F714C5F"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-provenanceType-Restored.json",
+      "sha256": "E9B8114E259E846BECE436EA791F4EAB5BD5A178D6E42660938E878FBBA00579"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-sourceStatus-Unavailable.json",
+      "sha256": "6806A6D2C09F61B504EE97B40EB22311B9DFB0A1CC78FF2BBC6AB805ED4FA432"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-duplicate.json",
+      "sha256": "CC114491CA077D25D37A19E4C2734DDA68E0A20E1CEA296EE6C51B7D16837321"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-fraction.json",
+      "sha256": "36B90E74A906EA80C3C53D4CFF837D2602F7BB3D3D6A55043D7857B593D71AA3"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-negative.json",
+      "sha256": "EE1D0115798F9019BFE4DD5BEEC4DEA8DF2B8723315C620936A9069C8638B17A"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-overflow.json",
+      "sha256": "6A94DA5C080374AB2FACE60635B3CBC5273CE419A7D6C20515612E8001B9EC17"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-too-many.json",
+      "sha256": "38E960CF9448B3E68D820CDD7843FEE3AAE68813331C2B93CAC6EBFC3A586022"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-unknown.json",
+      "sha256": "B7C1F2EE30B6E9C8F0FD906AF4C1D09049C1F482CB1186CFF2262DCD6E9562A7"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-unsorted.json",
+      "sha256": "EC04FF2AE2B121F84FBA8347098BD3439F24D64D6566AA17D9C49BEF913E9C04"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-zero.json",
+      "sha256": "2F01110396DF5A1EF328BDAC25B8A32036F0F510F65D2B0558DE938DFA66F776"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-missing-capability.json",
+      "sha256": "E05882A43225228DB061EA3B43D7896D4F5C5940BEA7FD8ABA728683808322AA"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-missing-health.json",
+      "sha256": "CD79DE94FA19B46DB7C97C35303A402592CFE522757E4A15D89D65DC18264063"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-missing-set.json",
+      "sha256": "246D410EC2F62D97ED9E37BB867C3D3ABB7A163AAA9400EF8295F9EF7FE75A1C"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-no-observation-time.json",
+      "sha256": "CE938C66E6142B303AF824B94D68588AE2B6C601C0E906E0ECF360E890C575F6"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-quantity.json",
+      "sha256": "5614CF470DB0E3DA9150D73DE85045F75EF063BD941FF54A570F649802F96AEA"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-revision.json",
+      "sha256": "284104AD226832E6AF00F95A69A753BDC6184E6EDB1DF7F29DD4307AACCD08CA"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-session.json",
+      "sha256": "A3EC867882939872DC3593BFB76D2391543BF933B918402F5AF49263A81F4AEA"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-stale-coherent.json",
+      "sha256": "739985880E5C76D983240C27F5C03852A166D3CDA8C978169657C3E5F6268125"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-stale-no-reason.json",
+      "sha256": "5B53B46303F9A2500DCD483C21C51042E4B9CB43169A45C4D1B35778154D9A91"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-unavailable-empty.json",
+      "sha256": "40A24F386EF72FDF58E5EF2DB73C514E53B9EAE381A4DC01DB3ABD83E7D46952"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-unvalidated-set.json",
+      "sha256": "2E7E910107D96B19B0C6B600C55A4B34AF2747D95E7D0AD64C8A2723CE6E428F"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-version.json",
+      "sha256": "2C85D3B833B0FFF6A2FFEEBC8632FB65CE9E75785363B613E39F8F7C754C1D07"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-dresser-aggregate-correlation.json",
+      "sha256": "27AC8D6954E908A66773FBC7EF4D7D51910082FAAAA820A05AA99E2449019281"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-duplicate-entry-index.json",
+      "sha256": "F0FE335E186D0F3FE3A4FF01C67AA7AA5388210D771BEC06CAF6AE7575B46D86"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-facewear-health-missing.json",
+      "sha256": "4412F1431E4F7F7CA48785D981DCAA122DC0ACA86D2D717E11D3D768B2CB3D68"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-partial-facewear-included.json",
+      "sha256": "3F906E91AC885CFE9716B86ED980A062FD8F0D121B01E9AE256E97C61170B5A1"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/expanded-invalid-beasts-health-reported.json",
+      "sha256": "2FFAAEAB5DA00E142B647348835A13AD5D76DBCBB25875EBA2FED3D690307165"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/expanded-invalid-beasts-missing-health.json",
+      "sha256": "D73D1770C6B68A7A62B0F96F14131E70399688CD23951CCBD0652C27B666B08F"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/expanded-invalid-beasts-reported-proves-owned.json",
+      "sha256": "5E91FD89DC90391335C36CD9D0E372113EA9E5996EF56AE398776B83CF73FA0E"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/expanded-invalid-beasts-unknown-id.json",
+      "sha256": "D05E64E461AC20E0DB4602D51A7867200B8205AD78134B90D3C5FDF496F4D3C5"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-duplicate-ids.json",
+      "sha256": "AF71F7568A0926F4F8E3A560070B463564DBFEC86183224D65E73849FFA5CE91"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-empty-root.json",
+      "sha256": "CA3D163BAB055381827226140568F3BEF7EAAC187CEBD76878E0B63E9E442356"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-fractional-id.json",
+      "sha256": "F05CE4ECE45FA0111F5DBE68A98FC0B31A86CA1D18ED6AF1028488438BC0FA0B"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-key-order.json",
+      "sha256": "BC6D111C60E9A30C9A28DCB96F80212B082855F1E491941C4BAB6135CE74714C"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-negative-id.json",
+      "sha256": "64422D5758528540A0F2A567BFD247D23F9E40A82791D2B27FC504FAC513A640"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-overflow-id.json",
+      "sha256": "287C0261C8339546B710D80B1CFF658A1D6FA22EFBAB7290B4EFAF2FA5C8DAF7"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-root-version.json",
+      "sha256": "F42206D7CD2D9B79ED6660B45E759DD09DAC98E40301AE6DED1D8BF1DB471D3D"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-unknown-id.json",
+      "sha256": "2948DA5EA7525272256C224A2B6E482A513B33198BECAC5EE61CECD68A93C17D"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-unknown-key.json",
+      "sha256": "C3AC082A6108641D25DB4361624D61B8DAEF957A17CE39CBDD7C591352B9A3AF"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-unsorted-ids.json",
+      "sha256": "329651729901F3B1F8D115F56B7672B33E0B705A5D2D8148BC92F0AC1E162EC1"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-zero-id.json",
+      "sha256": "90C82F11CBC4E4D801705C522B2F648BEE5CCBDCCDED0B58B228C60A169F7138"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-changed-invalid-correlation.json",
+      "sha256": "5F9C65915A93A18E2AC1D28676C7C404DA73677343882B5597A2F2BE8127D079"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-changed-invalid-duplicate.json",
+      "sha256": "68C3DC503C6660B52DE28F8B5B83F2E5920F587C01241DC1CCA9BA5BB71D317B"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-changed-invalid-generation.json",
+      "sha256": "7D2B0C1D7F5B75F018EFF2C8672BD4C89B5FB11D66E63179B669F692E4F01442"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-changed-invalid-identity.json",
+      "sha256": "9C7D2607945CFF687A43F8D4BA5D2B294006FA8D9AF295C82BD09DBA59350FB0"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-changed-invalid-unknown.json",
+      "sha256": "E107006744175D9630225A859A02CCDE585B871A0263278CC62F7682CE3AB7CC"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-changed-invalid-version.json",
+      "sha256": "14CE108EC1AE7FA88B61F371AB09622480E952FD23CC119E9A5157EADC0B425D"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-withdrawn-invalid-identity.json",
+      "sha256": "F91A8F9E21F1B8DD5D79DDA08B8475547A8453EEF60F283FB28FD8FB58925459"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-withdrawn-invalid-session.json",
+      "sha256": "8569E1471447393071CAC3BC4376D516B74FA90B6E50CBB1762317EC286DB307"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-withdrawn-invalid-timestamp.json",
+      "sha256": "AA2DFE47AAE3E6CEAC843352A20AE562C1503B812A512EB6E547494546DB0137"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-withdrawn-invalid-version.json",
+      "sha256": "08C0B17682FDF9597D14A3B9DC2D6850B151A198DBE3E80B0339771F198EC575"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/capabilities-valid.json",
+      "sha256": "A303C10BA707E55B0B4ADB6BCC630FA6F981EE54460CAF4B51018BFB627F5EF2"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-beasts-degraded.json",
+      "sha256": "4EF988FB4ECD3E61235253505CD1B4E9A427A596555F6811B688B2215C685853"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-beasts-empty.json",
+      "sha256": "D9EB5D8F3BDBD2838CE9F0B099901AD70C76BB2C4395CCB1874D2362C145B2F6"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-beasts-populated.json",
+      "sha256": "1781D9D66B17AF387BEB8E26053EF2FF353E7541E24167FE282268266A4852B0"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-beasts-stale-observed.json",
+      "sha256": "B53560DA22AFB588465DCB1907CFF855EBB1043570508718BC82AC5BBE85E662"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-beasts-stale-restored.json",
+      "sha256": "58D631C8C126FE3C6C78CFA3D90A60A2D759B2375126C56E47AB09DC337B689E"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-beasts-unknown-field.json",
+      "sha256": "D5330117B4C4EB4C7A8BE4D25C8A15CD43059718A5B314343542B436108F0820"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-empty-dresser.json",
+      "sha256": "A05AC32EE8566F35C4BABFE2B0FA46EA7DCF67BCAB20F1BC739612D4DCF8A442"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-empty-facewear.json",
+      "sha256": "28D1BFEBF47A6B2484248E0AB550718F95E447CDDA4758A73B19D69A17D720A0"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-facewear-unavailable.json",
+      "sha256": "6DD7B4AD0B66C4E59E761F453F2D35839D245EFC39D500850DF02E0444D9466C"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-full.json",
+      "sha256": "74C4C1A73B5020AC8260419E35F301D3B2F6BA93E0ACF994049660DB28C4A205"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-legacy-restored-composition-unknown.json",
+      "sha256": "B060E0C0799CAE4BA8186AD199AB580A4A92678444A3D75E25E79C4332D1ABC0"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/expanded-valid-beasts-empty.json",
+      "sha256": "92CFB426E9E21D8942AFB9C1189695073E5EF4047DDFC44C896BC62378B2BBD1"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/expanded-valid-beasts-populated.json",
+      "sha256": "9CE65E76B490568B4BB6FDB7F7764BE2163DE8D579A0F591791F04E63D90BA8C"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/ffxiv-collect-valid-beasts-all-collections.json",
+      "sha256": "B3F415C1C304B21F9083F1C76A548E5DFCC185E1B9726A581297C94584BA8A0A"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/ffxiv-collect-valid-beasts-complete-empty.json",
+      "sha256": "D85CB4D974EF8451FB8CB05B30F37E02892B9A82B972D96731F0AB2567942284"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/ffxiv-collect-valid-beasts-omitted.json",
+      "sha256": "208836F45635B9EEC2EEDFDEF510BFAA33DFC2CE4AAAEB49BFC673FDC38CED00"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/ffxiv-collect-valid-beasts-populated.json",
+      "sha256": "53B24E41419E11087B1E8F8849E2032055CC78354E2BFFF4EDA8E36EA89450CA"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/snapshot-changed-valid-beasts.json",
+      "sha256": "487926369114ED17D9DFD872DCC2158D21B7F56FAE0A1B693CA8989CE17434C1"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/snapshot-changed-valid.json",
+      "sha256": "CB0FB03E683F7497AFF9539F6AC55FC9FD1916E163FB2493A515A2BF2B9CA6F0"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/snapshot-withdrawn-valid.json",
+      "sha256": "62B85E0613157F4AEF0CD8CBF250298A2D26EE018398B8AEEB9385E8461C8BDA"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/InventoryItemReaderTests.cs",
+      "sha256": "39E0F2A34E655C2778D88EE22FC0284D351B7635C62F3D81BAFBC92CF39DF74F"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/OwnershipEvidenceValidationTests.cs",
+      "sha256": "7F813F18E40DE630DF3E5E90CBDD12729CE6C8F5FF4BA7A5D9C528E5A5E13C73"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/packages.lock.json",
+      "sha256": "BBF796F4B22639F78715746FDC40B573CDE7218D1DD194709F195D088A47BD50"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/ReentrantClientTests.cs",
+      "sha256": "81B6DA6C07300B6F21E08E15D38D19C51F9763E21FCEB740E3AE97283ED99CAF"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/RemainingDetailTests.cs",
+      "sha256": "9A057AD65FA2BF184B378BBE3FA2646CD634508F0B5E0B13496087D9DC8F47B3"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/RemainingInputTests.cs",
+      "sha256": "11CF46EE1878E8A7B2AEA79FFC34772590CCF0074CED08B307F97A18743E147A"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/ReportedEvidenceValidationTests.cs",
+      "sha256": "979F7D16520631B3B071AED5CDB23366739E19C7193B493A186561039341F400"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/RichCollectionConsistencyTests.cs",
+      "sha256": "072CE8FA6D8EB3514A18D32B3B3FE82644AEA573BC65BAA5CEDFD388B4283ED6"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/run-tests.ps1",
+      "sha256": "7E2C5A0C634B5B133F601D2DDE689593FED6033661B9268DD19290C09704AE3D"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/SchemaAdditionalBoundaryTests.cs",
+      "sha256": "85B428DA23C7F5A5531841335D69153EE8159A7CC06B7DC9C433F7226986E4A6"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/SchemaBoundaryTests.cs",
+      "sha256": "849E5CA28862606A9531327C35A7C37FA7DA197C44C7FC91AF04A83768A80216"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/SchemaCompositionTests.cs",
+      "sha256": "C186EE816907F4A5E5C808B960614C0B8A77D314DCAB3677CF4D346CC300FEE0"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/SchemaProcessProbe.cs",
+      "sha256": "4BC4C34C77862F89D5B0BB7C6F1C851AB191CD13A614BBDAFB15637A1A1497E9"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/SchemaRegistrationTests.cs",
+      "sha256": "B4A4127E723DE53EA8ECA159F981B51D4E0B132FDB30193F4B18AF9A0CF26775"
+    },
+    {
+      "file": "tests/Exportaramus.ConsumerKit.Tests/SchemaVersionCharacterTests.cs",
+      "sha256": "5CD44F1F2D82F3CFD31375A03F3E58D7FD65FA1450B8F237342D515E87887701"
+    }
+  ]
+}

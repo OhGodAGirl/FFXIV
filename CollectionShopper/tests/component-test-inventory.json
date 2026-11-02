@@ -1,0 +1,1207 @@
+{
+  "schemaVersion": 1,
+  "scope": "Owned src/**/*.cs; native boundaries are reviewed and require live checks, not claimed unit-tested",
+  "components": [
+    {
+      "path": "src/Adapters/CollectionData/CollectionMappingCatalog.Dalamud.cs",
+      "kind": "native-adapter",
+      "coverageGate": false,
+      "evidence": "Native Lumina row reads. CollectionMappingPolicy directly tests named Facewear rows plus one, deduplication and overflow; other category mappings select native public identifiers. Current sheet fields/data require live validation.",
+      "reviewedSourceSha256": "8DF82192C8B2700CE65DC58FCB44F8C59E322FF41C67A5DAD146BC60A5E90A59",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionMappingPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/ExportaramusOwnershipTests.cs"
+      ],
+      "liveChecks": [
+        "tests/LIVE_COMPONENT_CHECKS.md#collectionmappingcatalog"
+      ]
+    },
+    {
+      "path": "src/Adapters/CollectionData/CollectionMappingPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionMappingPolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Adapters/CollectionData/ExportaramusConsumer.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/ExportaramusConsumerTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Adapters/CollectionData/ExportaramusTransport.Dalamud.cs",
+      "kind": "native-adapter",
+      "coverageGate": false,
+      "evidence": "Direct owned Dalamud IPC gate binding. Canonical client lifecycle and prepared ownership are tested in the included ExportaramusConsumer; native subscriptions are reviewed separately.",
+      "reviewedSourceSha256": "6CD824EA0CB0D3815FAF4C7553CD079954F92E0E026B8324BA3AE1847A83EC4E",
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/ExportaramusConsumerTests.cs"
+      ],
+      "liveChecks": [
+        "tests/LIVE_COMPONENT_CHECKS.md#exportaramustransport"
+      ]
+    },
+    {
+      "path": "src/Bootstrap/Configuration.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Persisted auto-properties and constants; Coverlet skips generated accessors. Original DTO is linked directly, with defaults, round-trip, null legacy fields, and migration tests in ConfigurationTests.",
+      "reviewedSourceSha256": "36F2F95F48FC7194B4EFB1C5A61D57FBCDCCEB6CFCB32685960851EBE19BA96F",
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Bootstrap/ConfigurationTests.cs",
+        "tests/CollectionShopper.Tests/Features/Diagnostics/DiagnosticTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/CategorySettingsPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Bootstrap/Configuration.Dalamud.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Interface-only partial binding to Dalamud IPluginConfiguration; exact configuration defaults and serialization are tested through the linked Configuration.cs DTO.",
+      "reviewedSourceSha256": "786018B04E66EFE0B8A98730165EFF558D66C143411E7D16B5FE11C7C225A98A",
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Bootstrap/ConfigurationTests.cs",
+        "tests/CollectionShopper.Tests/Features/Diagnostics/DiagnosticTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/CategorySettingsPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Bootstrap/ConfigurationMigrationPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Bootstrap/ConfigurationTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Bootstrap/Plugin.cs",
+      "kind": "native-adapter",
+      "coverageGate": false,
+      "evidence": "Native composition and lifecycle wiring. PurchaseTrackingPolicy, ConfigurationMigrationPolicy, PluginCommandPolicy, and ThemeObservation are directly tested. Actual subscriptions, frame scheduling, command/window dispatch, and IPC notification require live integration checks.",
+      "reviewedSourceSha256": "5FD61D20085118B23F9092D3A7C5E7E165A0B86BAC18D97DA8DEBA28C43ED04F",
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Bootstrap/ConfigurationTests.cs",
+        "tests/CollectionShopper.Tests/Bootstrap/PluginCommandPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseTrackingPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Shared/Ui/ThemeObservationTests.cs"
+      ],
+      "liveChecks": [
+        "tests/LIVE_COMPONENT_CHECKS.md#plugin"
+      ]
+    },
+    {
+      "path": "src/Bootstrap/PluginCommandPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Bootstrap/PluginCommandPolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Bootstrap/PluginIdentity.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Compile-time identity constants generate no executable lines; identity shape is covered by metadata and unit tests.",
+      "reviewedSourceSha256": "2621FE04AD93974D4E6D84D5A3E095A8326EFE4E1EF965CDCF58CB202AB822F5",
+      "tests": [
+        "tests/CollectionShopper.Tests/Bootstrap/PluginIdentityTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/ExportaramusConsumerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Diagnostics/DiagnosticTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PendingPurchaseGuardTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Collection/CatalogEligibilityPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/CatalogEligibilityPolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Collection/CollectionDataOwnershipPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionDataOwnershipSessionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/ExportaramusConsumerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/ExportaramusOwnershipTests.cs",
+        "tests/CollectionShopper.Tests/Features/Diagnostics/DiagnosticTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PendingPurchaseGuardTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseReadinessTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseTrackingPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingCatalogProjectionTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Collection/CollectionDataOwnershipSession.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionDataOwnershipSessionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionRefreshRequestsTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Collection/CollectionDataOwnershipSourceState.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "A90D279C74D7644B0F550FED89C4E32992DA58CE315FE4D53C8EBA6A8CC9543E",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Diagnostics/DiagnosticTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Collection/CollectionDataOwnershipState.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionDataOwnershipSessionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Diagnostics/DiagnosticTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseReadinessTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseTrackingPolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Collection/CollectionOwnershipRefreshPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionOwnershipRefreshPolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Collection/CollectionRefreshRequests.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionRefreshRequestsTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Collection/FfxivCollectClient.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionBoundaryRegressionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/FfxivCollectClientTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/HttpContextTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/HttpMutationBoundaryTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/MarketPriceResilienceTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/PriceResultBoundaryTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/PriceResultContextTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Collection/ItemOwnership.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "1D0794CB8F9AD6ADF57C10F134DB740052DCDBD75059AFFD5D4ED25EF5DE5FE9",
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/ExportaramusOwnershipTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PendingPurchaseGuardTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseReadinessTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseTrackingPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingPortDefaultsTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Collection/MarketPricePublication.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/MarketPricePublicationTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Collection/MarketPriceRefreshResult.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/MarketPricePublicationTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/MarketPriceRefreshResultTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/MarketPriceResilienceTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/PriceResultContextTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Collection/MarketPriceResponsePolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionBoundaryRegressionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/MarketPriceResponsePolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Collection/OutfitCatalog.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionBoundaryRegressionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/OutfitCatalogTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Collection/OutfitCatalogParser.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/OutfitCatalogTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Collection/OutfitPlanningPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/OutfitPlanningPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingCatalogProjectionTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Diagnostics/DiagnosticCheck.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "55E7AD16D6D13E7829EFF3FA61E9417F0332D590748FD63E3A6F41B451EBEF56",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Diagnostics/DiagnosticTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Diagnostics/DiagnosticInputs.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "3B156C3AAB7084A5AF9BFD306B836B908F6EF3544A44D112E605CCFB681B03BD",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Diagnostics/DiagnosticTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Diagnostics/DiagnosticPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Diagnostics/DiagnosticTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Diagnostics/DiagnosticReport.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Diagnostics/DiagnosticTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Diagnostics/DiagnosticResultKind.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "3163A2765677847BEF56933FBB9D1FBD5EC78F92F8894EA52EF7541F381FB30D",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/ExportaramusOwnershipTests.cs",
+        "tests/CollectionShopper.Tests/Features/Diagnostics/DiagnosticTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Diagnostics/DiagnosticSnapshot.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "A3779ECA51D93D8E5CEAE264D224406D19DB60FC43F2DB6B61171D5F20392B03",
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Diagnostics/DiagnosticTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Diagnostics/DiagnosticsWindow.cs",
+      "kind": "native-adapter",
+      "coverageGate": false,
+      "evidence": "ImGui display and deliberate clipboard adapter. DiagnosticPolicy and DiagnosticReport directly test managed checks, serialization and redaction; rendered controls and clipboard interaction require live validation.",
+      "reviewedSourceSha256": "50F34B93C3665648A3B4304AE447D5C26A2BC129AC2017BB0F7C9C8BE3E09D9A",
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Diagnostics/DiagnosticTests.cs"
+      ],
+      "liveChecks": [
+        "tests/LIVE_COMPONENT_CHECKS.md#diagnosticswindow"
+      ]
+    },
+    {
+      "path": "src/Features/Main/MainWindow.cs",
+      "kind": "native-adapter",
+      "coverageGate": false,
+      "evidence": "Thin Dalamud window composition wrapper with no decision behavior.",
+      "reviewedSourceSha256": "FF5EB9BBF21194BD7E64E072FC77FACF37BACDAF359D4A16E07BE39041836F11",
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs"
+      ],
+      "liveChecks": [
+        "tests/LIVE_COMPONENT_CHECKS.md#mainwindow"
+      ]
+    },
+    {
+      "path": "src/Features/MarketBoard/MarketBoardBookmarkWindow.cs",
+      "kind": "native-adapter",
+      "coverageGate": false,
+      "evidence": "Direct native-addon and ImGui sidecar adapter; context and occlusion decisions are extracted and covered.",
+      "reviewedSourceSha256": "49FDABBA179367CF32D01356032B578375568AAD5F7067FF41EA898FDE120F3C",
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/MarketBoard/MarketBoardTabPresentationTests.cs",
+        "tests/CollectionShopper.Tests/Shared/Ui/NativeWindowDrawClipperTests.cs",
+        "tests/CollectionShopper.Tests/Shared/Ui/UiLayoutPolicyTests.cs"
+      ],
+      "liveChecks": [
+        "tests/LIVE_COMPONENT_CHECKS.md#marketboardbookmarkwindow"
+      ]
+    },
+    {
+      "path": "src/Features/MarketBoard/MarketBoardContext.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/MarketBoard/MarketBoardContextTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/MarketBoard/MarketBoardTabPresentation.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Bootstrap/ConfigurationTests.cs",
+        "tests/CollectionShopper.Tests/Features/MarketBoard/MarketBoardTabPresentationTests.cs",
+        "tests/CollectionShopper.Tests/Shared/Ui/NativeWindowDrawClipperTests.cs",
+        "tests/CollectionShopper.Tests/Shared/Ui/UiLayoutPolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/MarketBoard/MarketWorldPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/MarketBoard/MarketWorldPolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/CategorySettingsPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/CategorySettingsPolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/Collectable.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "FD5CD91AB533BD311215F31F302FD974B088E5DFC868954F8D27E0270F90A37A",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/FfxivCollectModelTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/CollectionCatalogPage.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "B90E59C8E3D08F7B2ABBA538AB1A0C597956757EDDBB7EDA14BE599A471DACA7",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/FfxivCollectClientTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/FfxivCollectModelTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/CollectionCatalogResult.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "23377DB0D883670D7A5726E5BED6430FC3F1D6E63DBCDCAB5F8039B752CD56AD",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/FfxivCollectClientTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/CollectionSource.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "34D5E4469B0B6312F7575F863EDB8433E4E1DE575EBC234DF7C92D370D6873E6",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/OutfitCatalogTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/IShoppingContext.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingPortDefaultsTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/IShoppingMarketBoard.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingPortDefaultsTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/MarketBoardSettingsView.Dalamud.cs",
+      "kind": "native-adapter",
+      "coverageGate": false,
+      "evidence": "Original ImGui settings methods moved under exact body/call mapping; retains the same configuration and callbacks. Offline render review does not prove live layout/input parity.",
+      "reviewedSourceSha256": "B1ECFC3DA01E9EA916E27D3060E998C5784BB35D06DA80CC0BA2144ACC8F48B4",
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Bootstrap/ConfigurationTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchasePolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs"
+      ],
+      "liveChecks": [
+        "tests/LIVE_COMPONENT_CHECKS.md#marketboardsettingsview"
+      ]
+    },
+    {
+      "path": "src/Features/Shopping/MarketPrice.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "36AB65B47B89AF7B4E42070DD9DC728A91661F99670D22E8A2F8911BC950DA3E",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionBoundaryRegressionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/MarketPriceResponsePolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/PriceResultBoundaryTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingProjectionTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/MarketPriceQuote.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "68547DFE674CF16DC71729A5FC7E64585AB42FF45283D555671969BF80A7E67F",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionBoundaryRegressionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/MarketPricePublicationTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/MarketPriceRefreshResultTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/MarketPriceResilienceTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/MarketPriceResponsePolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingCatalogProjectionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingProjectionTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/Outfit.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "8E09CE42AD4448BD9609EF72DA504314FEF5B9C02E5AC2AB35FFE897E6D86FEA",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionBoundaryRegressionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/ExportaramusOwnershipTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/OutfitCatalogTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/OutfitPlanningPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Diagnostics/DiagnosticTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PendingPurchaseGuardTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchasePolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseTrackingPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShopperPagePolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingCatalogProjectionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingListPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingListTextTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingProjectionTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/OutfitPiece.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "C6F41FD471A6CF1D1418258B1052933A39A2AEF58CA29640022A33D9438B49EB",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/OutfitCatalogTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/OutfitPlanningPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingCatalogProjectionTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/OutfitPlan.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "2927D5E0C1634716769A54A60C761F0C8442EB6B52C0BD7AA3C9F097556DD84F",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/OutfitPlanningPolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/PendingPurchaseGuard.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/PendingPurchaseGuardTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseTrackingPolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/PurchaseListingCandidate.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchasePolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingPortDefaultsTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingSubmissionPolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/PurchasePolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchasePolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/PurchaseReadinessPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/ExportaramusConsumerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseReadinessTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingCatalogProjectionTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/PurchaseTrackingPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseTrackingPolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShopperCategorySettingsView.Dalamud.cs",
+      "kind": "native-adapter",
+      "coverageGate": false,
+      "evidence": "ImGui checkbox/table adapter; CategorySettingsPolicy tests exercise all eight category getters/setters and persistence fields. Actual click delivery, layout and save callback dispatch require live checks.",
+      "reviewedSourceSha256": "0231426743ED977E41D76E27D038D8CEA11A90A986E709FD7E6F497FD57AE75E",
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/CategorySettingsPolicyTests.cs"
+      ],
+      "liveChecks": [
+        "tests/LIVE_COMPONENT_CHECKS.md#shoppercategorysettingsview"
+      ]
+    },
+    {
+      "path": "src/Features/Shopping/ShopperPage.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "0BDCD0ED2A4D148361EA5403D236A20B7448C189B28C515F0D372829CA41A991",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShopperPagePolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingCatalogProjectionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingListPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingListTextTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingProjectionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/VisibleShoppingItemsCacheTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShopperPagePolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShopperPagePolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShopperWindow.cs",
+      "kind": "native-adapter",
+      "coverageGate": false,
+      "evidence": "Native sheet reads, ImGui drawing, and framework orchestration. Managed list/cache/text, catalog eligibility, price publication/session rejection, ownership, page and purchase decisions have direct tests. Native sheet validity, full window lifecycle and rendering still require live integration checks.",
+      "reviewedSourceSha256": "279245BBC01E69B8FFDB1391D0DD5E45BB396A18411B8ABD0BD666C7FDDAFAF2",
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/CatalogEligibilityPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionDataOwnershipSessionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/MarketPricePublicationTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingListPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingListTextTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/VisibleShoppingItemsCacheTests.cs",
+        "tests/CollectionShopper.Tests/Shared/Operations/RefreshPublicationTests.cs"
+      ],
+      "liveChecks": [
+        "tests/LIVE_COMPONENT_CHECKS.md#shopperwindow"
+      ]
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingCandidate.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Port or immutable data declaration; production controller/projection behavior directly exercised through deterministic tests.",
+      "reviewedSourceSha256": "7301AC01D90E884FE0FF146766DFF4A57F2A7DD36A99E9288022F2042B3386FE",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingCatalogProjectionTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingCatalogProjection.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingCatalogProjectionTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingCategory.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "44099F109490DF233F13D9E28C3BA618924E63823F09DB6AC45FC1D2508FA9ED",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionBoundaryRegressionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/ExportaramusConsumerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/ExportaramusOwnershipTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/CategorySettingsPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PendingPurchaseGuardTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchasePolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseReadinessTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseTrackingPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShopperPagePolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingCatalogProjectionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingListPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingListTextTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingProjectionTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingContext.Dalamud.cs",
+      "kind": "native-adapter",
+      "coverageGate": false,
+      "evidence": "Thin Dalamud/native binding for directly tested production controller. Native event and pointer behavior requires explicit live edge-case evidence.",
+      "reviewedSourceSha256": "0196D66C62123DD16CCC3BE547CEDC4F4F2668B30ACA33CA143B83CCACCE3ED8",
+      "tests": [
+        "tests/CollectionShopper.Tests/Bootstrap/ConfigurationTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseTrackingPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs"
+      ],
+      "liveChecks": [
+        "tests/LIVE_COMPONENT_CHECKS.md#shoppingcontext"
+      ]
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingController.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingController.Dalamud.cs",
+      "kind": "native-adapter",
+      "coverageGate": false,
+      "evidence": "Thin Dalamud/native binding for directly tested production controller. Native event and pointer behavior requires explicit live edge-case evidence.",
+      "reviewedSourceSha256": "4002E7DEB67C8E0B108DDEDD100B17D59E13CB32E7252DA39627D22080483D0D",
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs"
+      ],
+      "liveChecks": [
+        "tests/LIVE_COMPONENT_CHECKS.md#shoppingcontroller"
+      ]
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingEmptyState.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "AA09A6A07635844582D993B48B579BC044F7D738E2A791946AB2A020D328EF3F",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingProjectionTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingEventDelivery.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingEventDeliveryTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingEventQueue.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingEventDeliveryTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingEventQueueTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingItem.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "36FA87D8052E6CDB28955EE117F5CF6106D7CBFF471E43014236284A5B6EA355",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionBoundaryRegressionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/ExportaramusConsumerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchasePolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseReadinessTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/PurchaseTrackingPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingCatalogProjectionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingListPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingPortDefaultsTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingProjectionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/VisibleShoppingItemsCacheTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingListPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingListPolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingListText.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingListTextTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingMarketBoardAdapter.Dalamud.cs",
+      "kind": "native-adapter",
+      "coverageGate": false,
+      "evidence": "Native pointers/row copy and packet subscriptions. ShoppingSubmissionPolicy and ShoppingEventDelivery directly test final revalidation, forbidden calls, native operation failure, overflow and teardown delivery. Actual game packet/pointer validity requires live checks.",
+      "reviewedSourceSha256": "CFF70D9FC09866BD05E222FEFB2F3E3FB1B8DEAEEB026A62A2139B50FD242B9F",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingEventDeliveryTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingEventQueueTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingSubmissionPolicyTests.cs"
+      ],
+      "liveChecks": [
+        "tests/LIVE_COMPONENT_CHECKS.md#shoppingmarketboardadapter"
+      ]
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingMarketEvent.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Immutable packet event record; FIFO snapshot/handoff behavior directly exercised in ShoppingEventQueue tests.",
+      "reviewedSourceSha256": "DED299B85D103679279B3264A964FB7006426C0B17A783B955AD22A35B1EC5B5",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingEventDeliveryTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingEventQueueTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingOfferings.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Port or immutable data declaration; production controller/projection behavior directly exercised through deterministic tests.",
+      "reviewedSourceSha256": "CD423D00B3ADE5554EAD105630ED9006680F87452CF8541429ECE9E930A673CC",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingEventDeliveryTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingEventQueueTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingPortDefaultsTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingOwnershipCounts.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "8EB006B968B11BD8B8C7480C6A5D2749B383176ED395F63D2502059061784552",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingProjectionTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingPhase.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests.",
+      "reviewedSourceSha256": "F5D0EB2727E304CE32DEBA8B26777B1C1CFF762552D75CF1780FC89753CEC15B",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingProjection.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionBoundaryRegressionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingCatalogProjectionTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingProjectionTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingPurchase.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Port or immutable data declaration; production controller/projection behavior directly exercised through deterministic tests.",
+      "reviewedSourceSha256": "91FB9EE1133610996F6FE050862056672ECA9505101CB3FED1623EEF928917B2",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingEventDeliveryTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingEventQueueTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingPortDefaultsTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingRunSettings.cs",
+      "kind": "declaration",
+      "coverageGate": false,
+      "evidence": "Port or immutable data declaration; production controller/projection behavior directly exercised through deterministic tests.",
+      "reviewedSourceSha256": "5C2E13C45609FB232CF9F4DB427101D59C9C69472C09282E203679905EC01CA3",
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingControllerTests.cs",
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingPortDefaultsTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingSubmissionPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/ShoppingSubmissionPolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Features/Shopping/VisibleShoppingItemsCache.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Features/Shopping/VisibleShoppingItemsCacheTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Shared/Operations/RefreshActivity.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionRefreshRequestsTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/ExportaramusConsumerTests.cs",
+        "tests/CollectionShopper.Tests/LifecycleStressTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Shared/Operations/RefreshPublication.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Shared/Operations/RefreshPublicationTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Shared/Operations/SingleFlightOperation.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/CollectionRefreshRequestsTests.cs",
+        "tests/CollectionShopper.Tests/Features/Collection/ExportaramusConsumerTests.cs",
+        "tests/CollectionShopper.Tests/LifecycleStressTests.cs",
+        "tests/CollectionShopper.Tests/Shared/Operations/SingleFlightOperationBoundaryTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Shared/Ui/NativeWindowDrawClipper.Dalamud.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Shared/Ui/NativeWindowDrawClipperTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Shared/Ui/PluginControls.cs",
+      "kind": "native-adapter",
+      "coverageGate": false,
+      "evidence": "Direct ImGui native-finish button drawing adapter with no product decision behavior.",
+      "reviewedSourceSha256": "D6C40651580CE23AD76723F8333CEC33E797074730202283EE4EC29B5BBCAF00",
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Shared/Ui/ThemeColorPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Shared/Ui/UiLayoutPolicyTests.cs"
+      ],
+      "liveChecks": [
+        "tests/LIVE_COMPONENT_CHECKS.md#plugincontrols"
+      ]
+    },
+    {
+      "path": "src/Shared/Ui/PluginMotion.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/ArchitectureContractTests.cs",
+        "tests/CollectionShopper.Tests/Shared/Ui/PluginMotionTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Shared/Ui/PluginTheme.cs",
+      "kind": "native-adapter",
+      "coverageGate": false,
+      "evidence": "Direct ImGui style-stack adapter with no product decision behavior.",
+      "reviewedSourceSha256": "1B9BC8684B8CC3E3B8858D5901AAA2A3C16E6DA9249B5B75CAB7041A91EBC032",
+      "tests": [
+        "tests/CollectionShopper.Tests/Shared/Ui/ThemeColorPolicyTests.cs",
+        "tests/CollectionShopper.Tests/Shared/Ui/ThemeObservationTests.cs"
+      ],
+      "liveChecks": [
+        "tests/LIVE_COMPONENT_CHECKS.md#plugintheme"
+      ]
+    },
+    {
+      "path": "src/Shared/Ui/ThemeColorPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Shared/Ui/ThemeColorPolicyTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Shared/Ui/ThemeObservation.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Shared/Ui/ThemeObservationTests.cs"
+      ],
+      "liveChecks": []
+    },
+    {
+      "path": "src/Shared/Ui/UiLayoutPolicy.cs",
+      "kind": "executed-coverage",
+      "coverageGate": true,
+      "evidence": "Direct production source is executed by the coverage suite; 100% line and branch gate. Test files below exercise this component or its public consumers.",
+      "reviewedSourceSha256": null,
+      "tests": [
+        "tests/CollectionShopper.Tests/Shared/Ui/UiLayoutPolicyTests.cs"
+      ],
+      "liveChecks": []
+    }
+  ]
+}

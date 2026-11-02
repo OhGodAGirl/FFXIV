@@ -167,6 +167,16 @@ def independently_killed(entry, before, report_hash, mutant, root, repair=None):
     return True
 
 
+def validate_current_nonviability(mutant, result, root, native=False):
+    """A raw label never proves nonviability; require the exact compiler replay."""
+    import multi_stage_review as stage
+    eligible = (mutant['status'] == 'CompileError'
+                or mutant['status'] == 'Ignored' and mutant.get('statusReason') == BLOCK_REASON
+                or not native and mutant['status'] in ('Survived', 'Timeout', 'NoCoverage'))
+    stage.require(eligible, 'Current nonviability classification is not eligible for this raw outcome.')
+    return stage.validate_nonviability(result, root)
+
+
 def reconcile_current(ledger, binding, report, root, native=False):
     """Review genuine schema1.2 same-source executions, without a repair bridge."""
     import sys
@@ -183,7 +193,7 @@ def reconcile_current(ledger, binding, report, root, native=False):
         receipt = json.loads(Path(checked['receiptPath']).read_bytes())
         root = Path(receipt['campaignRoot']).resolve()
         measured = checked['campaignInventory']
-        checked = dict(checked, kind='measured-native-campaign', inventoryPaths={r['path']: r['sha256'] for r in measured['files']}, inventorySha256=measured['sha256'], inventoryArtifact=receipt['beforeInventory'], cases=checked['campaignCases'])
+        checked = dict(checked, kind='measured-native-campaign', validatorInventoryPaths=checked['inventoryPaths'], inventoryPaths={r['path']: r['sha256'] for r in measured['files']}, inventorySha256=measured['sha256'], inventoryArtifact=receipt['beforeInventory'], cases=checked['campaignCases'])
         stage_id = 'inventory-current'
     stage.require(report == json.loads(Path(checked['reportPath']).read_bytes()), 'Current parsed report differs from bound raw report.')
     stage.require(ledger.get('schemaVersion') == ('native-current-1.0' if native else 'current-1.0') and ledger.get('reviewer', '').strip()
@@ -221,8 +231,7 @@ def reconcile_current(ledger, binding, report, root, native=False):
             stage.validate_causality(json.loads(proof.read_bytes()), entry, result, result_path,
                 stage_id, root, checked['inventoryPaths'])
         elif classification == 'IndividuallyNonViable':
-            stage.require(actual[identity]['status'] == 'CompileError' or actual[identity]['status'] == 'Ignored' and actual[identity].get('statusReason') == BLOCK_REASON, 'Current nonviability classification is not eligible for this raw outcome.')
-            stage.validate_nonviability(result, root)
+            validate_current_nonviability(actual[identity], result, root, native=native)
         elif classification == 'IndependentlyEquivalent':
             stage.validate_survival(result, checked, sys.modules[__name__], root)
             proof = verified_artifact(root, entry['equivalenceReview']['path'], entry['equivalenceReview']['sha256'])

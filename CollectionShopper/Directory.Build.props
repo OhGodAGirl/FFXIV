@@ -1,0 +1,33 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <Deterministic>true</Deterministic>
+    <CollectionShopperSourceRoot>$(MSBuildThisFileDirectory)</CollectionShopperSourceRoot>
+    <PathMap>$(CollectionShopperSourceRoot)=/_/CollectionShopper/,$(PathMap)</PathMap>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <SourceRoot Include="$(CollectionShopperSourceRoot)" />
+  </ItemGroup>
+  <!-- Keep local and CI symbol paths identical, including companion assemblies. -->
+  <Target Name="MapCollectionShopperSourceRoot" AfterTargets="InitializeSourceRootMappedPaths">
+    <ItemGroup>
+      <SourceRoot Update="$(CollectionShopperSourceRoot)" MappedPath="/_/CollectionShopper/" />
+    </ItemGroup>
+  </Target>
+  <Target Name="MapCollectionShopperDebugPaths" BeforeTargets="CoreCompile" DependsOnTargets="_SetPathMapFromSourceRoots">
+    <PropertyGroup>
+      <PathMap>$(CollectionShopperSourceRoot)=/_/CollectionShopper/,$(PathMap)</PathMap>
+    </PropertyGroup>
+  </Target>
+</Project>

@@ -1,0 +1,7 @@
+* text=auto
+# Integrity inventories and the pinned consumer kit compare exact source bytes.
+src/** -text
+data/Contracts/** -text
+tests/fixtures/Contracts/** -text
+*.png binary
+*.zip binary

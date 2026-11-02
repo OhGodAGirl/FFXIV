@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "path": "src/Features/Main/MainController.cs",
+      "sourceSha256": "38F9B8116F743BFD9CB5F6692927C25EFAE04F2DA638AD2C4A9FC182EC7AA1BC",
+      "mutator": "PostIncrementExpression to PostDecrementExpression mutation",
+      "replacement": "persistenceRevision--",
+      "startLine": 701,
+      "startColumn": 9,
+      "endLine": 701,
+      "endColumn": 30,
+      "rationale": "persistenceRevision is a private change token. It is only copied before an action and compared for equality afterward, never ordered or exposed. Increment and decrement both differ from the saved value after one successful persistence. The action performs at most one successful Save; no observable result depends on direction.",
+      "reviewer": "code_smell_review"
+    },
+    {
+      "path": "src/Features/Main/MainController.cs",
+      "sourceSha256": "38F9B8116F743BFD9CB5F6692927C25EFAE04F2DA638AD2C4A9FC182EC7AA1BC",
+      "mutator": "Statement mutation",
+      "replacement": ";",
+      "startLine": 124,
+      "startColumn": 21,
+      "endLine": 124,
+      "endColumn": 49,
+      "rationale": "SaveOutfit persists a deep copy of the active draft and clears its dirty flag. BuildView immediately recreates an equivalent clean draft if removed; retaining the existing independent draft yields identical normalized values. No draft reference escapes: views contain projected values and preview returns a copy. Only allocation and private reference identity differ.",
+      "reviewer": "code_smell_review; parent independent review"
+    }
+  ]
+}

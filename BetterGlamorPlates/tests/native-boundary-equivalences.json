@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "path": "src/Shared/Operations/OwnedResourcePair.cs",
+      "sourceSha256": "1CF1FB666919E45FB19E09C2CFA67A573C42A3B56875BBF5AD6264ED56846E27",
+      "mutator": "Equality mutation",
+      "replacement": "failures.Count >= 1",
+      "startLine": 37,
+      "startColumn": 13,
+      "endLine": 37,
+      "endColumn": 31,
+      "rationale": "The preceding failures.Count == 1 branch always throws through ExceptionDispatchInfo.Throw. This comparison is reached only for count 0 or count 2; > 1 and >= 1 are identical on that reachable domain. No callback occurs between the count test and this comparison.",
+      "reviewer": "native_boundary_tests; pending parent independent review"
+    }
+  ]
+}
