@@ -103,6 +103,40 @@ def recorded_run(command, root, prefix, timeout=120):
     return run, [{'path': str(p), 'sha256': digest(p)} for p in (log, execution)]
 
 
+def current_review_command(tool, request_path, prefix, descriptor=None):
+    command = [sys.executable, '-I', str(tool), '--current-request', str(request_path)]
+    if descriptor is None:
+        return command, [], None
+    require(set(descriptor) == {'format', 'launcher', 'review', 'script'}, 'Unexpected current-review launcher descriptor fields.')
+    require(descriptor['format'] == 'exportaramus-read-only-longpath-launcher', 'Unknown current-review launcher format.')
+    launcher, peer, script = (bound(descriptor[key]) for key in ('launcher', 'review', 'script'))
+    require(script.resolve() == tool.resolve() and digest(script) == digest(tool), 'Launcher targets a different validator.')
+    review = json.loads(peer.read_bytes())
+    require(review.get('reviewed') is True and isinstance(review.get('reviewer'), str) and review['reviewer'].strip() and isinstance(review.get('reason'), str) and review['reason'].strip(), 'Launcher lacks identified independent review.')
+    require(review.get('launcherSha256') == digest(launcher), 'Launcher peer approval binds different bytes.')
+    record = prefix.with_name(prefix.name + '-longpath.json')
+    require(not record.exists(), 'Launcher record already exists; preserve earlier attempt.')
+    command = [sys.executable, '-I', str(launcher), '--script', str(tool), '--sha256', digest(tool), '--record', str(record), '--current-request', str(request_path)]
+    return command, [descriptor[key] for key in ('launcher', 'review', 'script')], record
+
+
+def validate_current_review_launch(record, descriptor, tool, request_path):
+    if record is None:
+        return []
+    value = json.loads(record.read_bytes())
+    require(value.get('format') == 'exportaramus-read-only-longpath-launch' and value.get('exitCode') == 0 and value.get('error') is None, 'Read-only launcher failed.')
+    require(Path(value['script']).resolve() == tool.resolve() and value.get('scriptSha256') == digest(tool), 'Launcher script binding changed.')
+    launcher = bound(descriptor['launcher'])
+    require(Path(value['launcher']).resolve() == launcher.resolve() and value.get('launcherSha256') == digest(launcher), 'Launcher identity changed.')
+    require(value.get('arguments') == ['--current-request', str(request_path)], 'Unexpected child validator arguments.')
+    require(value.get('writeCallsUnchanged') is True and value.get('pathNormalizationApplied') is False, 'Launcher changed write or normalization semantics.')
+    require(isinstance(value.get('mappedReads'), list), 'Missing mapped read receipt.')
+    for mapped in value['mappedReads']:
+        original = mapped.get('original', '')
+        require(isinstance(original, str) and len(original) > 259 and mapped.get('extended') == '\\\\?\\' + original, 'Invalid extended read mapping.')
+    return [{'path': str(record), 'sha256': digest(record)}]
+
+
 def validate_runner_version(item, root, output=None):
     pwsh = shutil.which('pwsh')
     require(pwsh is not None, 'PowerShell is unavailable for actual runner metadata verification.')
@@ -552,7 +586,12 @@ def compose(plan_path, output):
             request_path = output / ('current-request-' + str(len(normalizations)) + '.json')
             request_path.write_text(json.dumps(request, indent=2), encoding='utf-8')
             tool = bound(request['validatorFiles']['report_set_review.py'])
-            run, run_evidence = recorded_run([sys.executable, '-I', str(tool), '--current-request', str(request_path)], Path(request['root']), output / ('current-review-' + str(len(normalizations))), timeout=1800)
+            prefix = output / ('current-review-' + str(len(normalizations)))
+            launcher_descriptor = item.get('currentReviewLauncher')
+            command, launcher_evidence, launch_record = current_review_command(tool, request_path, prefix, launcher_descriptor)
+            run, run_evidence = recorded_run(command, Path(request['root']), prefix, timeout=1800)
+            run_evidence.extend(launcher_evidence)
+            run_evidence.extend(validate_current_review_launch(launch_record, launcher_descriptor, tool, request_path))
             require(run.returncode == 0, 'Fresh current review failed; diagnostics preserved.')
             reviewed = json.loads(run.stdout)
             require(reviewed['reportSha256'] == item['report']['sha256'] and reviewed['currentCampaignSha256'] == request['currentCampaign']['sha256'], 'Current reviewer returned different bindings.')
