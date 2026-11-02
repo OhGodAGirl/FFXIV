@@ -114,4 +114,27 @@ class CurrentCampaignTests(unittest.TestCase):
             old['schemaVersion']='2.0';prior.write_text(json.dumps(old));receipt['priorCampaign']['receipt']=artifact(prior)
             with self.assertRaises(ValueError):current.validate_prior_campaign(receipt,root,{},report)
 
+class DerivedManifestTests(unittest.TestCase):
+    def test_only_canonical_manifest_and_unchanged_checker(self):
+        import multi_stage_review
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'tools').mkdir();checker=root/'tools/contract-checksums.py'
+            checker.write_text("def verify_canonical(root):\n    if (root/'project/ConsumerKit/1.2/SHA256SUMS').read_text() != 'canonical': raise ValueError('stale manifest')\n")
+            path='project/ConsumerKit/1.2/SHA256SUMS';manifest=root/path;manifest.parent.mkdir(parents=True);manifest.write_text('canonical')
+            sha=current.report_set.digest(checker);before={path:'old','tools/contract-checksums.py':sha};after={path:'new','tools/contract-checksums.py':sha}
+            change={'path':path,'kind':'DerivedManifest'};receipt={'schemaVersion':'2.0','toolChanges':[],'testChanges':[change]}
+            with patch.object(multi_stage_review,'validate_strengthening') as review:
+                current.validate_input_transition(before,after,receipt,root);review.assert_called_once()
+            manifest.write_text('stale')
+            with self.assertRaises(ValueError):current.validate_input_transition(before,after,receipt,root)
+            manifest.write_text('canonical')
+            for old,new in [(dict(before,**{'tools/contract-checksums.py':'changed'}),after),(before,dict(after,**{'tools/contract-checksums.py':'changed'})),({path:'old'},{path:'new'}),(before,{'tools/contract-checksums.py':sha})]:
+                with self.assertRaises(ValueError):current.validate_input_transition(old,new,receipt,root)
+            checker.write_text('# altered')
+            with self.assertRaises(ValueError):current.validate_input_transition(before,after,receipt,root)
+            for candidate,kind in [('project/ConsumerKit/1.1/SHA256SUMS','DerivedManifest'),(path,'TestStrengthening')]:
+                with self.assertRaises(ValueError):current.validate_input_transition(before,after,dict(receipt,testChanges=[{'path':candidate,'kind':kind}]),root)
+            with self.assertRaises(ValueError):current.validate_input_transition(before,after,dict(receipt,schemaVersion='1.0'),root)
+
+
 if __name__=='__main__':unittest.main()

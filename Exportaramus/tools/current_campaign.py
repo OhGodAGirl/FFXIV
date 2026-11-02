@@ -38,6 +38,17 @@ def validate_input_transition(before, after, receipt, root):
     changes = receipt['testChanges']
     for change in changes:
         path = change.get('path', '')
+        if path == 'project/ConsumerKit/1.2/SHA256SUMS' and change.get('kind') == 'DerivedManifest':
+            checker = 'tools/contract-checksums.py'
+            report_set.require(path in before and path in after, 'Derived manifest cannot be added or deleted.')
+            report_set.require(bool(before.get(checker)) and before.get(checker) == after.get(checker)
+                    == report_set.digest(root / checker), 'Derived manifest checker must remain exactly pinned.')
+            import importlib.util
+            spec = importlib.util.spec_from_file_location('current_manifest_checker', root / checker)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            module.verify_canonical(root)
+            continue
         report_set.require(path.startswith(('tests/Exportaramus.Tests/', 'tests/Exportaramus.ConsumerKit.Tests/', 'tests/Exportaramus.InventoryReader.Mutation.Tests/')) and path.endswith('.cs') and change.get('kind') == 'TestStrengthening', 'Current successor permits only reviewed test-source strengthening.')
     import multi_stage_review
     multi_stage_review.validate_strengthening({p:h for p,h in before.items() if not p.startswith('tools/')}, {p:h for p,h in after.items() if not p.startswith('tools/')}, changes, root, bridge, multi_suite=True)
