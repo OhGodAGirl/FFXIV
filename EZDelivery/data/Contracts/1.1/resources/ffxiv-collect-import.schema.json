@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://exportaramus.local/schemas/ffxiv-collect/1.0/import.schema.json",
+  "title": "Exportaramus FFXIV Collect Import Payload",
+  "type": "object",
+  "minProperties": 1,
+  "maxProperties": 15,
+  "properties": {
+    "armoires": { "$ref": "#/$defs/idArray" },
+    "bardings": { "$ref": "#/$defs/idArray" },
+    "cards": { "$ref": "#/$defs/idArray" },
+    "fashions": { "$ref": "#/$defs/idArray" },
+    "field_records": { "$ref": "#/$defs/idArray" },
+    "frames": { "$ref": "#/$defs/idArray" },
+    "hairstyles": { "$ref": "#/$defs/idArray" },
+    "leves": { "$ref": "#/$defs/idArray" },
+    "npcs": { "$ref": "#/$defs/idArray" },
+    "occult_records": { "$ref": "#/$defs/idArray" },
+    "orchestrions": { "$ref": "#/$defs/idArray" },
+    "outfits": { "$ref": "#/$defs/idArray" },
+    "relics": { "$ref": "#/$defs/idArray" },
+    "spells": { "$ref": "#/$defs/idArray" },
+    "survey_records": { "$ref": "#/$defs/idArray" }
+  },
+  "$defs": {
+    "idArray": {
+      "type": "array",
+      "maxItems": 50000,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 4294967295
+      }
+    }
+  },
+  "additionalProperties": false
+}

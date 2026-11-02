@@ -1,0 +1,34 @@
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <Version>1.0.0.0</Version><Author>OhGodAGirl</Author><Name>EZ Delivery</Name>
+    <InternalName>EZDelivery</InternalName><AssemblyName>EZDelivery</AssemblyName><RootNamespace>EZDelivery</RootNamespace>
+    <RepoUrl>https://github.com/OhGodAGirl/FFXIV/tree/main/EZDelivery</RepoUrl>
+    <Punchline>Fast(er) Expert Deliveries</Punchline>
+    <Tags>grand company;expert delivery;seals;quartermaster;collection;shopping</Tags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>EZ Delivery makes Grand Company turn-ins and rewards faster. Hand in all eligible gear with a single click, respecting your in-game filters and stopping safely at the seal cap. At the Quartermaster, instantly find weapons, armor, barding, and furnishings you’re still missing using collection data from Exportaramus, then grab them individually—or hit Buy All and be done with it.</Description>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems><AllowUnsafeBlocks>true</AllowUnsafeBlocks><CanUnloadAsync>true</CanUnloadAsync>
+    <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Deterministic>true</Deterministic><RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers><EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile><WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Update="images/icon.png" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="src/**/*.cs" Exclude="src/Contracts/**/*.cs" />
+    <Compile Include="src/Contracts/1.1/CollectionDataGateBindings.Dalamud.cs" />
+    <ProjectReference Include="project/Contracts/1.1/Exportaramus.ConsumerKit.V1_1.csproj" />
+  </ItemGroup>
+  <!-- The immutable Consumer Kit binding lacks XML docs on six upstream symbols.
+       Compile its nonblank source lines behind a file-local warning directive; owned source keeps CS1591 enabled. -->
+  <Target Name="DocumentedConsumerBindingBoundary" BeforeTargets="CoreCompile">
+    <ReadLinesFromFile File="src/Contracts/1.1/CollectionDataGateBindings.Dalamud.cs">
+      <Output TaskParameter="Lines" ItemName="ConsumerBindingLines" />
+    </ReadLinesFromFile>
+    <WriteLinesToFile File="$(IntermediateOutputPath)CollectionDataGateBindings.DocumentationBoundary.cs" Lines="#pragma warning disable CS1591;@(ConsumerBindingLines)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Remove="src/Contracts/1.1/CollectionDataGateBindings.Dalamud.cs" />
+      <Compile Include="$(IntermediateOutputPath)CollectionDataGateBindings.DocumentationBoundary.cs" />
+    </ItemGroup>
+  </Target>
+</Project>

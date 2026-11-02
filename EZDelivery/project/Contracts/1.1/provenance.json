@@ -1,0 +1,249 @@
+{
+  "SchemaVersion": 1,
+  "Source": "Exportaramus Consumer Kit 1.1",
+  "License": "MIT",
+  "Files": [
+    {
+      "UpstreamPath": "CollectionDataContracts.cs",
+      "UpstreamSha256": "6DCE4C2DC91A0454AB11C62496BFFD6EF131896BC22B7590845BCF91D7D82696",
+      "PublicPath": "src/Contracts/1.1/CollectionDataContracts.cs",
+      "PublicSha256": "6DCE4C2DC91A0454AB11C62496BFFD6EF131896BC22B7590845BCF91D7D82696",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "CollectionDataGateBindings.Dalamud.cs",
+      "UpstreamSha256": "61B4FE98680E584065599A068A182706879A69493F33D669EE2DF182FFED2E4D",
+      "PublicPath": "src/Contracts/1.1/CollectionDataGateBindings.Dalamud.cs",
+      "PublicSha256": "61B4FE98680E584065599A068A182706879A69493F33D669EE2DF182FFED2E4D",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "CollectionDataGates.cs",
+      "UpstreamSha256": "563C9CC4EC22D0E5D9FA9790CC0EE49A911B0B54B3ED32F4F11AE7C7C0DA1C33",
+      "PublicPath": "src/Contracts/1.1/CollectionDataGates.cs",
+      "PublicSha256": "563C9CC4EC22D0E5D9FA9790CC0EE49A911B0B54B3ED32F4F11AE7C7C0DA1C33",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "CollectionDataIpcClient.cs",
+      "UpstreamSha256": "DA4E99D2EB4B2131C6074C5B8CD28DD0AF054AD82E4F34C077DC65030F4995A1",
+      "PublicPath": "src/Contracts/1.1/CollectionDataIpcClient.cs",
+      "PublicSha256": "DA4E99D2EB4B2131C6074C5B8CD28DD0AF054AD82E4F34C077DC65030F4995A1",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "CollectionDataJsonContext.cs",
+      "UpstreamSha256": "526B5BE86B7EFDFB07D42D758A84782E50CC70AA530779CFADD67AC10B89E087",
+      "PublicPath": "src/Contracts/1.1/CollectionDataJsonContext.cs",
+      "PublicSha256": "526B5BE86B7EFDFB07D42D758A84782E50CC70AA530779CFADD67AC10B89E087",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "CollectionDataSemanticValidator.cs",
+      "UpstreamSha256": "21BC07A1667737C577908B3CDF0C603CBC9D59A392244FC1AD634F4332CB6F89",
+      "PublicPath": "src/Contracts/1.1/CollectionDataSemanticValidator.cs",
+      "PublicSha256": "21BC07A1667737C577908B3CDF0C603CBC9D59A392244FC1AD634F4332CB6F89",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "ContractSchemaRegistry.cs",
+      "UpstreamSha256": "1BB0EC2505926E8713E5EFA96511B7B8765978722BAABB301A8AFA267E0C7883",
+      "PublicPath": "src/Contracts/1.1/ContractSchemaRegistry.cs",
+      "PublicSha256": "1BB0EC2505926E8713E5EFA96511B7B8765978722BAABB301A8AFA267E0C7883",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "ExactJsonNumber.cs",
+      "UpstreamSha256": "7F24EB6B191F2253EDB3DCEDC46EE246AAD2149E192B6F6266537D0C325D8414",
+      "PublicPath": "src/Contracts/1.1/ExactJsonNumber.cs",
+      "PublicSha256": "7F24EB6B191F2253EDB3DCEDC46EE246AAD2149E192B6F6266537D0C325D8414",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "Exportaramus.ConsumerKit.V1_1.csproj",
+      "UpstreamSha256": "35716865EE01FD1E507C4AA82FA1CE8F1CDE06809E2E4EF65DE484739C735DAC",
+      "PublicPath": "project/Contracts/1.1/Exportaramus.ConsumerKit.V1_1.csproj",
+      "PublicSha256": "42575D8D9A3477B4BDDAC8154BEB7CA2C2616EC6C5BF7340EB863D73BF100533",
+      "Transformation": "Public layout/project/provenance adaptation"
+    },
+    {
+      "UpstreamPath": "SHA256SUMS",
+      "UpstreamSha256": "10095A1F7DC6B6F87B0DB168A49A723CA34D99A637C9D2EC571E891F2AB7DA6A",
+      "PublicPath": "project/Contracts/1.1/UPSTREAM-SHA256SUMS",
+      "PublicSha256": "10095A1F7DC6B6F87B0DB168A49A723CA34D99A637C9D2EC571E891F2AB7DA6A",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "fixtures/invalid/compact-invalid-dresser-aggregate-correlation.json",
+      "UpstreamSha256": "B330E593607098942D4601150C569FB39AD32E16205F4235E05C9E0EF61B5531",
+      "PublicPath": "tests/fixtures/Contracts/1.1/fixtures/invalid/compact-invalid-dresser-aggregate-correlation.json",
+      "PublicSha256": "B330E593607098942D4601150C569FB39AD32E16205F4235E05C9E0EF61B5531",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "fixtures/invalid/compact-invalid-duplicate-entry-index.json",
+      "UpstreamSha256": "A9FBA2A094204FC6F96D101AFAE661C6C294DCA01A2F1BCAB452EEB1453579FD",
+      "PublicPath": "tests/fixtures/Contracts/1.1/fixtures/invalid/compact-invalid-duplicate-entry-index.json",
+      "PublicSha256": "A9FBA2A094204FC6F96D101AFAE661C6C294DCA01A2F1BCAB452EEB1453579FD",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "fixtures/invalid/compact-invalid-facewear-health-missing.json",
+      "UpstreamSha256": "269C258229415FEFC0174EF5932BCC3893E2C4D1C3CF3FB77DDB3C725B152DE2",
+      "PublicPath": "tests/fixtures/Contracts/1.1/fixtures/invalid/compact-invalid-facewear-health-missing.json",
+      "PublicSha256": "269C258229415FEFC0174EF5932BCC3893E2C4D1C3CF3FB77DDB3C725B152DE2",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "fixtures/invalid/compact-invalid-partial-facewear-included.json",
+      "UpstreamSha256": "FBC0E3D4C28B9E7F221DF9E819DF4E0EC7DA2738E1BF8E57978F9C68F0174B28",
+      "PublicPath": "tests/fixtures/Contracts/1.1/fixtures/invalid/compact-invalid-partial-facewear-included.json",
+      "PublicSha256": "FBC0E3D4C28B9E7F221DF9E819DF4E0EC7DA2738E1BF8E57978F9C68F0174B28",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "fixtures/valid/capabilities-valid.json",
+      "UpstreamSha256": "CD89093CBFF63BB3883A33B8F1A91FA05F986DD9E69CF3F341F633C8B764EB98",
+      "PublicPath": "tests/fixtures/Contracts/1.1/fixtures/valid/capabilities-valid.json",
+      "PublicSha256": "CD89093CBFF63BB3883A33B8F1A91FA05F986DD9E69CF3F341F633C8B764EB98",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "fixtures/valid/compact-valid-empty-dresser.json",
+      "UpstreamSha256": "353985A0C0E687C7C82658BD4C40B9FE4144493FB31E27227D89567BABA3BD00",
+      "PublicPath": "tests/fixtures/Contracts/1.1/fixtures/valid/compact-valid-empty-dresser.json",
+      "PublicSha256": "353985A0C0E687C7C82658BD4C40B9FE4144493FB31E27227D89567BABA3BD00",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "fixtures/valid/compact-valid-empty-facewear.json",
+      "UpstreamSha256": "E6924B8A4B01E330B73D71898A7B713AC8EA5523E6E0E6898E8A72EB970F3459",
+      "PublicPath": "tests/fixtures/Contracts/1.1/fixtures/valid/compact-valid-empty-facewear.json",
+      "PublicSha256": "E6924B8A4B01E330B73D71898A7B713AC8EA5523E6E0E6898E8A72EB970F3459",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "fixtures/valid/compact-valid-facewear-unavailable.json",
+      "UpstreamSha256": "EC861E4060FFDC35EF07D2AB1B0510804356EDD9221BD7D8543844B3DE6D269E",
+      "PublicPath": "tests/fixtures/Contracts/1.1/fixtures/valid/compact-valid-facewear-unavailable.json",
+      "PublicSha256": "EC861E4060FFDC35EF07D2AB1B0510804356EDD9221BD7D8543844B3DE6D269E",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "fixtures/valid/compact-valid-full.json",
+      "UpstreamSha256": "FEBE1253CDBE8864B029F24E4641CA2C533ABF7C77354C14986F7CB420A53E87",
+      "PublicPath": "tests/fixtures/Contracts/1.1/fixtures/valid/compact-valid-full.json",
+      "PublicSha256": "FEBE1253CDBE8864B029F24E4641CA2C533ABF7C77354C14986F7CB420A53E87",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "fixtures/valid/compact-valid-legacy-restored-composition-unknown.json",
+      "UpstreamSha256": "7E838496ACE408F2B8C548ADB8E33BB058D784446B306D08E381A374C6182931",
+      "PublicPath": "tests/fixtures/Contracts/1.1/fixtures/valid/compact-valid-legacy-restored-composition-unknown.json",
+      "PublicSha256": "7E838496ACE408F2B8C548ADB8E33BB058D784446B306D08E381A374C6182931",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "fixtures/valid/snapshot-changed-valid.json",
+      "UpstreamSha256": "CFA743ABD8EC950AF1C59F3C2F87B326BF45997EAB45615B17EAA8774D9FCF28",
+      "PublicPath": "tests/fixtures/Contracts/1.1/fixtures/valid/snapshot-changed-valid.json",
+      "PublicSha256": "CFA743ABD8EC950AF1C59F3C2F87B326BF45997EAB45615B17EAA8774D9FCF28",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "fixtures/valid/snapshot-withdrawn-valid.json",
+      "UpstreamSha256": "F35890DB11D2D65D4A44A78C90ABB85BEFDFD1ECB4DBFC12FBC9BD40D329AADE",
+      "PublicPath": "tests/fixtures/Contracts/1.1/fixtures/valid/snapshot-withdrawn-valid.json",
+      "PublicSha256": "F35890DB11D2D65D4A44A78C90ABB85BEFDFD1ECB4DBFC12FBC9BD40D329AADE",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "packages.lock.json",
+      "UpstreamSha256": "A4364D81A6DE2707D66FBCED18FBBC926C882AB96E1D1AEBBB17E871285B9D75",
+      "PublicPath": "project/Contracts/1.1/packages.lock.json",
+      "PublicSha256": "A4364D81A6DE2707D66FBCED18FBBC926C882AB96E1D1AEBBB17E871285B9D75",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "resources/derived-inputs.json",
+      "UpstreamSha256": "427CB8FB922EB82E5134C6FFEE604FA6012AA6B40FBEDE0DF38E6F90D8291D22",
+      "PublicPath": "data/Contracts/1.1/resources/derived-inputs.json",
+      "PublicSha256": "427CB8FB922EB82E5134C6FFEE604FA6012AA6B40FBEDE0DF38E6F90D8291D22",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "resources/derived-inputs.schema.json",
+      "UpstreamSha256": "05B81AD693BA4947F1809EBA6946465EE2CC4890B68C05A1A074168080EE8971",
+      "PublicPath": "data/Contracts/1.1/resources/derived-inputs.schema.json",
+      "PublicSha256": "05B81AD693BA4947F1809EBA6946465EE2CC4890B68C05A1A074168080EE8971",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "resources/ffxiv-collect-import.schema.json",
+      "UpstreamSha256": "ED43F19AEA778F80869194E1A3BD9FF09BD7D3F6A0754AC8636E192494514234",
+      "PublicPath": "data/Contracts/1.1/resources/ffxiv-collect-import.schema.json",
+      "PublicSha256": "ED43F19AEA778F80869194E1A3BD9FF09BD7D3F6A0754AC8636E192494514234",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "resources/identifier-mappings.json",
+      "UpstreamSha256": "847B4D36D43487F8DD7B477FC1748F2C9F72BB3D646F1E0D95B388A187CFE90E",
+      "PublicPath": "data/Contracts/1.1/resources/identifier-mappings.json",
+      "PublicSha256": "847B4D36D43487F8DD7B477FC1748F2C9F72BB3D646F1E0D95B388A187CFE90E",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "resources/recognized-ids.json",
+      "UpstreamSha256": "CD450758A9EFED643B9A353F14B4A25BDC760770EB72D6C396F368AB863A179A",
+      "PublicPath": "data/Contracts/1.1/resources/recognized-ids.json",
+      "PublicSha256": "CD450758A9EFED643B9A353F14B4A25BDC760770EB72D6C396F368AB863A179A",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "schemas/capabilities.schema.json",
+      "UpstreamSha256": "E6DFE671956EB821942D36697C3D8B927253D4B5B9DBF264632F94CD2C0EE1B4",
+      "PublicPath": "data/Contracts/1.1/schemas/capabilities.schema.json",
+      "PublicSha256": "E6DFE671956EB821942D36697C3D8B927253D4B5B9DBF264632F94CD2C0EE1B4",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "schemas/collection-data.schema.json",
+      "UpstreamSha256": "5F9480E864E5D4BD694E94D37CFDFCF51F6076B62113DD148914F1D929DE7764",
+      "PublicPath": "data/Contracts/1.1/schemas/collection-data.schema.json",
+      "PublicSha256": "5F9480E864E5D4BD694E94D37CFDFCF51F6076B62113DD148914F1D929DE7764",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "schemas/common.schema.json",
+      "UpstreamSha256": "7EF8C7A3892716C4BAC03BDC027D6CFE5AC42D35ECF53E653B0305509D61D901",
+      "PublicPath": "data/Contracts/1.1/schemas/common.schema.json",
+      "PublicSha256": "7EF8C7A3892716C4BAC03BDC027D6CFE5AC42D35ECF53E653B0305509D61D901",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "schemas/exportaramus-snapshot.schema.json",
+      "UpstreamSha256": "3BE5D76506933ABF1C7BD20C1A841029BABC8E20E42F1F8A80EA72D61F00417F",
+      "PublicPath": "data/Contracts/1.1/schemas/exportaramus-snapshot.schema.json",
+      "PublicSha256": "3BE5D76506933ABF1C7BD20C1A841029BABC8E20E42F1F8A80EA72D61F00417F",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "schemas/snapshot-changed.schema.json",
+      "UpstreamSha256": "28DDCCC3494CE96874BF2BF080122E2CA1087A67518D3731F7550AF26E9F53D0",
+      "PublicPath": "data/Contracts/1.1/schemas/snapshot-changed.schema.json",
+      "PublicSha256": "28DDCCC3494CE96874BF2BF080122E2CA1087A67518D3731F7550AF26E9F53D0",
+      "Transformation": "None"
+    },
+    {
+      "UpstreamPath": "schemas/snapshot-withdrawn.schema.json",
+      "UpstreamSha256": "2E0D262ECCFB8878BE34CD4335153AE25AF2440BE8FC99E20B1AFD9260441FCF",
+      "PublicPath": "data/Contracts/1.1/schemas/snapshot-withdrawn.schema.json",
+      "PublicSha256": "2E0D262ECCFB8878BE34CD4335153AE25AF2440BE8FC99E20B1AFD9260441FCF",
+      "Transformation": "None"
+    }
+  ],
+  "Omitted": [
+    "README.md",
+    "Exportaramus.ConsumerKit.V1_1.Runtime.csproj"
+  ]
+}

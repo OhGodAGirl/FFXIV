@@ -1,0 +1,6 @@
+bin/
+obj/
+development/
+AGENTS.md
+**/TestResults/
+**/StrykerOutput/

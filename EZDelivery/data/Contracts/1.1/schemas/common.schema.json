@@ -1,0 +1,764 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://exportaramus.local/schemas/1.1/common.schema.json",
+  "title": "Exportaramus Common Contract Types 1.0",
+  "$defs": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.1"
+    },
+    "providerVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "providerSessionId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "contentId": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]{0,19}$",
+      "maxLength": 20
+    },
+    "utcDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$",
+      "maxLength": 64
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "captureGeneration": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "positiveId": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4294967295
+    },
+    "quantity": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4294967295
+    },
+    "clientLanguage": {
+      "type": "string",
+      "enum": [
+        "Japanese",
+        "English",
+        "German",
+        "French"
+      ]
+    },
+    "captureType": {
+      "type": "string",
+      "enum": [
+        "Full",
+        "Lightweight",
+        "Restored",
+        "Reported"
+      ]
+    },
+    "consistency": {
+      "type": "string",
+      "enum": [
+        "Coherent",
+        "MixedObservationTimes"
+      ]
+    },
+    "dataType": {
+      "type": "string",
+      "enum": [
+        "PermanentUnlock",
+        "CurrentItemPresence",
+        "Derived",
+        "ReportedOwnership"
+      ]
+    },
+    "sourceStatus": {
+      "type": "string",
+      "enum": [
+        "Fresh",
+        "Stale",
+        "Unavailable",
+        "NeverObserved"
+      ]
+    },
+    "completeness": {
+      "type": "string",
+      "enum": [
+        "Complete",
+        "Partial",
+        "Unknown"
+      ]
+    },
+    "provenanceType": {
+      "type": "string",
+      "enum": [
+        "None",
+        "Observed",
+        "Restored",
+        "Reported",
+        "Derived"
+      ]
+    },
+    "capabilityState": {
+      "type": "string",
+      "enum": [
+        "Supported",
+        "Degraded",
+        "UnavailablePendingValidation"
+      ]
+    },
+    "reasonCode": {
+      "type": "string",
+      "enum": [
+        "None",
+        "NotLoadedThisSession",
+        "WindowNotReady",
+        "IncompleteContainerSet",
+        "IncompleteRetainerSet",
+        "MappingValidationFailed",
+        "PatchValidationRequired",
+        "RestoredFromDisk",
+        "CharacterUnavailable",
+        "IdentityUnavailable",
+        "QuantityOverflow",
+        "CaptureFailed",
+        "GameDataVersionUnsupported",
+        "OutputSizeLimitExceeded",
+        "SerializerValidationFailed"
+      ]
+    },
+    "sourceKey": {
+      "type": "string",
+      "enum": [
+        "mounts",
+        "minions",
+        "emotes",
+        "bardings",
+        "cards",
+        "npcs",
+        "fashions",
+        "frames",
+        "occult_records",
+        "orchestrions",
+        "spells",
+        "aetherytes",
+        "chocobo_routes",
+        "leves",
+        "hairstyles",
+        "field_records",
+        "survey_records",
+        "quests",
+        "achievements",
+        "armoires",
+        "glamour_dresser",
+        "outfits",
+        "relics",
+        "inventory",
+        "armoryChest",
+        "chocoboSaddlebag",
+        "premiumSaddlebag",
+        "retainers",
+        "armoire",
+        "glamourDresser",
+        "reportedOwnership",
+        "facewear"
+      ]
+    },
+    "sourceCapability": {
+      "type": "object",
+      "required": [
+        "dataType",
+        "capabilityState",
+        "supportsQuantity",
+        "reasonCode",
+        "reason"
+      ],
+      "properties": {
+        "dataType": {
+          "$ref": "#/$defs/dataType"
+        },
+        "capabilityState": {
+          "$ref": "#/$defs/capabilityState"
+        },
+        "supportsQuantity": {
+          "type": "boolean"
+        },
+        "reasonCode": {
+          "$ref": "#/$defs/reasonCode"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 160
+        }
+      },
+      "additionalProperties": true
+    },
+    "sourceHealth": {
+      "type": "object",
+      "required": [
+        "dataType",
+        "captureGeneration",
+        "sourceStatus",
+        "completeness",
+        "provenanceType",
+        "capabilityState",
+        "reasonCode",
+        "reason"
+      ],
+      "properties": {
+        "dataType": {
+          "$ref": "#/$defs/dataType"
+        },
+        "observedAtUtc": {
+          "$ref": "#/$defs/utcDateTime"
+        },
+        "captureGeneration": {
+          "$ref": "#/$defs/captureGeneration"
+        },
+        "sourceStatus": {
+          "$ref": "#/$defs/sourceStatus"
+        },
+        "completeness": {
+          "$ref": "#/$defs/completeness"
+        },
+        "provenanceType": {
+          "$ref": "#/$defs/provenanceType"
+        },
+        "capabilityState": {
+          "$ref": "#/$defs/capabilityState"
+        },
+        "reasonCode": {
+          "$ref": "#/$defs/reasonCode"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 160
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "sourceStatus": {
+                "enum": [
+                  "Fresh",
+                  "Stale"
+                ]
+              }
+            },
+            "required": [
+              "sourceStatus"
+            ]
+          },
+          "then": {
+            "required": [
+              "observedAtUtc"
+            ],
+            "properties": {
+              "provenanceType": {
+                "not": {
+                  "const": "None"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "sourceStatus": {
+                "enum": [
+                  "Unavailable",
+                  "NeverObserved"
+                ]
+              }
+            },
+            "required": [
+              "sourceStatus"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "observedAtUtc"
+              ]
+            },
+            "properties": {
+              "provenanceType": {
+                "const": "None"
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": true
+    },
+    "unlockSet": {
+      "type": "object",
+      "required": [
+        "unlockedIds"
+      ],
+      "properties": {
+        "unlockedIds": {
+          "type": "array",
+          "maxItems": 50000,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/positiveId"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "quantifiedPresenceItem": {
+      "type": "object",
+      "required": [
+        "itemId",
+        "quantity"
+      ],
+      "properties": {
+        "itemId": {
+          "$ref": "#/$defs/positiveId"
+        },
+        "quantity": {
+          "$ref": "#/$defs/quantity"
+        }
+      },
+      "additionalProperties": true
+    },
+    "setPresenceItem": {
+      "type": "object",
+      "required": [
+        "itemId"
+      ],
+      "properties": {
+        "itemId": {
+          "$ref": "#/$defs/positiveId"
+        }
+      },
+      "not": {
+        "required": [
+          "quantity"
+        ]
+      },
+      "additionalProperties": true
+    },
+    "quantifiedPresenceSource": {
+      "type": "object",
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 50000,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/quantifiedPresenceItem"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "setPresenceSource": {
+      "type": "object",
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 50000,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/setPresenceItem"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "reportedEvidence": {
+      "type": "object",
+      "required": [
+        "itemId",
+        "reportedAtUtc",
+        "reporter"
+      ],
+      "properties": {
+        "itemId": {
+          "$ref": "#/$defs/positiveId"
+        },
+        "reportedAtUtc": {
+          "$ref": "#/$defs/utcDateTime"
+        },
+        "reporter": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        }
+      },
+      "additionalProperties": true
+    },
+    "ownershipFact": {
+      "type": "object",
+      "required": [
+        "dataType",
+        "sourceKey",
+        "subjectId",
+        "state",
+        "sourceStatus"
+      ],
+      "properties": {
+        "dataType": {
+          "type": "string",
+          "enum": [
+            "PermanentUnlock",
+            "CurrentItemPresence"
+          ]
+        },
+        "sourceKey": {
+          "$ref": "#/$defs/sourceKey"
+        },
+        "subjectId": {
+          "$ref": "#/$defs/positiveId"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "Present",
+            "Absent",
+            "Unknown"
+          ]
+        },
+        "sourceStatus": {
+          "$ref": "#/$defs/sourceStatus"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ownershipEvidence": {
+      "type": "object",
+      "required": [
+        "ruleCode",
+        "facts"
+      ],
+      "properties": {
+        "ruleCode": {
+          "type": "string",
+          "enum": [
+            "DirectPermanentUnlock",
+            "DirectCurrentItemPresence",
+            "QuestCompletion",
+            "AllRequiredConstituents",
+            "PermanentUnlockOrCurrentItemPresence"
+          ]
+        },
+        "facts": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/ownershipFact"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "collectionItem": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "owned",
+        "ownershipEvidence"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/positiveId"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "owned": {
+          "type": "boolean"
+        },
+        "ownershipEvidence": {
+          "$ref": "#/$defs/ownershipEvidence"
+        },
+        "reportedEvidence": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/reportedEvidence"
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "NotStarted",
+            "InProgress",
+            "Completed"
+          ]
+        },
+        "group": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "category": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "series": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "level": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 999
+        },
+        "location": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "expansion": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "festival": {
+          "type": "boolean"
+        },
+        "repeatable": {
+          "type": "boolean"
+        },
+        "progress": {
+          "type": "object",
+          "properties": {
+            "current": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            "target": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            }
+          },
+          "minProperties": 1,
+          "additionalProperties": true
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "points": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "rewardCollected": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "rewards": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "id": {
+                "$ref": "#/$defs/positiveId"
+              },
+              "quantity": {
+                "$ref": "#/$defs/quantity"
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "collectionResult": {
+      "type": "object",
+      "required": [
+        "label",
+        "ownershipKind",
+        "totalKnown",
+        "sourceStatus",
+        "completeness",
+        "provenanceType",
+        "observedAtUtc",
+        "items"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "ownershipKind": {
+          "type": "string",
+          "enum": [
+            "PermanentUnlock",
+            "CurrentItemPresence",
+            "Derived"
+          ]
+        },
+        "totalKnown": {
+          "type": "boolean"
+        },
+        "sourceStatus": {
+          "type": "string",
+          "enum": [
+            "Fresh",
+            "Stale"
+          ]
+        },
+        "completeness": {
+          "type": "string",
+          "const": "Complete"
+        },
+        "provenanceType": {
+          "$ref": "#/$defs/provenanceType"
+        },
+        "observedAtUtc": {
+          "$ref": "#/$defs/utcDateTime"
+        },
+        "items": {
+          "type": "array",
+          "maxItems": 50000,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/collectionItem"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "omission": {
+      "type": "object",
+      "required": [
+        "reasonCode",
+        "message"
+      ],
+      "properties": {
+        "reasonCode": {
+          "$ref": "#/$defs/reasonCode"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        }
+      },
+      "additionalProperties": true
+    },
+    "dresserEntry": {
+      "type": "object",
+      "required": [
+        "entryIndex",
+        "rawItemId",
+        "baseItemId",
+        "outfitId",
+        "components"
+      ],
+      "properties": {
+        "entryIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 799
+        },
+        "rawItemId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        },
+        "baseItemId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        },
+        "outfitId": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 4294967295
+        },
+        "components": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 11,
+          "items": {
+            "type": "object",
+            "required": [
+              "slotIndex",
+              "itemId"
+            ],
+            "properties": {
+              "slotIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10
+              },
+              "itemId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 4294967295
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "dresserPresenceSource": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/setPresenceSource"
+        }
+      ],
+      "properties": {
+        "dresserEntries": {
+          "type": "array",
+          "maxItems": 800,
+          "items": {
+            "$ref": "#/$defs/dresserEntry"
+          }
+        }
+      }
+    }
+  }
+}
