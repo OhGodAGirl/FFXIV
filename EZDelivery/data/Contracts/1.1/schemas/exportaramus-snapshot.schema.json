@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://exportaramus.local/schemas/1.1/exportaramus-snapshot.schema.json",
+  "title": "Exportaramus Collector's Compendium Snapshot 1.1",
+  "type": "object",
+  "required": [
+    "format",
+    "schemaVersion",
+    "exportaramusVersion",
+    "exportedAtUtc",
+    "capturedAtUtc",
+    "captureType",
+    "captureGeneration",
+    "consistency",
+    "catalog",
+    "character",
+    "collections",
+    "currentItemPresence",
+    "sourceCapabilities",
+    "sourceHealth",
+    "omittedCollections"
+  ],
+  "properties": {
+    "format": { "type": "string", "const": "exportaramus-snapshot" },
+    "schemaVersion": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "exportaramusVersion": { "$ref": "common.schema.json#/$defs/providerVersion" },
+    "exportedAtUtc": { "$ref": "common.schema.json#/$defs/utcDateTime" },
+    "capturedAtUtc": { "$ref": "common.schema.json#/$defs/utcDateTime" },
+    "captureType": { "$ref": "common.schema.json#/$defs/captureType" },
+    "captureGeneration": { "$ref": "common.schema.json#/$defs/captureGeneration" },
+    "consistency": { "$ref": "common.schema.json#/$defs/consistency" },
+    "catalog": {
+      "type": "object",
+      "required": ["clientLanguage", "gameDataVersion"],
+      "properties": {
+        "clientLanguage": { "$ref": "common.schema.json#/$defs/clientLanguage" },
+        "gameDataVersion": { "type": "string", "minLength": 1, "maxLength": 128 }
+      },
+      "additionalProperties": true
+    },
+    "character": {
+      "type": "object",
+      "required": ["displayName"],
+      "properties": {
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 128 }
+      },
+      "additionalProperties": true
+    },
+    "collections": {
+      "type": "object",
+      "properties": {
+        "mounts": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "minions": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "emotes": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "bardings": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "cards": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "npcs": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "fashions": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "frames": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "occult_records": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "orchestrions": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "spells": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "aetherytes": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "chocobo_routes": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "leves": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "hairstyles": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "field_records": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "survey_records": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "armoires": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "glamour_dresser": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "outfits": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "relics": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "quests": { "$ref": "common.schema.json#/$defs/collectionResult" },
+        "achievements": { "$ref": "common.schema.json#/$defs/collectionResult" }
+      },
+      "additionalProperties": { "$ref": "common.schema.json#/$defs/collectionResult" }
+    },
+    "currentItemPresence": {
+      "type": "object",
+      "properties": {
+        "inventory": { "$ref": "common.schema.json#/$defs/quantifiedPresenceSource" },
+        "armoryChest": { "$ref": "common.schema.json#/$defs/quantifiedPresenceSource" },
+        "chocoboSaddlebag": { "$ref": "common.schema.json#/$defs/quantifiedPresenceSource" },
+        "premiumSaddlebag": { "$ref": "common.schema.json#/$defs/quantifiedPresenceSource" },
+        "retainers": { "$ref": "common.schema.json#/$defs/quantifiedPresenceSource" },
+        "armoire": { "$ref": "common.schema.json#/$defs/setPresenceSource" },
+        "glamourDresser": { "$ref": "common.schema.json#/$defs/setPresenceSource" }
+      },
+      "additionalProperties": { "$ref": "common.schema.json#/$defs/setPresenceSource" }
+    },
+    "sourceCapabilities": {
+      "type": "object",
+      "additionalProperties": { "$ref": "common.schema.json#/$defs/sourceCapability" }
+    },
+    "sourceHealth": {
+      "type": "object",
+      "additionalProperties": { "$ref": "common.schema.json#/$defs/sourceHealth" }
+    },
+    "omittedCollections": {
+      "type": "object",
+      "additionalProperties": { "$ref": "common.schema.json#/$defs/omission" }
+    }
+  },
+  "additionalProperties": true
+}

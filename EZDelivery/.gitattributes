@@ -1,0 +1,6 @@
+* text=auto
+/src/Contracts/1.1/** -text whitespace=cr-at-eol
+/data/Contracts/1.1/** -text whitespace=cr-at-eol
+/tests/fixtures/Contracts/1.1/** -text whitespace=cr-at-eol
+/project/Contracts/1.1/UPSTREAM-SHA256SUMS -text whitespace=cr-at-eol
+*.png binary
