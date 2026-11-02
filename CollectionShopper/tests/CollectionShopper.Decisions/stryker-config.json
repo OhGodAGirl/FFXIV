@@ -1,0 +1,68 @@
+{
+  "stryker-config": {
+    "test-projects": [
+      "../CollectionShopper.Tests/CollectionShopper.Tests.csproj"
+    ],
+    "configuration": "Release",
+    "mutate": [
+      "**/PendingPurchaseGuard.cs",
+      "**/ThemeColorPolicy.cs",
+      "**/CollectionOwnershipRefreshPolicy.cs",
+      "**/CollectionDataOwnershipPolicy.cs",
+      "**/CollectionDataOwnershipSession.cs",
+      "**/MarketPriceResponsePolicy.cs",
+      "**/OutfitCatalogParser.cs",
+      "**/OutfitPlanningPolicy.cs",
+      "**/MarketBoardContext.cs",
+      "**/MarketBoardTabPresentation.cs",
+      "**/MarketWorldPolicy.cs",
+      "**/PurchasePolicy.cs",
+      "**/ShopperPagePolicy.cs",
+      "**/ShoppingProjection.cs",
+      "**/RefreshActivity.cs",
+      "**/PluginMotion.cs",
+      "**/ExportaramusConsumer.cs",
+      "**/CollectionDataOwnershipState.cs",
+      "**/PurchaseReadinessPolicy.cs",
+      "**/PurchaseListingCandidate.cs",
+      "**/DiagnosticPolicy.cs",
+      "**/DiagnosticReport.cs",
+      "**/FfxivCollectClient.cs",
+      "**/OutfitCatalog.cs",
+      "**/ShoppingController.cs",
+      "**/ShoppingCatalogProjection.cs",
+      "**/CollectionRefreshRequests.cs",
+      "**/ShoppingEventQueue.cs",
+      "**/MarketPriceRefreshResult.cs",
+      "**/SingleFlightOperation.cs",
+      "**/UiLayoutPolicy.cs",
+      "**/ThemeObservation.cs",
+      "**/RefreshPublication.cs",
+      "**/VisibleShoppingItemsCache.cs",
+      "**/ShoppingSubmissionPolicy.cs",
+      "**/ShoppingListText.cs",
+      "**/ShoppingListPolicy.cs",
+      "**/ShoppingEventDelivery.cs",
+      "**/PurchaseTrackingPolicy.cs",
+      "**/CategorySettingsPolicy.cs",
+      "**/MarketPricePublication.cs",
+      "**/CatalogEligibilityPolicy.cs",
+      "**/PluginCommandPolicy.cs",
+      "**/ConfigurationMigrationPolicy.cs",
+      "**/CollectionMappingPolicy.cs",
+      "**/IShoppingContext.cs",
+      "**/IShoppingMarketBoard.cs"
+    ],
+    "reporters": [
+      "cleartext",
+      "json"
+    ],
+    "report-file-name": "mutation-report",
+    "thresholds": {
+      "high": 100,
+      "low": 100,
+      "break": 100
+    },
+    "concurrency": 1
+  }
+}

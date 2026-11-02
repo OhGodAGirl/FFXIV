@@ -1,0 +1,101 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>CollectionShopper.Decisions</AssemblyName>
+    <RootNamespace>CollectionShopper</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\src\Bootstrap\Configuration.cs" />
+    <Compile Include="..\..\src\Bootstrap\ConfigurationMigrationPolicy.cs" />
+    <Compile Include="..\..\src\Bootstrap\PluginCommandPolicy.cs" />
+    <Compile Include="..\..\src\Features\Shopping\PurchaseTrackingPolicy.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingController.cs" />
+    <Compile Include="..\..\src\Features\Shopping\PendingPurchaseGuard.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingEventQueue.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingMarketEvent.cs" />
+    <Compile Include="..\..\src\Features\Shopping\IShoppingContext.cs" />
+    <Compile Include="..\..\src\Features\Shopping\IShoppingMarketBoard.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingRunSettings.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingOfferings.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingPurchase.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingPhase.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingCandidate.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingCatalogProjection.cs" />
+    <Compile Include="..\..\src\Features\Collection\CollectionRefreshRequests.cs" />
+    <InternalsVisibleTo Include="CollectionShopper.Tests" />
+    <InternalsVisibleTo Include="CollectionShopper.Performance" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\project\Contracts\1.2\CollectionShopper.Exportaramus.csproj" />
+    <Compile Include="..\..\src\Adapters\CollectionData\ExportaramusConsumer.cs" Link="Adapters\CollectionData\ExportaramusConsumer.cs" />
+    <Compile Include="..\..\src\Features\Collection\CollectionDataOwnershipState.cs" />
+    <Compile Include="..\..\src\Features\Collection\CollectionDataOwnershipSourceState.cs" />
+    <Compile Include="..\..\src\Features\Collection\ItemOwnership.cs" />
+    <Compile Include="..\..\src\Bootstrap\PluginIdentity.cs" Link="Bootstrap\PluginIdentity.cs" />
+    <Compile Include="..\..\src\Features\Collection\CollectionDataOwnershipPolicy.cs" Link="Features\Collection\CollectionDataOwnershipPolicy.cs" />
+    <Compile Include="..\..\src\Features\Collection\CollectionDataOwnershipSession.cs" Link="Features\Collection\CollectionDataOwnershipSession.cs" />
+    <Compile Include="..\..\src\Features\Collection\CollectionOwnershipRefreshPolicy.cs" Link="Features\Collection\CollectionOwnershipRefreshPolicy.cs" />
+    <Compile Include="..\..\src\Features\Collection\FfxivCollectClient.cs" Link="Features\Collection\FfxivCollectClient.cs" />
+    <Compile Include="..\..\src\Features\Collection\MarketPriceRefreshResult.cs" Link="Features\Collection\MarketPriceRefreshResult.cs" />
+    <Compile Include="..\..\src\Features\Collection\MarketPriceResponsePolicy.cs" Link="Features\Collection\MarketPriceResponsePolicy.cs" />
+    <Compile Include="..\..\src\Features\Collection\OutfitCatalog.cs" Link="Features\Collection\OutfitCatalog.cs" />
+    <Compile Include="..\..\src\Features\Collection\OutfitCatalogParser.cs" Link="Features\Collection\OutfitCatalogParser.cs" />
+    <Compile Include="..\..\src\Features\Collection\OutfitPlanningPolicy.cs" Link="Features\Collection\OutfitPlanningPolicy.cs" />
+    <Compile Include="..\..\src\Features\Diagnostics\DiagnosticResultKind.cs" />
+    <Compile Include="..\..\src\Features\Diagnostics\DiagnosticCheck.cs" />
+    <Compile Include="..\..\src\Features\Diagnostics\DiagnosticSnapshot.cs" />
+    <Compile Include="..\..\src\Features\Diagnostics\DiagnosticInputs.cs" />
+    <Compile Include="..\..\src\Features\Diagnostics\DiagnosticPolicy.cs" />
+    <Compile Include="..\..\src\Features\Diagnostics\DiagnosticReport.cs" />
+    <Compile Include="..\..\src\Features\MarketBoard\MarketBoardContext.cs" Link="Features\MarketBoard\MarketBoardContext.cs" />
+    <Compile Include="..\..\src\Features\MarketBoard\MarketBoardTabPresentation.cs" Link="Features\MarketBoard\MarketBoardTabPresentation.cs" />
+    <Compile Include="..\..\src\Features\MarketBoard\MarketWorldPolicy.cs" Link="Features\MarketBoard\MarketWorldPolicy.cs" />
+    <Compile Include="..\..\src\Features\Shopping\Outfit.cs" />
+    <Compile Include="..\..\src\Features\Shopping\OutfitPiece.cs" />
+    <Compile Include="..\..\src\Features\Shopping\CollectionSource.cs" />
+    <Compile Include="..\..\src\Features\Shopping\Collectable.cs" />
+    <Compile Include="..\..\src\Features\Shopping\CollectionCatalogPage.cs" />
+    <Compile Include="..\..\src\Features\Shopping\CollectionCatalogResult.cs" />
+    <Compile Include="..\..\src\Features\Shopping\OutfitPlan.cs" />
+    <Compile Include="..\..\src\Features\Shopping\MarketPrice.cs" />
+    <Compile Include="..\..\src\Features\Shopping\MarketPriceQuote.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingCategory.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShopperPage.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingItem.cs" />
+    <Compile Include="..\..\src\Features\Shopping\PurchaseListingCandidate.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingSubmissionPolicy.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingEventDelivery.cs" />
+    <Compile Include="..\..\src\Features\Shopping\PurchasePolicy.cs" />
+    <Compile Include="..\..\src\Features\Shopping\PurchaseReadinessPolicy.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShopperPagePolicy.cs" Link="Features\Shopping\ShopperPagePolicy.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingOwnershipCounts.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingEmptyState.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingProjection.cs" />
+    <Compile Include="..\..\src\Shared\Operations\SingleFlightOperation.cs" Link="Shared\Operations\SingleFlightOperation.cs" />
+    <Compile Include="..\..\src\Shared\Operations\RefreshActivity.cs" Link="Shared\Operations\RefreshActivity.cs" />
+    <Compile Include="..\..\src\Shared\Ui\ThemeColorPolicy.cs" Link="Shared\Ui\ThemeColorPolicy.cs" />
+    <Compile Include="..\..\src\Shared\Ui\PluginMotion.cs" Link="Shared\Ui\PluginMotion.cs" />
+    <Compile Include="..\..\src\Shared\Ui\UiLayoutPolicy.cs" />
+    <Compile Include="..\..\src\Shared\Ui\ThemeObservation.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\Data\outfits.json" Link="Data\outfits.json">
+      <LogicalName>CollectionShopper.Data.outfits.json</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\src\Features\Shopping\VisibleShoppingItemsCache.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingListPolicy.cs" />
+    <Compile Include="..\..\src\Features\Shopping\ShoppingListText.cs" />
+    <Compile Include="..\..\src\Features\Shopping\CategorySettingsPolicy.cs" />
+    <Compile Include="..\..\src\Features\Collection\CatalogEligibilityPolicy.cs" />
+    <Compile Include="..\..\src\Features\Collection\MarketPricePublication.cs" />
+    <Compile Include="..\..\src\Shared\Operations\RefreshPublication.cs" />
+  </ItemGroup>
+  <ItemGroup><Compile Include="..\..\src\Adapters\CollectionData\CollectionMappingPolicy.cs" /></ItemGroup>
+</Project>

@@ -1,0 +1,260 @@
+{
+  "minimumLineCoverage": 100,
+  "minimumBranchCoverage": 100,
+  "includedProductionFiles": [
+    "src/Features/Shopping/PendingPurchaseGuard.cs",
+    "src/Adapters/CollectionData/ExportaramusConsumer.cs",
+    "src/Features/Collection/CollectionDataOwnershipPolicy.cs",
+    "src/Features/Collection/CollectionDataOwnershipSession.cs",
+    "src/Features/Collection/CollectionDataOwnershipState.cs",
+    "src/Features/Collection/CollectionOwnershipRefreshPolicy.cs",
+    "src/Features/Collection/FfxivCollectClient.cs",
+    "src/Features/Collection/MarketPriceRefreshResult.cs",
+    "src/Features/Collection/MarketPriceResponsePolicy.cs",
+    "src/Features/Collection/OutfitCatalog.cs",
+    "src/Features/Collection/OutfitCatalogParser.cs",
+    "src/Features/Collection/OutfitPlanningPolicy.cs",
+    "src/Features/Diagnostics/DiagnosticPolicy.cs",
+    "src/Features/Diagnostics/DiagnosticReport.cs",
+    "src/Features/MarketBoard/MarketBoardContext.cs",
+    "src/Features/MarketBoard/MarketBoardTabPresentation.cs",
+    "src/Features/MarketBoard/MarketWorldPolicy.cs",
+    "src/Features/Shopping/PurchaseListingCandidate.cs",
+    "src/Features/Shopping/PurchasePolicy.cs",
+    "src/Features/Shopping/PurchaseReadinessPolicy.cs",
+    "src/Features/Shopping/ShopperPagePolicy.cs",
+    "src/Features/Shopping/ShoppingProjection.cs",
+    "src/Shared/Operations/RefreshActivity.cs",
+    "src/Shared/Operations/SingleFlightOperation.cs",
+    "src/Shared/Ui/PluginMotion.cs",
+    "src/Shared/Ui/ThemeColorPolicy.cs",
+    "src/Features/Shopping/ShoppingController.cs",
+    "src/Features/Shopping/ShoppingCatalogProjection.cs",
+    "src/Features/Collection/CollectionRefreshRequests.cs",
+    "src/Features/Shopping/ShoppingEventQueue.cs",
+    "src/Shared/Ui/UiLayoutPolicy.cs",
+    "src/Shared/Ui/ThemeObservation.cs",
+    "src/Shared/Operations/RefreshPublication.cs",
+    "src/Features/Shopping/VisibleShoppingItemsCache.cs",
+    "src/Features/Shopping/ShoppingSubmissionPolicy.cs",
+    "src/Features/Shopping/ShoppingListText.cs",
+    "src/Features/Shopping/ShoppingListPolicy.cs",
+    "src/Features/Shopping/ShoppingEventDelivery.cs",
+    "src/Features/Shopping/PurchaseTrackingPolicy.cs",
+    "src/Features/Shopping/CategorySettingsPolicy.cs",
+    "src/Features/Collection/MarketPricePublication.cs",
+    "src/Features/Collection/CatalogEligibilityPolicy.cs",
+    "src/Bootstrap/PluginCommandPolicy.cs",
+    "src/Bootstrap/ConfigurationMigrationPolicy.cs",
+    "src/Adapters/CollectionData/CollectionMappingPolicy.cs",
+    "src/Features/Shopping/IShoppingContext.cs",
+    "src/Features/Shopping/IShoppingMarketBoard.cs",
+    "src/Shared/Ui/NativeWindowDrawClipper.Dalamud.cs"
+  ],
+  "excludedProductionFiles": [
+    {
+      "path": "src/Adapters/CollectionData/CollectionMappingCatalog.Dalamud.cs",
+      "reason": "Native Lumina row reads. CollectionMappingPolicy directly tests named Facewear rows plus one, deduplication and overflow; other category mappings select native public identifiers. Current sheet fields/data require live validation."
+    },
+    {
+      "path": "src/Adapters/CollectionData/ExportaramusTransport.Dalamud.cs",
+      "reason": "Direct owned Dalamud IPC gate binding. Canonical client lifecycle and prepared ownership are tested in the included ExportaramusConsumer; native subscriptions are reviewed separately."
+    },
+    {
+      "path": "src/Bootstrap/Configuration.cs",
+      "reason": "Persisted auto-properties and constants; Coverlet skips generated accessors. Original DTO is linked directly, with defaults, round-trip, null legacy fields, and migration tests in ConfigurationTests."
+    },
+    {
+      "path": "src/Bootstrap/Plugin.cs",
+      "reason": "Native composition and lifecycle wiring. PurchaseTrackingPolicy, ConfigurationMigrationPolicy, PluginCommandPolicy, and ThemeObservation are directly tested. Actual subscriptions, frame scheduling, command/window dispatch, and IPC notification require live integration checks."
+    },
+    {
+      "path": "src/Bootstrap/PluginIdentity.cs",
+      "reason": "Compile-time identity constants generate no executable lines; identity shape is covered by metadata and unit tests."
+    },
+    {
+      "path": "src/Features/Collection/CollectionDataOwnershipSourceState.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Collection/ItemOwnership.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Diagnostics/DiagnosticCheck.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Diagnostics/DiagnosticInputs.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Diagnostics/DiagnosticResultKind.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Diagnostics/DiagnosticSnapshot.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Diagnostics/DiagnosticsWindow.cs",
+      "reason": "ImGui display and deliberate clipboard adapter. DiagnosticPolicy and DiagnosticReport directly test managed checks, serialization and redaction; rendered controls and clipboard interaction require live validation."
+    },
+    {
+      "path": "src/Features/Main/MainWindow.cs",
+      "reason": "Thin Dalamud window composition wrapper with no decision behavior."
+    },
+    {
+      "path": "src/Features/MarketBoard/MarketBoardBookmarkWindow.cs",
+      "reason": "Direct native-addon and ImGui sidecar adapter; context and occlusion decisions are extracted and covered."
+    },
+    {
+      "path": "src/Features/Shopping/Collectable.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Shopping/CollectionCatalogPage.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Shopping/CollectionCatalogResult.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Shopping/CollectionSource.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Shopping/MarketBoardSettingsView.Dalamud.cs",
+      "reason": "Original ImGui settings methods moved under exact body/call mapping; retains the same configuration and callbacks. Offline render review does not prove live layout/input parity."
+    },
+    {
+      "path": "src/Features/Shopping/MarketPrice.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Shopping/MarketPriceQuote.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Shopping/Outfit.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Shopping/OutfitPiece.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Shopping/OutfitPlan.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Shopping/ShopperCategorySettingsView.Dalamud.cs",
+      "reason": "ImGui checkbox/table adapter; CategorySettingsPolicy tests exercise all eight category getters/setters and persistence fields. Actual click delivery, layout and save callback dispatch require live checks."
+    },
+    {
+      "path": "src/Features/Shopping/ShopperPage.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Shopping/ShopperWindow.cs",
+      "reason": "Native sheet reads, ImGui drawing, and framework orchestration. Managed list/cache/text, catalog eligibility, price publication/session rejection, ownership, page and purchase decisions have direct tests. Native sheet validity, full window lifecycle and rendering still require live integration checks."
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingCategory.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingEmptyState.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingItem.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingOwnershipCounts.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingPhase.cs",
+      "reason": "Declaration-only enum or immutable positional record; compiler-generated accessors are excluded by the existing Coverlet settings. Supplied/default values are exercised by decision and serialization tests."
+    },
+    {
+      "path": "src/Shared/Ui/PluginControls.cs",
+      "reason": "Direct ImGui native-finish button drawing adapter with no product decision behavior."
+    },
+    {
+      "path": "src/Shared/Ui/PluginTheme.cs",
+      "reason": "Direct ImGui style-stack adapter with no product decision behavior."
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingRunSettings.cs",
+      "reason": "Port or immutable data declaration; production controller/projection behavior directly exercised through deterministic tests."
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingOfferings.cs",
+      "reason": "Port or immutable data declaration; production controller/projection behavior directly exercised through deterministic tests."
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingPurchase.cs",
+      "reason": "Port or immutable data declaration; production controller/projection behavior directly exercised through deterministic tests."
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingCandidate.cs",
+      "reason": "Port or immutable data declaration; production controller/projection behavior directly exercised through deterministic tests."
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingController.Dalamud.cs",
+      "reason": "Thin Dalamud/native binding for directly tested production controller. Native event and pointer behavior requires explicit live edge-case evidence."
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingContext.Dalamud.cs",
+      "reason": "Thin Dalamud/native binding for directly tested production controller. Native event and pointer behavior requires explicit live edge-case evidence."
+    },
+    {
+      "path": "src/Features/Shopping/ShoppingMarketBoardAdapter.Dalamud.cs",
+      "reason": "Native pointers/row copy and packet subscriptions. ShoppingSubmissionPolicy and ShoppingEventDelivery directly test final revalidation, forbidden calls, native operation failure, overflow and teardown delivery. Actual game packet/pointer validity requires live checks."
+    },
+    {
+      "reason": "Immutable packet event record; FIFO snapshot/handoff behavior directly exercised in ShoppingEventQueue tests.",
+      "path": "src/Features/Shopping/ShoppingMarketEvent.cs"
+    },
+    {
+      "path": "src/Bootstrap/Configuration.Dalamud.cs",
+      "reason": "Interface-only partial binding to Dalamud IPluginConfiguration; exact configuration defaults and serialization are tested through the linked Configuration.cs DTO."
+    },
+    {
+      "path": "src/Contracts/1.2/Consumer/CollectionDataIpcClient.cs",
+      "reason": "Byte-pinned upstream ConsumerKit 1.2 input; source and SDK tests/examples are preserved against the upstream manifest. Owned integration is coverage gated separately."
+    },
+    {
+      "path": "src/Contracts/1.2/CollectionDataContracts.cs",
+      "reason": "Byte-pinned upstream ConsumerKit 1.2 dependency; owned integration is separately coverage-gated."
+    },
+    {
+      "path": "src/Contracts/1.2/CollectionDataGates.cs",
+      "reason": "Byte-pinned upstream ConsumerKit 1.2 dependency; owned integration is separately coverage-gated."
+    },
+    {
+      "path": "src/Contracts/1.2/CollectionDataJsonContext.cs",
+      "reason": "Byte-pinned upstream ConsumerKit 1.2 dependency; owned integration is separately coverage-gated."
+    },
+    {
+      "path": "src/Contracts/1.2/CollectionDataSemanticValidator.cs",
+      "reason": "Byte-pinned upstream ConsumerKit 1.2 dependency; owned integration is separately coverage-gated."
+    },
+    {
+      "path": "src/Contracts/1.2/ContractSchemaRegistry.cs",
+      "reason": "Byte-pinned upstream ConsumerKit 1.2 dependency; owned integration is separately coverage-gated."
+    },
+    {
+      "path": "src/Contracts/1.2/ExactJsonNumber.cs",
+      "reason": "Byte-pinned upstream ConsumerKit 1.2 dependency; owned integration is separately coverage-gated."
+    },
+    {
+      "path": "src/Contracts/1.2/Consumer/CollectionDataIpcClient.cs",
+      "reason": "Byte-pinned upstream ConsumerKit 1.2 dependency; owned integration is separately coverage-gated."
+    }
+  ]
+}

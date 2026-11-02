@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <Version>1.0.0.1</Version>
+    <Author>OhGodAGirl</Author>
+    <RootNamespace>CollectionShopper</RootNamespace>
+    <ProductName>Collection Shopper</ProductName>
+    <Name>Collection Shopper</Name>
+    <Punchline>Find and purchase any collectibles you're missing.</Punchline>
+    <Description>Collection Shopper turns the Market Board into a shopping list for your collection. See which outfits, weapons, minions, mounts, orchestrion rolls, hairstyles, glasses, and fashion accessories you’re still missing; check current Universalis price estimates; then buy what you want one at a time—or let Buy All do the shopping for you, with configurable spending limits to keep your gil in check.</Description>
+    <RepoUrl>https://github.com/OhGodAGirl/FFXIV</RepoUrl>
+    <Tags>glamour;collection;ffxivcollect;marketboard;shopping</Tags>
+    <AcceptsFeedback>false</AcceptsFeedback>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="images\icon.png" CopyToOutputDirectory="PreserveNewest" TargetPath="images\icon.png" />
+    <EmbeddedResource Include="data\outfits.json" LogicalName="CollectionShopper.Data.outfits.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="project\Contracts\1.2\CollectionShopper.Exportaramus.csproj" />
+    <Compile Remove="src\Contracts\**\*.cs" />
+    <Compile Remove="project\**\*.cs" />
+    <Compile Remove="tests\**\*.cs" />
+    <Compile Remove="artifacts\**\*.cs" />
+    <Compile Remove="development\**\*.cs" />
+    <Compile Remove="publish\**\*.cs" />
+  </ItemGroup>
+</Project>
+
+
+
+
+
+
+
+
+
+
+
