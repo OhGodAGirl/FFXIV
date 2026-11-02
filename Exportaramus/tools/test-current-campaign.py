@@ -55,4 +55,44 @@ class CurrentCampaignTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d, patch.object(current.report_set.shutil,'which',return_value='pwsh'), patch.object(current.report_set,'bound',return_value=Path(d)/'runner.dll'), patch.object(current.report_set,'recorded_run',return_value=(SimpleNamespace(returncode=0,stdout='4.15.0'),[])):
             with self.assertRaises(ValueError):current.validate_runner_version({'canonicalRunner':{},'canonicalToolVersion':'4.16.0+exact'},Path(d))
 
+    def test_schema_one_rejects_test_changes(self):
+        with self.assertRaises(ValueError):current.validate_input_transition({'tests/Exportaramus.Tests/A.cs':'a'}, {'tests/Exportaramus.Tests/A.cs':'b'}, {'schemaVersion':'1.0','toolChanges':[],'testChanges':[]},Path('.'))
+    def test_reviewed_test_strengthening(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);proof=root/'review.json';proof.write_text('independent test source review')
+            entry={'path':'tests/Exportaramus.Tests/A.cs','kind':'TestStrengthening','beforeSha256':'a','afterSha256':'b','reason':'Add an immediate public identity assertion before waiting for owned work.','reviewed':True,'reviewer':'reviewer','preservesFixtureSemantics':True,'noNewSkips':True,'noRelaxedDeadlines':True,'preservesExistingAssertions':True,'evidence':[{'path':str(proof),'sha256':hashlib.sha256(proof.read_bytes()).hexdigest()}]}
+            receipt={'schemaVersion':'2.0','toolChanges':[],'testChanges':[entry]}
+            current.validate_input_transition({entry['path']:'a'},{entry['path']:'b'},receipt,root)
+            entry['preservesExistingAssertions']=False
+            with self.assertRaises(ValueError):current.validate_input_transition({entry['path']:'a'},{entry['path']:'b'},receipt,root)
+    def test_successor_rejects_production_or_project_change(self):
+        for path in ('src/A.cs','tests/Exportaramus.Tests/A.csproj','tests/coverage.runsettings'):
+            with self.assertRaises(ValueError):current.validate_input_transition({path:'a'},{path:'b'},{'schemaVersion':'2.0','toolChanges':[],'testChanges':[{'path':path,'kind':'TestStrengthening'}]},Path('.'))
+    def test_successor_rejects_unnamed_test_change(self):
+        with self.assertRaises(ValueError):current.validate_input_transition({'tests/Exportaramus.Tests/A.cs':'a'},{'tests/Exportaramus.Tests/A.cs':'b'},{'schemaVersion':'2.0','toolChanges':[],'testChanges':[]},Path('.'))
+    def test_full_case_preservation_including_duplicates(self):
+        old={'provider':{'a':2},'consumerkit12':{'b':1},'inventoryreader':{'c':1}}
+        current.validate_baseline_preservation(old,dict(old,provider={'a':2,'d':1}))
+        with self.assertRaises(ValueError):current.validate_baseline_preservation(old,dict(old,provider={'a':1,'d':2}))
+    def test_missing_successor_suite_rejected(self):
+        with self.assertRaises(ValueError):current.validate_baseline_preservation({'provider':{'a':1}},{'provider':{'a':1}})
+
+    def test_prior_receipt_validation_is_required(self):
+        import json
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d); prior=root/'prior.json'; inventory=root/'inventory.json'; report=root/'report.json'
+            report.write_text('{}');inventory.write_text('{}')
+            artifact=lambda p:{'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}
+            old={'schemaVersion':'1.0','beforeInventory':artifact(inventory),'measurement':{'report':artifact(report)}}
+            prior.write_text(json.dumps(old)); receipt={'priorCampaign':{'root':str(root),'receipt':artifact(prior),'inventory':artifact(inventory)}}
+            cases={'provider':['a','a'],'consumerkit12':['b'],'inventoryreader':['c']}
+            with patch.object(current.bridge,'inventory',return_value=({'sha256':'measured'},{})),patch.object(current,'current_paths',return_value={}),patch.object(current.report_set,'recorded_run',return_value=(SimpleNamespace(returncode=0,stdout=json.dumps({'cases':cases,'evidence':[]})),[])) as child:
+                actual,_=current.validate_prior_campaign(receipt,root,{},report)
+                self.assertEqual(actual,cases);self.assertEqual(child.call_count,1)
+                child.return_value=(SimpleNamespace(returncode=1,stdout=''),[])
+                with self.assertRaises(ValueError):current.validate_prior_campaign(receipt,root,{},report)
+                with self.assertRaises(ValueError):current.validate_prior_campaign(receipt,root,{'src/different.cs':'changed'},report)
+            old['schemaVersion']='2.0';prior.write_text(json.dumps(old));receipt['priorCampaign']['receipt']=artifact(prior)
+            with self.assertRaises(ValueError):current.validate_prior_campaign(receipt,root,{},report)
+
 if __name__=='__main__':unittest.main()

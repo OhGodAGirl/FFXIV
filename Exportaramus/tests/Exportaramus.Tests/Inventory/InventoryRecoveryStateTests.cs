@@ -14,6 +14,7 @@ public sealed class InventoryRecoveryStateTests
         await using var service = new InventoryService(cache);
         service.SetCharacter(1);
         service.Pump();
+        _ = Worker(service);
         await cache.Started.Task;
         cache.First.SetException(new IOException("The current read failed."));
         await Assert.ThrowsAsync<IOException>(() => Worker(service));
@@ -51,6 +52,7 @@ public sealed class InventoryRecoveryStateTests
         await using var service = new InventoryService(cache);
         service.SetCharacter(1);
         service.Pump();
+        _ = Worker(service);
         await cache.Started.Task;
         service.SetCharacter(2);
         service.SetCharacter(1);

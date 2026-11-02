@@ -15,6 +15,7 @@ public sealed class InventoryServiceTests
     {
         await using var service = new InventoryService();
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         Assert.False(service.ObserveRoster(1, [null!]));
         Assert.False(service.ObserveRoster(1, [new(0, "Name")]));
         Assert.False(service.ObserveRoster(1, [new(1, "")]));
@@ -44,7 +45,9 @@ public sealed class InventoryServiceTests
         var cache = new ControlledCache();
         await using var service = new InventoryService(cache);
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         service.Pump();
+        AssertWorkerScheduled(service);
         await cache.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
         service.SetCharacter(0);
         cache.Loaded.SetResult(Saved(1));
@@ -69,6 +72,7 @@ public sealed class InventoryServiceTests
     {
         await using var service = new InventoryService();
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         Assert.True(service.ObserveRoster(1, [new(11, "First"), new(22, "Second")]));
         Assert.True(service.AcceptLocation(1, First, "First", [new(100, 2, 1), new(100, 3, 4)], Now));
         Assert.True(service.AcceptLocation(1, Second, "Second", [new(200, 1, 0)], Now));
@@ -92,6 +96,7 @@ public sealed class InventoryServiceTests
     {
         await using var service = new InventoryService();
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         Assert.False(service.GetSnapshot()!.RetainerRosterKnown);
         Assert.False(service.AcceptLocation(1, First, "First", [], Now));
         service.ObserveRoster(1, [new(11, "First"), new(22, "Second")]);
@@ -115,6 +120,7 @@ public sealed class InventoryServiceTests
     {
         await using var service = new InventoryService();
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         service.AcceptLocation(1, Bag, "Inventory", [new(100, 2, 0)], Now);
         service.AcceptLocation(1, Bag, "Inventory", [new(100, uint.MaxValue, 0), new(100, 0, 1)], Now.AddSeconds(1));
         var location = At(service.GetSnapshot()!, Bag);
@@ -133,6 +139,7 @@ public sealed class InventoryServiceTests
         Assert.Equal(uint.MaxValue, maximum.Single().NormalQuantity);
         await using var service = new InventoryService();
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         var armoire = new InventoryLocationKey(InventoryLocationKind.Armoire);
         service.AcceptLocation(1, armoire, "Armoire", [new(100, 0, 0), new(100, 0, 0)], Now);
         var location = At(service.GetSnapshot()!, armoire);
@@ -146,6 +153,7 @@ public sealed class InventoryServiceTests
     {
         await using var service = new InventoryService();
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         service.AcceptLocation(1, Bag, "Inventory", [new(100, 2, 0)], Now);
         service.SetCharacter(2);
         Assert.False(service.AcceptLocation(1, Bag, "Inventory", [], Now));
@@ -161,6 +169,7 @@ public sealed class InventoryServiceTests
     {
         await using var service = new InventoryService();
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         service.AcceptLocation(1, Bag, "Inventory", [], Now);
         var before = service.GetSnapshot();
         Assert.False(service.AcceptLocation(1, Bag, "Inventory", [], Now.AddSeconds(59)));
@@ -178,7 +187,9 @@ public sealed class InventoryServiceTests
         var cache = new ControlledCache();
         await using var service = new InventoryService(cache);
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         service.Pump();
+        AssertWorkerScheduled(service);
         await cache.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
         service.AcceptLocation(1, Bag, "Inventory", [], Now.AddSeconds(1));
         cache.Loaded.SetResult(Saved(1));
@@ -196,7 +207,9 @@ public sealed class InventoryServiceTests
         var cache = new ControlledCache();
         var service = new InventoryService(cache);
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         service.Pump();
+        AssertWorkerScheduled(service);
         await cache.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
         service.SetCharacter(2);
         cache.Loaded.SetResult(Saved(1));
@@ -216,6 +229,7 @@ public sealed class InventoryServiceTests
         var cache = new BlockingWriteCache();
         var service = new InventoryService(cache);
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         service.Pump();
         service.AcceptLocation(1, Bag, "Inventory", [new(100, 1, 0)], Now);
         await PumpUntil(service, () => cache.Started.Task.IsCompleted);
@@ -237,6 +251,7 @@ public sealed class InventoryServiceTests
         var cache = new FailingCache();
         await using var service = new InventoryService(cache);
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         service.AcceptLocation(1, Bag, "Inventory", [new(100, 1, 0)], Now);
         service.Pump();
         await PumpUntil(service, () => service.LastCacheFailure is not null);
@@ -251,6 +266,7 @@ public sealed class InventoryServiceTests
         var clock = new ManualClock();
         await using var service = new InventoryService(cache, clock);
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         service.AcceptLocation(1, Bag, "Inventory", [new(100, 1, 0)], Now);
         service.Pump();
         await PumpUntil(service, () => service.LastCacheFailure is not null);
@@ -276,7 +292,9 @@ public sealed class InventoryServiceTests
         try
         {
             service.SetCharacter(1);
+            Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
             service.Pump();
+            AssertWorkerScheduled(service);
             await cache.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
             pump = Task.Factory.StartNew(service.Pump, CancellationToken.None,
                 TaskCreationOptions.LongRunning, TaskScheduler.Default);
@@ -299,6 +317,7 @@ public sealed class InventoryServiceTests
         var cache = new ControlledCache();
         var service = new InventoryService(cache);
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         await service.DisposeAsync();
         service.Pump();
         // Inspect the worker directly; a queued task may fail before calling the cache.
@@ -332,6 +351,7 @@ public sealed class InventoryServiceTests
         var clock = new ManualClock();
         await using var service = new InventoryService(cache, clock);
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         service.Pump();
         await PumpUntil(service, () => service.LastCacheFailure is not null);
         service.AcceptLocation(1, Bag, "Inventory", [], Now.AddSeconds(1));
@@ -359,6 +379,7 @@ public sealed class InventoryServiceTests
         var clock = new ManualClock();
         await using var service = new InventoryService(cache, clock);
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         service.Pump();
         await PumpUntil(service, () => service.LastCacheFailure is not null);
         service.SetCharacter(next);
@@ -376,7 +397,9 @@ public sealed class InventoryServiceTests
         var cache = new ControlledCache();
         await using var service = new InventoryService(cache);
         service.SetCharacter(1);
+        Assert.Equal<ulong?>(1ul, service.GetSnapshot()?.ContentId);
         service.Pump();
+        AssertWorkerScheduled(service);
         await cache.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
         service.SetCharacter(2);
         cache.Loaded.SetException(new IOException());
@@ -413,8 +436,17 @@ public sealed class InventoryServiceTests
         {
             timeout.Token.ThrowIfCancellationRequested();
             service.Pump();
+            if (!predicate()) AssertWorkerScheduled(service);
             await Task.Delay(1, timeout.Token);
         }
+    }
+
+    private static void AssertWorkerScheduled(InventoryService service)
+    {
+        var field = typeof(InventoryService).GetField("worker",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        Assert.NotNull(field);
+        Assert.IsAssignableFrom<Task>(field.GetValue(service));
     }
 
     private sealed class ControlledCache : IInventoryCache

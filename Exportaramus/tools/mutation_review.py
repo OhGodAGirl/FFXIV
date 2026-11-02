@@ -183,7 +183,7 @@ def reconcile_current(ledger, binding, report, root, native=False):
         receipt = json.loads(Path(checked['receiptPath']).read_bytes())
         root = Path(receipt['campaignRoot']).resolve()
         measured = checked['campaignInventory']
-        checked = dict(checked, kind='measured-native-campaign', inventoryPaths={r['path']: r['sha256'] for r in measured['files']}, inventorySha256=measured['sha256'], inventoryArtifact=receipt['beforeInventory'])
+        checked = dict(checked, kind='measured-native-campaign', inventoryPaths={r['path']: r['sha256'] for r in measured['files']}, inventorySha256=measured['sha256'], inventoryArtifact=receipt['beforeInventory'], cases=checked['campaignCases'])
         stage_id = 'inventory-current'
     stage.require(report == json.loads(Path(checked['reportPath']).read_bytes()), 'Current parsed report differs from bound raw report.')
     stage.require(ledger.get('schemaVersion') == ('native-current-1.0' if native else 'current-1.0') and ledger.get('reviewer', '').strip()
@@ -195,6 +195,7 @@ def reconcile_current(ledger, binding, report, root, native=False):
     actual = {m['id']: m for value in report['files'].values() for m in value['mutants']}
     stage.require(len(actual) == sum(len(v['mutants']) for v in report['files'].values()), 'Duplicate current mutant identities.')
     accepted, seen, snapshots, cache = set(), set(), set(), {}
+    source_approved = current_source_artifacts(root, checked['inventoryPaths'])
     for entry in ledger.get('entries', []):
         identity = entry['id']
         stage.require(identity in actual and identity not in seen and entry['file'] == source, 'Current entry is duplicate or outside measured source.')
@@ -206,6 +207,7 @@ def reconcile_current(ledger, binding, report, root, native=False):
         summary, result, result_path = stage.verify_summary(entry, checked, sys.modules[__name__], root, snapshots, cache)
         environment_path = verified_artifact(root, entry['environmentReview']['path'], entry['environmentReview']['sha256'])
         approved = {str(Path(x['path']).resolve()): x['sha256'] for x in checked['evidence']}
+        approved.update(source_approved)
         for value in summary['toolchain'].values():
             if isinstance(value, dict) and 'path' in value and 'sha256' in value:
                 stage.bound(value)
@@ -234,6 +236,18 @@ def reconcile_current(ledger, binding, report, root, native=False):
             stage.require(hashlib.sha256((snapshot / relative).read_bytes()).hexdigest() == expected, 'Current reviewed snapshot changed.')
     current_campaign.validate_current_campaign(binding['receiptPath'], validation_root, validation_inventory, binding['reportPath'])
     return accepted
+
+
+def current_source_artifacts(root, paths):
+    """Only exact live inventory members may support environment provenance."""
+    root = Path(root).resolve()
+    approved = {}
+    for relative, expected in paths.items():
+        path = (root / relative).resolve()
+        if not path.is_relative_to(root) or sha256(path) != expected:
+            raise ValueError('Current source environment artifact differs from verified inventory.')
+        approved[str(path)] = expected
+    return approved
 
 
 def reconcile(ledger, before, report_hash, scope, report, root, repair=None):

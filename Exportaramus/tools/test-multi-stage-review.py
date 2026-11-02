@@ -429,6 +429,14 @@ class StageChecks(unittest.TestCase):
         with self.assertRaises(ValueError):
             stage.execution_cases({'kind': 'current-campaign', 'cases': ['one']}, 'consumerkit12')
 
+    def test_current_environment_source_artifacts_require_exact_live_inventory(self):
+        artifact = self.artifact('tools/individual-mutation.py', 'exact reviewed native executor')
+        self.assertEqual(legacy.current_source_artifacts(self.root, {'tools/individual-mutation.py': artifact['sha256']}), {artifact['path']: artifact['sha256']})
+        with self.assertRaises(ValueError):
+            legacy.current_source_artifacts(self.root, {'tools/individual-mutation.py': 'different'})
+        with self.assertRaises(ValueError):
+            legacy.current_source_artifacts(self.root, {'../outside': artifact['sha256']})
+
     def test_native_current_execution_preserves_original_schema_and_status_eligibility(self):
         entry, binding, summary, folder = self.current_fixture()
         binding['kind'] = 'measured-native-campaign'

@@ -175,6 +175,18 @@ class ReportSetTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             review.historical_receipt({'gatePassed': True}, 'exact')
 
+    def test_compiler_inventory_preserves_pending_without_reintroducing_reviewed_entries(self):
+        accepted = dict(self.mutant('1', 'CompileError'), file=self.source, reviewedIndividually=True)
+        pending = dict(self.mutant('2', 'CompileError'), file=self.source, reviewedIndividually=False)
+        receipt = {'reviewedMutants': [accepted], 'unresolvedMutants': [], 'compileErrorMutants': [accepted, pending]}
+        self.assertEqual(review.historical_pending(receipt), [pending])
+        for incorrect in (dict(accepted, reviewedIndividually=False), dict(pending, reviewedIndividually=True)):
+            altered = dict(receipt, compileErrorMutants=[incorrect])
+            with self.assertRaises(ValueError):
+                review.historical_pending(altered)
+        with self.assertRaises(ValueError):
+            review.historical_pending(dict(receipt, unresolvedMutants=[accepted]))
+
     def test_readme_exception_requires_exact_content_and_consumption_audit(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

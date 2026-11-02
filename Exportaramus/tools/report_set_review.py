@@ -217,6 +217,19 @@ def historical_receipt(receipt, report_hash):
     require(set(receipt.get('reviewRequired', [])) <= allowed_pending, 'Historical evidence has validation errors beyond unresolved dispositions.')
 
 
+def historical_pending(receipt):
+    reviewed = {(x['file'], x['id']) for x in receipt['reviewedMutants']}
+    require(len(reviewed) == len(receipt['reviewedMutants']), 'Historical reviewed identities are duplicated.')
+    pending = list(receipt['unresolvedMutants'])
+    require(not reviewed.intersection((x['file'], x['id']) for x in pending), 'Historical accepted and unresolved identities conflict.')
+    for mutant in receipt['compileErrorMutants']:
+        key = (mutant['file'], mutant['id'])
+        require(mutant.get('reviewedIndividually') is (key in reviewed), 'Historical compiler review flag differs from actual accepted inventory.')
+        if key not in reviewed:
+            pending.append(mutant)
+    return pending
+
+
 def current_outcomes(old_report, historical_unresolved, replacements, accepted=None):
     accepted = accepted or set()
     old_keys = {(p, m['id']) for p, f in old_report['files'].items() for m in f['mutants']}
@@ -398,7 +411,7 @@ def compose(plan_path, output):
             require(len(accepted) == len(reviewed['accepted']) and not fresh_accepted.intersection(accepted), 'Duplicate current accepted entries.')
             fresh_accepted.update(accepted)
             evidence.extend(run_evidence + reviewed['reviewEvidence'] + [{'path': str(request_path), 'sha256': digest(request_path)}])
-    result = current_outcomes(old_report, receipt['unresolvedMutants'] + receipt['compileErrorMutants'], replacements, fresh_accepted)
+    result = current_outcomes(old_report, historical_pending(receipt), replacements, fresh_accepted)
     # Recheck all inputs after potentially long validators and report reads.
     require(bridge.live_paths(final_root, 'current') == final_paths and bridge.live_paths(coverage_root, 'current') == final_paths, 'Inputs changed during composition.')
     for value in evidence:
