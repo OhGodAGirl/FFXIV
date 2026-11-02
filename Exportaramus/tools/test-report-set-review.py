@@ -481,6 +481,19 @@ class CurrentReviewLauncherTests(unittest.TestCase):
             if alteration == 'script': self.descriptor['script'] = self.art('other.py', 'validator')
             if alteration == 'arguments': self.descriptor['arguments'] = ['--skip-review']
             with self.subTest(alteration=alteration), self.assertRaises(ValueError): self.command()
+    def test_union_request_must_pin_its_own_validator(self):
+        self.assertEqual(review.current_review_launcher({'currentReviewLauncher':self.descriptor},{}),self.descriptor)
+        self.assertEqual(review.current_review_launcher({}, {'currentReviewLauncher':self.descriptor}),self.descriptor)
+        with self.assertRaises(ValueError):review.current_review_launcher({'currentReviewLauncher':self.descriptor},{'currentReviewLauncher':None})
+        other = self.root / 'successor.py'; other.write_text('successor validator')
+        with self.assertRaises(ValueError):
+            review.current_review_command(other,self.request,self.prefix,self.descriptor)
+        successor=copy.deepcopy(self.descriptor)
+        successor['script']={'path':str(other),'sha256':review.digest(other)}
+        command,_,_=review.current_review_command(other,self.request,self.prefix,successor)
+        self.assertEqual(command[command.index('--sha256')+1],review.digest(other))
+        self.assertEqual(command[command.index('--script')+1],str(other))
+
     def test_execution_record_checks_exact_bindings_and_semantics(self):
         _, _, record = self.command()
         valid = {'format':'exportaramus-read-only-longpath-launch', 'script':str(self.tool), 'scriptSha256':review.digest(self.tool), 'launcher':self.launcher['path'], 'launcherSha256':self.launcher['sha256'], 'arguments':['--current-request',str(self.request)], 'exitCode':0, 'error':None, 'writeCallsUnchanged':True, 'pathNormalizationApplied':False, 'mappedReads':[]}

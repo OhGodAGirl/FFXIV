@@ -125,6 +125,12 @@ def current_review_compatibility(request, item, final_cases, bridge):
     return evidence
 
 
+def current_review_launcher(request, item):
+    if 'currentReviewLauncher' in request and 'currentReviewLauncher' in item:
+        require(request['currentReviewLauncher'] == item['currentReviewLauncher'], 'Conflicting current-review launcher descriptors.')
+    return request.get('currentReviewLauncher', item.get('currentReviewLauncher'))
+
+
 def current_review_command(tool, request_path, prefix, descriptor=None):
     command = [sys.executable, '-I', str(tool), '--current-request', str(request_path)]
     if descriptor is None:
@@ -608,7 +614,7 @@ def compose(plan_path, output):
             request_path.write_text(json.dumps(request, indent=2), encoding='utf-8')
             tool = bound(request['validatorFiles']['report_set_review.py'])
             prefix = output / ('current-review-' + str(len(normalizations)) + '-' + str(review_index))
-            launcher_descriptor = item.get('currentReviewLauncher')
+            launcher_descriptor = current_review_launcher(request, item)
             command, launcher_evidence, launch_record = current_review_command(tool, request_path, prefix, launcher_descriptor)
             run, run_evidence = recorded_run(command, Path(request['root']), prefix, timeout=1800)
             run_evidence.extend(launcher_evidence)
