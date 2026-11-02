@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
 using System.Text.Json;
-using Exportaramus.Features.CollectionData.State;
 using Exportaramus.Features.CollectionData.Capture;
 using Exportaramus.Features.CollectionData.Catalog;
+using Exportaramus.Features.CollectionData.State;
 using Exportaramus.Features.Snapshots;
 
 namespace Exportaramus.Tests.Snapshots;
