@@ -12,6 +12,9 @@ using BetterGlamorPlates.Shared.Operations;
 /// </summary>
 public sealed class LifecycleStressTests
 {
+    // This bounds a hung test, not worker latency; hosted runners may defer continuations.
+    private static readonly TimeSpan CompletionTimeout = TimeSpan.FromSeconds(10);
+
     /// <summary>Verifies repeated teardown is reverse-ordered and idempotent.</summary>
     [Fact]
     public void TeardownIsReverseOrderedAndIdempotentAcrossRepeatedLifecycles()
@@ -87,7 +90,7 @@ public sealed class LifecycleStressTests
 
         registry.Dispose();
         registry.Dispose();
-        await registry.WhenIdle.WaitAsync(TimeSpan.FromMilliseconds(500));
+        await registry.WhenIdle.WaitAsync(CompletionTimeout);
 
         Assert.True(capturedToken.IsCancellationRequested);
         Assert.NotNull(scheduled);
@@ -111,7 +114,7 @@ public sealed class LifecycleStressTests
 
         Assert.True(registry.TryStart(_ =>
             Task.FromException(new InvalidOperationException("operation failed"))));
-        await registry.WhenIdle.WaitAsync(TimeSpan.FromMilliseconds(500));
+        await registry.WhenIdle.WaitAsync(CompletionTimeout);
 
         var error = Assert.Single(errors);
         Assert.Equal("operation failed", error.Message);
@@ -132,7 +135,7 @@ public sealed class LifecycleStressTests
         Assert.False(registry.WhenIdle.IsCompleted);
 
         completion.SetResult();
-        await registry.WhenIdle.WaitAsync(TimeSpan.FromMilliseconds(500));
+        await registry.WhenIdle.WaitAsync(CompletionTimeout);
 
         Assert.Equal(0, registry.ActiveCount);
     }
@@ -242,7 +245,7 @@ public sealed class LifecycleStressTests
         Assert.False(registry.WhenIdle.IsCompleted);
 
         second.SetResult();
-        await registry.WhenIdle.WaitAsync(TimeSpan.FromMilliseconds(500));
+        await registry.WhenIdle.WaitAsync(CompletionTimeout);
         Assert.Equal(0, registry.ActiveCount);
     }
 
@@ -264,7 +267,7 @@ public sealed class LifecycleStressTests
         Assert.False(registry.WhenIdle.IsCompleted);
 
         releaseWork.SetResult();
-        await registry.WhenIdle.WaitAsync(TimeSpan.FromMilliseconds(500));
+        await registry.WhenIdle.WaitAsync(CompletionTimeout);
 
         // Idle describes active work; release callbacks run immediately after that signal.
         await released.Task.WaitAsync(TimeSpan.FromSeconds(2));
