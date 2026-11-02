@@ -542,7 +542,58 @@ def discover_summaries(root):
     return paths
 
 
-def inventory_executions(stage, context, report_hash, nonviable):
+def execution_fidelity(manifest, entries, report_path):
+    descriptor = manifest.get('mutationFidelity')
+    if descriptor is None:
+        return None, []
+    audit_tool = local_module('report_set_review', TOOL_ROOT)
+    report_artifact = descriptor['report']
+    require(bound(report_artifact) == report_path.resolve() and report_artifact['sha256'] == digest(report_path),
+            'Fidelity audit report differs from exact composition report.')
+    evidence = audit_tool.validate_mutation_fidelity(entries, report_artifact, descriptor,
+        stage_validator=argparse.Namespace(recompute_mutation=recompute_mutation))
+    report = json.loads(report_path.read_bytes())
+    audit = json.loads(bound(descriptor['audit']).read_bytes())
+    return {'rows': {(r['file'], r['id']): r for r in audit['rows']},
+            'sources': {f: value['source'] for f, value in report['files'].items()}}, evidence
+
+
+def different_legacy_execution(summary, result, context, fidelity):
+    # Only a complete independently reviewed audit can distinguish old wrong-AST executions.
+    if fidelity is None or summary.get('replacementMode') is not None or result.get('replacementMode') is not None:
+        return False
+    require(result.get('rendering') is None, 'Legacy execution claims renderer evidence.')
+    key = (result['file'], result['mutant']['id'])
+    row = fidelity['rows'].get(key)
+    if row is None or row.get('audit') != 'DifferentExpressionTree':
+        return False
+    valid = lambda x: isinstance(x, str) and re.fullmatch('[0-9a-f]{64}', x) is not None
+    require(valid(row.get('expectedShapeSha256')) and valid(row.get('nativeShapeSha256'))
+            and row['expectedShapeSha256'] != row['nativeShapeSha256'], 'Different legacy syntax needs distinct exact shape hashes.')
+    source = fidelity['sources'][result['file']]
+    source_hash = text_digest(source)
+    require(row['sourceSha256'] == source_hash == result['sourceSha256']
+            and context['repairedPaths'].get(result['file']) == source_hash,
+            'Legacy build source differs from the audited source.')
+    require(result['mutant']['location'] == row['location'] and result['mutant']['replacement'] == row['replacement'],
+            'Legacy build mutation differs from the audited mutation.')
+    lines = source.splitlines(keepends=True)
+    def offset(position):
+        line, column = position['line'], position['column']
+        require(1 <= line <= len(lines) and 1 <= column <= len(lines[line - 1].encode('utf-16-le')) // 2 + 1,
+                'Legacy mutation location is invalid.')
+        return sum(len(value.encode('utf-16-le')) for value in lines[:line - 1]) + (column - 1) * 2
+    start, end = offset(row['location']['start']), offset(row['location']['end'])
+    require(end > start, 'Legacy mutation span is empty or reversed.')
+    raw = source.encode('utf-16-le')
+    expected = (raw[:start] + row['replacement'].encode('utf-16-le') + raw[end:]).decode('utf-16-le')
+    require(result.get('originalSpan') == raw[start:end].decode('utf-16-le'), 'Legacy original span differs.')
+    mutated = bound({'path': result['mutatedSource'], 'sha256': result['mutatedSourceSha256']})
+    require(mutated.read_bytes() == expected.encode('utf-8'), 'Legacy build bytes differ from the audited textual splice.')
+    return True
+
+
+def inventory_executions(stage, context, report_hash, nonviable, fidelity=None, exclusions=None):
     summaries = stage.get('executionSummaries', [])
     require(summaries, 'Every stage must inventory its complete set of execution summaries.')
     declared = {str(bound(x, Path(stage['root']))) for x in summaries}
@@ -555,7 +606,15 @@ def inventory_executions(stage, context, report_hash, nonviable):
                 'Stage summary provenance differs.')
         for result in summary['results']:
             if (result['file'], result['mutant']['id']) in nonviable and result['build']['exitCode'] == 0 and not result['build']['timedOut']:
-                errors.append('Successful ordinary compilation contradicts nonviability: ' + result['mutant']['id'])
+                if different_legacy_execution(summary, result, context, fidelity):
+                    require(exclusions is not None, 'Nonmatching executions must be preserved in the receipt.')
+                    row = fidelity['rows'][(result['file'], result['mutant']['id'])]
+                    exclusions.append({'file': result['file'], 'id': result['mutant']['id'], 'summary': item,
+                        'mutatedSource': {'path': result['mutatedSource'], 'sha256': result['mutatedSourceSha256']},
+                        'expectedShapeSha256': row['expectedShapeSha256'], 'executedShapeSha256': row['nativeShapeSha256'],
+                        'reason': 'Preserved successful build executed a different AST; it is not viability evidence for the intended mutant.'})
+                else:
+                    errors.append('Successful ordinary compilation contradicts nonviability: ' + result['mutant']['id'])
     return errors
 
 
@@ -644,9 +703,15 @@ def compose(manifest_path, ledger_path, output, final_root):
     accepted.update(static_accepted)
     # A successful normal build means the mutant is viable, even if tests did not kill it.
     nonviable = {(e['file'], e['id']) for e in entries if e['classification'] == 'IndividuallyNonViable'}
+    fidelity, fidelity_evidence = execution_fidelity(manifest, entries, report_path)
+    evidence.extend(fidelity_evidence)
+    exclusions = []
     for stage, context in zip(stages, verified):
-        errors.extend(inventory_executions(stage, context, final['reportHash'], nonviable))
+        errors.extend(inventory_executions(stage, context, final['reportHash'], nonviable, fidelity, exclusions))
         evidence.extend(stage['executionSummaries'])
+    exclusion_path = output / 'nonmatching-legacy-executions.json'
+    save(exclusion_path, exclusions)
+    evidence.append({'path': str(exclusion_path), 'sha256': digest(exclusion_path)})
     campaign = local_module('mutation-campaign', TOOL_ROOT)
     original = json.loads((Path(final['run']) / 'mutation-campaign-summary.json').read_bytes())
     summary = campaign.summarize(final['before'], final['before']['files'], final['scope'], report, original['exitCode'], report_path,

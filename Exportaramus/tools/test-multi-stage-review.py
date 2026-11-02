@@ -772,5 +772,43 @@ class MutationRenderingChecks(unittest.TestCase):
         with self.assertRaises(ValueError): stage.recompute_mutation('.', 's', entry, {}, {'replacementMode': 'unknown'}, {}, executor)
 
 
+
+class LegacyCompilationFidelityTests(unittest.TestCase):
+    def test_legacy_build_requires_exact_audited_bytes(self):
+        import copy
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory); out=root/'development'/'run'; out.mkdir(parents=True)
+            source='a && b && c'; sha=stage.text_digest(source)
+            loc={'start':{'line':1,'column':6},'end':{'line':1,'column':12}}
+            mutated=out/'mutant.cs'; mutated.write_bytes(b'a && b || c')
+            result={'file':'src/A.cs','sourceSha256':sha,'mutant':{'id':'1','location':loc,'replacement':'b || c'},'originalSpan':'b && c','mutatedSource':str(mutated),'mutatedSourceSha256':stage.digest(mutated),'build':{'exitCode':0,'timedOut':False}}
+            summary={'sourceSha256':'inventory','reportSha256':'report','results':[result]}
+            context={'repairedInventory':{'sha256':'inventory'},'repairedPaths':{'src/A.cs':sha}}
+            row={'audit':'DifferentExpressionTree','sourceSha256':sha,'location':loc,'replacement':'b || c','expectedShapeSha256':'a'*64,'nativeShapeSha256':'b'*64}
+            fidelity={'sources':{'src/A.cs':source},'rows':{('src/A.cs','1'):row}}
+            def check(audit, exclusions):
+                p=out/'independent-mutation-summary.json';p.write_text(json.dumps(summary))
+                desc={'root':str(root),'executionSummaries':[{'path':str(p),'sha256':stage.digest(p)}]}
+                return stage.inventory_executions(desc,context,'report',{('src/A.cs','1')},audit,exclusions)
+            self.assertEqual(1,len(check(None,[])))
+            exclusions=[];self.assertEqual([],check(fidelity,exclusions));self.assertEqual(1,len(exclusions))
+            self.assertEqual(stage.digest(mutated),exclusions[0]['mutatedSource']['sha256'])
+            with self.assertRaises(ValueError):check(fidelity,None)
+            row['audit']='SameExpressionTree';self.assertEqual(1,len(check(fidelity,[])));row['audit']='DifferentExpressionTree'
+            summary['replacementMode']='roslyn-expression-v1';result['replacementMode']='roslyn-expression-v1'
+            self.assertEqual(1,len(check(fidelity,[])));del summary['replacementMode'];del result['replacementMode']
+            for field,value in [('sourceSha256','x'*64),('replacement','false'),('expectedShapeSha256',None),('nativeShapeSha256','a'*64)]:
+                with self.subTest(field=field):
+                    altered=copy.deepcopy(fidelity);altered['rows'][('src/A.cs','1')][field]=value
+                    with self.assertRaises(ValueError):check(altered,[])
+            result['originalSpan']='other'
+            with self.assertRaises(ValueError):check(fidelity,[])
+            result['originalSpan']='b && c';mutated.write_bytes(b'a && (b || c)');result['mutatedSourceSha256']=stage.digest(mutated)
+            with self.assertRaises(ValueError):check(fidelity,[])
+            mutated.write_bytes(b'a && b || c');result['mutatedSourceSha256']=stage.digest(mutated);context['repairedPaths']['src/A.cs']='changed'
+            with self.assertRaises(ValueError):check(fidelity,[])
+            context['repairedPaths']['src/A.cs']=sha;result['rendering']={'expectedShapeSha256':'a'*64}
+            with self.assertRaises(ValueError):check(fidelity,[])
+
 if __name__ == '__main__':
     unittest.main()

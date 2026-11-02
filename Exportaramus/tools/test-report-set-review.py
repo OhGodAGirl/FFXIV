@@ -343,5 +343,62 @@ class FidelityTests(unittest.TestCase):
         with self.assertRaises(ValueError): review.validate_mutation_fidelity([entry], self.report, self.descriptor)
 
 
+class MeasurementSuccessorTests(unittest.TestCase):
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
+        self.root=Path(self.temp.name);self.measured=self.root/'measured';self.final=self.root/'final'
+        self.measured.mkdir();self.final.mkdir();self.source='src/Features/Inventory/InventoryService.cs'
+        self.paths={self.source:'production','tests/A.cs':'old-test'};self.final_paths=dict(self.paths,**{'tests/A.cs':'new-test'})
+        self.before={'sha256':'old','files':[]};self.final_inventory={'sha256':'new','files':[]}
+        self.item={'source':self.source,'measurementRoot':str(self.measured),'measurementBefore':self.art('before.json',self.before),'measurementAfter':self.art('after.json',self.before),'canonicalToolVersion':'4.16.0+exact','outputDirectory':str(self.measured/'output')}
+        for key in ('report','executionConfig','process','canonicalRunner','execution'):self.item[key]=self.art(key+'.json',{'kind':key})
+        self.receipt={'campaignRoot':str(self.measured),'measurement':{k:v for k,v in self.item.items() if k not in ('measurementRoot','measurementBefore','measurementAfter')}}
+        self.item['finalCurrentCampaign']=self.art('campaign.json',self.receipt);self.final_artifact=self.art('final.json',self.final_inventory)
+        self.binding={'inventory':self.final_inventory,'inventoryPaths':self.final_paths,'campaignInventory':self.before,'campaignInventorySha256':'old','reportHash':self.item['report']['sha256'],'sourcePaths':{self.source},'campaignSourceSha256':'production','evidence':[]}
+        self.bridge=SimpleNamespace(inventory=lambda path:(json.loads(path.read_bytes()),dict(self.paths)),live_paths=lambda root,policy:dict(self.paths))
+    def art(self,name,value):
+        p=self.root/name;p.write_text(json.dumps(value));return {'path':str(p),'sha256':review.digest(p)}
+    def check(self):return review.measurement_context(self.item,self.final,self.final_inventory,self.final_paths,self.final_artifact,self.bridge)
+    def test_successor_retains_measurement(self):
+        with patch.object(review,'validate_final_campaign',return_value=self.binding) as validate:
+            result=self.check();self.assertEqual(self.measured,result['root']);self.assertEqual(self.before,result['inventory']);self.assertEqual(self.final,validate.call_args.args[1]);self.assertIn(self.item['finalCurrentCampaign'],result['evidence'])
+    def test_missing_successor_rejected(self):
+        del self.item['finalCurrentCampaign']
+        with self.assertRaises(ValueError):self.check()
+    def test_bound_inventory_report_and_source_cannot_change(self):
+        for field,value in [('inventory',{}),('inventoryPaths',{}),('campaignInventory',{}),('campaignInventorySha256','other'),('reportHash','other'),('sourcePaths',{'other'}),('campaignSourceSha256','other')]:
+            with self.subTest(field=field),patch.object(review,'validate_final_campaign',return_value=dict(self.binding,**{field:value})):
+                with self.assertRaises(ValueError):self.check()
+    def test_production_or_live_inputs_change_rejected(self):
+        self.final_paths[self.source]='changed'
+        with self.assertRaises(ValueError):self.check()
+        self.final_paths[self.source]='production';self.bridge.live_paths=lambda root,policy:{}
+        with self.assertRaises(ValueError):self.check()
+    def test_rehashed_different_measurement_rejected(self):
+        for key in ('report','executionConfig','process','canonicalRunner','execution'):
+            altered=copy.deepcopy(self.receipt);altered['measurement'][key]=self.art('other-'+key+'.json',{'kind':key});self.item['finalCurrentCampaign']=self.art('campaign.json',altered)
+            with self.subTest(key=key),patch.object(review,'validate_final_campaign',return_value=self.binding):
+                with self.assertRaises(ValueError):self.check()
+    def test_root_version_output_cannot_be_rebound(self):
+        for key,value in [('campaignRoot',str(self.final)),('canonicalToolVersion','4.15.0'),('outputDirectory',str(self.final/'other'))]:
+            altered=copy.deepcopy(self.receipt)
+            if key=='campaignRoot':altered[key]=value
+            else:altered['measurement'][key]=value
+            self.item['finalCurrentCampaign']=self.art('campaign.json',altered)
+            with self.subTest(key=key),patch.object(review,'validate_final_campaign',return_value=self.binding):
+                with self.assertRaises(ValueError):self.check()
+    def test_changed_measurement_after_rejected(self):
+        self.item['measurementAfter']=self.art('after.json',{'sha256':'changed','files':[]})
+        with self.assertRaises(ValueError):self.check()
+    def test_unchanged_route_retained(self):
+        del self.item['finalCurrentCampaign']
+        with patch.object(review,'validate_final_campaign',side_effect=AssertionError('unexpected')):
+            result=review.measurement_context(self.item,self.measured,self.before,self.paths,self.item['measurementBefore'],self.bridge);self.assertEqual(self.before,result['inventory'])
+    def test_wrong_validator_location_rejected(self):
+        fake=SimpleNamespace(__file__=str(self.root/'outside.py'))
+        with patch.dict('sys.modules',{'current_campaign':fake}):
+            with self.assertRaises(ValueError):review.validate_final_campaign({},self.final,{}, {})
+
+
 if __name__ == '__main__':
     unittest.main()

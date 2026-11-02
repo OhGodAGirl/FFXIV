@@ -385,6 +385,46 @@ def current_review_child(request_path):
     return {'accepted': sorted(accepted), 'reportSha256': binding['reportHash'], 'currentCampaignSha256': binding['receiptSha256'], 'reviewEvidence': [{'path': p, 'sha256': h} for p, h in sorted(normalized.items())]}
 
 
+def validate_final_campaign(artifact, root, inventory_artifact, report_artifact):
+    import current_campaign
+    require(Path(current_campaign.__file__).resolve() == root / 'tools/current_campaign.py',
+            'Final campaign validator is not the final pinned tool closure.')
+    return current_campaign.validate_current_campaign(bound(artifact), root, bound(inventory_artifact), bound(report_artifact), 'provider')
+
+
+def measurement_context(item, final_root, final_inventory, final_paths, final_artifact, bridge):
+    before, before_paths = bridge.inventory(bound(item['measurementBefore']))
+    after, after_paths = bridge.inventory(bound(item['measurementAfter']))
+    require(before == after and before_paths == after_paths, 'Measurement inputs changed during mutation execution.')
+    root = Path(item.get('measurementRoot', str(final_root))).resolve()
+    require(bridge.live_paths(root, 'current') == before_paths, 'Measured live inputs differ.')
+    source = item['source']
+    require(source in before_paths and before_paths[source] == final_paths.get(source), 'Measured production source differs from final source.')
+    evidence = [item['measurementBefore'], item['measurementAfter']]
+    successor = item.get('finalCurrentCampaign')
+    if before != final_inventory or before_paths != final_paths or successor is not None:
+        require(isinstance(successor, dict), 'Changed final inputs require a validated current-campaign successor.')
+        receipt = read(successor)
+        require(Path(receipt['campaignRoot']).resolve() == root, 'Successor names another measured root.')
+        binding = validate_final_campaign(successor, final_root, final_artifact, item['report'])
+        require(binding['inventory'] == final_inventory and binding['inventoryPaths'] == final_paths,
+                'Successor final inventory differs.')
+        require(binding['campaignInventory'] == before and binding['campaignInventorySha256'] == before['sha256'],
+                'Successor measured inventory differs.')
+        require(binding['reportHash'] == item['report']['sha256'] and binding['sourcePaths'] == {source}
+                and binding['campaignSourceSha256'] == before_paths[source], 'Successor report/source binding differs.')
+        measured = receipt['measurement']
+        require(measured['source'] == source and measured['canonicalToolVersion'] == item['canonicalToolVersion'],
+                'Successor source or actual runner version differs.')
+        for key in ('report', 'executionConfig', 'process', 'canonicalRunner', 'execution'):
+            require(bound(measured[key]) == bound(item[key]) and measured[key]['sha256'] == item[key]['sha256'],
+                    'Successor measurement artifact differs: ' + key)
+        require(Path(measured['outputDirectory']).resolve() == Path(item['outputDirectory']).resolve(),
+                'Successor measurement output differs.')
+        evidence.extend(binding['evidence'] + [successor])
+    return {'root': root, 'inventory': before, 'paths': before_paths, 'evidence': evidence}
+
+
 def compose(plan_path, output):
     plan = json.loads(plan_path.read_bytes())
     require(plan.get('schemaVersion') == '1.0' and plan.get('reviewer', '').strip(), 'Reviewed report-set plan required.')
@@ -453,6 +493,7 @@ def compose(plan_path, output):
     evidence.extend(bridge.component_coverage(coverage, coverage_root, final_paths))
     replacements = {}
     normalizations = []
+    measurement_contexts = []
     fresh_accepted = set()
     for item in plan['replacements']:
         source = item['source']
@@ -464,16 +505,17 @@ def compose(plan_path, output):
         require(not item.get('ledger'), 'A bare fresh ledger is unsupported; use an independently validated currentReview descriptor.')
         replacement_config(read(item['canonicalConfig']), read(item['executionConfig']), source)
         require(digest(bound(item['canonicalConfig'])) == old_paths[item['canonicalConfigPath']], 'Canonical config is not historical canonical input.')
-        measured_before, before_paths = bridge.inventory(bound(item['measurementBefore']))
-        measured_after, after_paths = bridge.inventory(bound(item['measurementAfter']))
-        require(measured_before == measured_after == final_inventory and before_paths == after_paths == final_paths, 'Measurement before/after inputs differ from final inventory.')
-        validate_execution(read(item['execution']), item, final_inventory['sha256'], final_root)
-        canonical_version = canonical_mutation_version((final_root / 'tools/mutation-campaign.py').read_text(encoding='utf-8'))
+        measured = measurement_context(item, final_root, final_inventory, final_paths, plan['finalInventory'], bridge)
+        measurement_contexts.append(measured)
+        evidence.extend(measured['evidence'])
+        measured_root = measured['root']
+        validate_execution(read(item['execution']), item, measured['inventory']['sha256'], measured_root)
+        canonical_version = canonical_mutation_version((measured_root / 'tools/mutation-campaign.py').read_text(encoding='utf-8'))
         require(item['canonicalToolVersion'].split('+')[0] == canonical_version, 'Mutation version differs from final canonical campaign tooling.')
-        evidence.extend(validate_runner_version(item, final_root, output / ('mutation-version-' + str(len(replacements)))))
+        evidence.extend(validate_runner_version(item, measured_root, output / ('mutation-version-' + str(len(replacements)))))
         raw_report = read(item['report'])
-        replacements[source] = replacement_inventory(scoped_report(raw_report, source, final_root, final_paths), source, (final_root / source).read_bytes())
-        normalization = {'rawReport': item['report'], 'selectedSource': source, 'selectedSourceSha256': final_paths[source], 'selectedMutants': len(replacements[source]), 'selectedMutantIdentitiesSha256': hashlib.sha256(json.dumps(replacements[source], sort_keys=True, separators=(',', ':')).encode('utf-8')).hexdigest(), 'paths': [{'raw': raw, 'canonical': Path(raw).resolve().relative_to(final_root).as_posix(), 'selected': Path(raw).resolve() == final_root / source, 'mutants': len(value['mutants'])} for raw, value in raw_report['files'].items()]}
+        replacements[source] = replacement_inventory(scoped_report(raw_report, source, measured_root, measured['paths']), source, (final_root / source).read_bytes())
+        normalization = {'rawReport': item['report'], 'selectedSource': source, 'selectedSourceSha256': final_paths[source], 'selectedMutants': len(replacements[source]), 'selectedMutantIdentitiesSha256': hashlib.sha256(json.dumps(replacements[source], sort_keys=True, separators=(',', ':')).encode('utf-8')).hexdigest(), 'paths': [{'raw': raw, 'canonical': Path(raw).resolve().relative_to(measured_root).as_posix(), 'selected': Path(raw).resolve() == measured_root / source, 'mutants': len(value['mutants'])} for raw, value in raw_report['files'].items()]}
         normalization_path = output / ('normalization-' + str(len(normalizations)) + '.json')
         normalization_path.write_text(json.dumps(normalization, indent=2), encoding='utf-8')
         normalizations.append({'path': str(normalization_path), 'sha256': digest(normalization_path)})
@@ -498,6 +540,8 @@ def compose(plan_path, output):
     result = current_outcomes(old_report, historical_pending(receipt), replacements, fresh_accepted)
     # Recheck all inputs after potentially long validators and report reads.
     require(bridge.live_paths(final_root, 'current') == final_paths and bridge.live_paths(coverage_root, 'current') == final_paths, 'Inputs changed during composition.')
+    for measured in measurement_contexts:
+        require(bridge.live_paths(measured['root'], 'current') == measured['paths'], 'Measured inputs changed during composition.')
     for value in evidence:
         bound(value)
     require(digest(plan_path) == plan_hash, 'Plan changed during composition.')
