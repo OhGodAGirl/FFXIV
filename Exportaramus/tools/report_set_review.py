@@ -205,7 +205,7 @@ def validate_final_strengthening(original, successor, changes, root, bridge, sta
         extra, root, FINAL_REPORT_TOOL_FILES, multi_suite=True)
     for change in extra:
         path = change['path']
-        require(path in original and path in successor, 'Final report tools must already exist; no additions or deletions.')
+        require(path in successor, 'Final report tool deletions are forbidden.')
         require(change.get('reviewed') is True and change.get('reviewer', '').strip(),
                 'Final report tool changes require an identified independent review.')
         require(digest(Path(root) / path) == successor[path], 'Final report tool bytes differ from inventory.')

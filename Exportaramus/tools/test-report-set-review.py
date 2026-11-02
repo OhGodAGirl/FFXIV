@@ -48,8 +48,16 @@ class ReportSetTests(unittest.TestCase):
             for changes in ([], [change, change]):
                 with self.assertRaises(ValueError):
                     review.validate_final_strengthening(old, new, changes, root, bridge, stage)
-            with self.assertRaises(ValueError):
-                review.validate_final_strengthening({}, new, [dict(change, beforeSha256=None)], root, bridge, stage)
+            # The actual historical M inventory predates these four exact tools.
+            for added_path in review.FINAL_REPORT_TOOL_FILES:
+                added_file = root / added_path; added_file.write_text('reviewed new helper')
+                added = {added_path: review.digest(added_file)}
+                entry = dict(change, path=added_path, beforeSha256=None, afterSha256=added[added_path])
+                review.validate_final_strengthening({}, added, [entry], root, bridge, stage)
+                with self.assertRaises(ValueError):
+                    review.validate_final_strengthening({}, added, [dict(entry, beforeSha256=old[path])], root, bridge, stage)
+                with self.assertRaises(ValueError):
+                    review.validate_final_strengthening({}, added, [dict(entry, reviewed=False)], root, bridge, stage)
             with self.assertRaises(ValueError):
                 review.validate_final_strengthening(old, {}, [dict(change, afterSha256=None)], root, bridge, stage)
             file.write_text('tampered')
