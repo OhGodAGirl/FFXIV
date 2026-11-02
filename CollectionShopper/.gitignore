@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+**/TestResults/
+**/StrykerOutput/
+artifacts/
+development/
+publish/
+.vs/
+*.user
+*.suo
+AGENTS.md
