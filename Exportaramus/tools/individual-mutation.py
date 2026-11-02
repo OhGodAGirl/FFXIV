@@ -203,6 +203,7 @@ def main():
     parser.add_argument('--report', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
     parser.add_argument('--repair-bridge', type=Path, help='Explicit reviewed original-campaign to repaired-test bridge.')
+    parser.add_argument('--current-campaign', type=Path, help='Completed same-production campaign binding with full baseline and coverage.')
     parser.add_argument('--ids', help='Comma-separated exact eligible report IDs; default selects every CompileError and ignored block.')
     parser.add_argument('--expected-test-count', type=int, required=True, help='Exact executed count from the current complete configured suite, bound by the same frozen inputs.')
     parser.add_argument('--shard-index', type=int, default=0)
@@ -220,7 +221,10 @@ def main():
         raise ValueError('Build and test bounds must be between1 and600 seconds.')
     if args.expected_test_count < 1:
         raise ValueError('Expected configured test count must be positive.')
+    if args.repair_bridge and args.current_campaign:
+        raise ValueError('Choose either historical repair or current campaign binding.')
     repair = None
+    current = None
     if args.repair_bridge:
         from repair_bridge import validate_bridge, case_names, preserves_cases
         repair = validate_bridge(args.repair_bridge.resolve(), root)
@@ -228,6 +232,9 @@ def main():
     inventory, report = json.loads(inventory_bytes), json.loads(report_bytes)
     if repair and (digest(report_bytes) != repair['reportHash'] or inventory['sha256'] != repair['repairedInventory']['sha256'] or digest(inventory_bytes) != repair['bridge']['repairedInventory']['sha256']):
         raise ValueError('Executor inputs do not match the repair bridge.')
+    if args.current_campaign:
+        from current_campaign import validate_current_campaign, validate_selection, validate_cases
+        current = validate_current_campaign(args.current_campaign, root, args.inventory, args.report, args.target)
     paths = {entry['path']: entry['sha256'] for entry in inventory['files']}
     if args.target != 'provider' and paths.get('tools/suite_binding.py') != digest(Path(suite_binding.__file__).read_bytes()):
         raise ValueError('Suite validator must match frozen inventory')
@@ -245,7 +252,9 @@ def main():
     if args.target != 'provider':
         preliminary_binding = suite_binding.evaluate(root, args.target, dotnet, paths)
         mapping = suite_binding.report_mapping(preliminary_binding, report, paths)
-    selected = selected_mutants(report, mapping, paths, set(args.ids.split(',')) if args.ids else None, repair is not None)
+    selected = selected_mutants(report, mapping, paths, set(args.ids.split(',')) if args.ids else None, repair is not None or current is not None)
+    if current:
+        validate_selection(current, selected)
     if args.target == 'provider':
         require_provider_mutants(selected)
     shard = select_shard(selected, args.shard_index, args.shard_count)
@@ -290,6 +299,8 @@ def main():
         raise RuntimeError('All configured baseline tests must pass with zero skipped/aborted/missing cases.')
     from repair_bridge import case_names
     baseline_cases = case_names(Path(baseline['tests']['trx']), passing=True)
+    if current:
+        validate_cases(current, baseline_cases)
     if repair:
         from repair_bridge import stage_cases
         original_cases, repaired_cases = stage_cases(repair, args.target)
@@ -312,6 +323,8 @@ def main():
     if repair:
         summary.update(schemaVersion='1.1', repairBridge=repair['bridgePath'], repairBridgeSha256=repair['bridgeSha256'],
                        originalSourceSha256=repair['originalInventory']['sha256'])
+    if current:
+        summary.update(schemaVersion='1.2', currentCampaign=current['receiptPath'], currentCampaignSha256=current['receiptSha256'])
     for relative, source, mutant in shard:
         directory = output / ('mutant-' + mutant['id'])
         directory.mkdir()

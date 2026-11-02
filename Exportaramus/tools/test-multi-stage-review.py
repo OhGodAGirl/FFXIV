@@ -398,6 +398,72 @@ class StageChecks(unittest.TestCase):
         entry['independentExecution'] = dict(summary=str(path), sha256=stage.digest(path))
         return stage.verify_summary(entry, repair, legacy, self.root, set(), cache)
 
+    def current_fixture(self):
+        entry, repair, summary, folder = self.execution_fixture()
+        receipt_path = summary.pop('repairBridge')
+        receipt_hash = summary.pop('repairBridgeSha256')
+        summary.pop('originalSourceSha256')
+        summary.update(schemaVersion='1.2', currentCampaign=receipt_path, currentCampaignSha256=receipt_hash)
+        binding = dict(kind='current-campaign', inventorySha256=repair['repairedInventory']['sha256'], inventoryArtifact=repair['bridge']['repairedInventory'], inventoryPaths=repair['repairedPaths'], reportHash=repair['reportHash'], reportPath=summary['report'], receiptPath=receipt_path, receiptSha256=receipt_hash, cases=['case0', 'case1'])
+        return entry, binding, summary, folder
+
+    def test_current_execution_is_explicit_and_preserves_full_case_identity(self):
+        fixture = self.current_fixture()
+        summary, result, _ = self.check_execution(fixture)
+        self.assertEqual(summary['schemaVersion'], '1.2')
+        stage.validate_kill(result, fixture[1], legacy, self.root)
+        with self.assertRaises(ValueError):
+            stage.validate_kill(result, dict(fixture[1], cases=['case0', 'other']), legacy, self.root)
+
+    def test_current_execution_cannot_relabel_stage_report_source_receipt_or_executor(self):
+        for key, value in [('schemaVersion', '1.1'), ('reportSha256', 'wrong'), ('sourceSha256', 'wrong'), ('inventorySha256', 'wrong'), ('executorSha256', 'wrong'), ('currentCampaignSha256', 'wrong'), ('repairBridge', 'claimed')]:
+            fixture = self.current_fixture()
+            fixture[2][key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                self.check_execution(fixture)
+            # Each fixture owns its root; reset between cases.
+            shutil.rmtree(self.root)
+            self.root.mkdir()
+
+    def test_current_case_helper_rejects_wrong_target(self):
+        with self.assertRaises(ValueError):
+            stage.execution_cases({'kind': 'current-campaign', 'cases': ['one']}, 'consumerkit12')
+
+    def test_native_current_execution_preserves_original_schema_and_status_eligibility(self):
+        entry, binding, summary, folder = self.current_fixture()
+        binding['kind'] = 'measured-native-campaign'
+        summary['schemaVersion'] = '1.0'
+        summary.pop('currentCampaign'); summary.pop('currentCampaignSha256')
+        entry.update(status='Ignored', statusReason=legacy.BLOCK_REASON)
+        summary['results'][0]['mutant'].update(status='Ignored', statusReason=legacy.BLOCK_REASON)
+        fixture = (entry, binding, summary, folder)
+        _, result, _ = self.check_execution(fixture)
+        stage.validate_kill(result, binding, legacy, self.root)
+        summary['currentCampaignSha256'] = binding['receiptSha256']
+        with self.assertRaises(ValueError):
+            self.check_execution(fixture)
+        summary.pop('currentCampaignSha256')
+        entry.update(status='Survived', statusReason=None)
+        summary['results'][0]['mutant'].update(status='Survived', statusReason=None)
+        with self.assertRaises(ValueError):
+            self.check_execution(fixture)
+
+    def test_current_reconciler_revalidates_receipt_and_rejects_old_ledger_identity(self):
+        import current_campaign
+        entry, binding, summary, folder = self.current_fixture()
+        raw = {'files': {'src/A.cs': {'source': 'true\n', 'mutants': [entry]}}}
+        Path(binding['reportPath']).write_text(json.dumps(raw))
+        binding.update(reportHash=stage.digest(binding['reportPath']), sourcePaths={'src/A.cs'}, evidence=[])
+        ledger = dict(schemaVersion='current-1.0', reviewer='reviewer', reportSha256=binding['reportHash'], sourceSha256=binding['inventorySha256'], currentCampaignSha256=binding['receiptSha256'], entries=[])
+        with patch.object(current_campaign, 'validate_current_campaign', return_value=binding) as validate:
+            self.assertEqual(legacy.reconcile_current(ledger, binding, raw, self.root), set())
+            self.assertEqual(validate.call_count, 2)
+        for key, value in [('schemaVersion', '2.0'), ('reportSha256', 'old'), ('sourceSha256', 'old'), ('currentCampaignSha256', 'old'), ('reviewer', '')]:
+            with patch.object(current_campaign, 'validate_current_campaign', return_value=binding), self.subTest(key=key), self.assertRaises(ValueError):
+                legacy.reconcile_current(dict(ledger, **{key: value}), binding, raw, self.root)
+        with patch.object(current_campaign, 'validate_current_campaign', return_value=binding), self.assertRaises(ValueError):
+            legacy.reconcile_current(ledger, binding, {'files': {}}, self.root)
+
     def equivalence_fixture(self):
         fixture = self.execution_fixture()
         entry, repair, summary, folder = fixture

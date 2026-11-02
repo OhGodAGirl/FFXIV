@@ -167,6 +167,75 @@ def independently_killed(entry, before, report_hash, mutant, root, repair=None):
     return True
 
 
+def reconcile_current(ledger, binding, report, root, native=False):
+    """Review genuine schema1.2 same-source executions, without a repair bridge."""
+    import sys
+    import multi_stage_review as stage
+    import current_campaign
+    root = Path(root).resolve()
+    checked = current_campaign.validate_current_campaign(binding['receiptPath'], root,
+        binding['inventoryArtifact']['path'], binding['reportPath'])
+    validation_root = root
+    validation_inventory = binding['inventoryArtifact']['path']
+    checked['kind'] = 'current-campaign'
+    stage_id = 'current-campaign'
+    if native:
+        receipt = json.loads(Path(checked['receiptPath']).read_bytes())
+        root = Path(receipt['campaignRoot']).resolve()
+        measured = checked['campaignInventory']
+        checked = dict(checked, kind='measured-native-campaign', inventoryPaths={r['path']: r['sha256'] for r in measured['files']}, inventorySha256=measured['sha256'], inventoryArtifact=receipt['beforeInventory'])
+        stage_id = 'inventory-current'
+    stage.require(report == json.loads(Path(checked['reportPath']).read_bytes()), 'Current parsed report differs from bound raw report.')
+    stage.require(ledger.get('schemaVersion') == ('native-current-1.0' if native else 'current-1.0') and ledger.get('reviewer', '').strip()
+        and ledger.get('reportSha256') == checked['reportHash']
+        and ledger.get('sourceSha256') == checked['inventorySha256']
+        and ledger.get('currentCampaignSha256') == checked['receiptSha256'], 'Current ledger identity differs.')
+    stage.require(len(checked['sourcePaths']) == 1, 'Current review requires exactly one measured source.')
+    source = next(iter(checked['sourcePaths']))
+    actual = {m['id']: m for value in report['files'].values() for m in value['mutants']}
+    stage.require(len(actual) == sum(len(v['mutants']) for v in report['files'].values()), 'Duplicate current mutant identities.')
+    accepted, seen, snapshots, cache = set(), set(), set(), {}
+    for entry in ledger.get('entries', []):
+        identity = entry['id']
+        stage.require(identity in actual and identity not in seen and entry['file'] == source, 'Current entry is duplicate or outside measured source.')
+        seen.add(identity)
+        stage.exact_mutation(entry, actual[identity])
+        stage.require(entry['sourceSha256'] == checked['inventoryPaths'][source]
+            and entry.get('reason', '').strip() and evidence_valid(entry, root), 'Current entry lacks exact source/evidence.')
+        stage.require(entry.get('executionStage') == stage_id and 'independentExecution' in entry, 'Current dispositions require exact execution evidence.')
+        summary, result, result_path = stage.verify_summary(entry, checked, sys.modules[__name__], root, snapshots, cache)
+        environment_path = verified_artifact(root, entry['environmentReview']['path'], entry['environmentReview']['sha256'])
+        approved = {str(Path(x['path']).resolve()): x['sha256'] for x in checked['evidence']}
+        for value in summary['toolchain'].values():
+            if isinstance(value, dict) and 'path' in value and 'sha256' in value:
+                stage.bound(value)
+                approved[str(Path(value['path']).resolve())] = value['sha256']
+        stage.validate_environment(json.loads(environment_path.read_bytes()), summary,
+            Path(entry['independentExecution']['summary']).resolve(), {'root': str(root), 'id': stage_id}, approved)
+        classification = entry['classification']
+        if classification == 'IndependentlyKilled':
+            stage.validate_kill(result, checked, sys.modules[__name__], root)
+            proof = verified_artifact(root, entry['causalReview']['path'], entry['causalReview']['sha256'])
+            stage.validate_causality(json.loads(proof.read_bytes()), entry, result, result_path,
+                stage_id, root, checked['inventoryPaths'])
+        elif classification == 'IndividuallyNonViable':
+            stage.require(actual[identity]['status'] == 'CompileError' or actual[identity]['status'] == 'Ignored' and actual[identity].get('statusReason') == BLOCK_REASON, 'Current nonviability classification is not eligible for this raw outcome.')
+            stage.validate_nonviability(result, root)
+        elif classification == 'IndependentlyEquivalent':
+            stage.validate_survival(result, checked, sys.modules[__name__], root)
+            proof = verified_artifact(root, entry['equivalenceReview']['path'], entry['equivalenceReview']['sha256'])
+            stage.validate_equivalence(json.loads(proof.read_bytes()), entry, result, result_path,
+                stage_id, root, checked['inventoryPaths'], current=not native)
+        else:
+            raise ValueError('Current dispositions require independently verified execution and individual review.')
+        accepted.add((source, identity))
+    for snapshot in snapshots:
+        for relative, expected in checked['inventoryPaths'].items():
+            stage.require(hashlib.sha256((snapshot / relative).read_bytes()).hexdigest() == expected, 'Current reviewed snapshot changed.')
+    current_campaign.validate_current_campaign(binding['receiptPath'], validation_root, validation_inventory, binding['reportPath'])
+    return accepted
+
+
 def reconcile(ledger, before, report_hash, scope, report, root, repair=None):
     accepted = set()
     reviewed_sources = set()

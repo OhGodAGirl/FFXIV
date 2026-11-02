@@ -203,26 +203,46 @@ def verify_summary(entry, repair, review_module, root, checked_snapshots=None, s
     else:
         path = review_module.verified_artifact(root, proof['summary'], proof['sha256'])
         summary = json.loads(path.read_bytes())
-    require(summary.get('format') == 'exportaramus-independent-mutation-shard' and summary.get('schemaVersion') == '1.1',
-            'Only explicit stage-bound repaired execution summaries are supported.')
-    require(summary['sourceSha256'] == repair['repairedInventory']['sha256']
-            and summary['inventorySha256'] == repair['bridge']['repairedInventory']['sha256']
-            and summary['reportSha256'] == repair['reportHash']
-            and summary['originalSourceSha256'] == repair['originalInventory']['sha256']
-            and summary['executorSha256'] == repair['repairedPaths']['tools/individual-mutation.py']
-            and summary['repairBridgeSha256'] == repair['bridgeSha256'], 'Execution was relabeled or belongs to another stage/campaign.')
+    native = repair.get('kind') == 'measured-native-campaign'
+    current = native or repair.get('kind') == 'current-campaign'
+    input_paths = repair['inventoryPaths'] if current else repair['repairedPaths']
+    if current:
+        require(summary.get('format') == 'exportaramus-independent-mutation-shard' and summary.get('schemaVersion') == ('1.0' if native else '1.2'), 'Current campaign execution schema differs.')
+        require(summary['sourceSha256'] == repair['inventorySha256']
+                and summary['inventorySha256'] == repair['inventoryArtifact']['sha256']
+                and summary['reportSha256'] == repair['reportHash']
+                and summary['executorSha256'] == input_paths['tools/individual-mutation.py'], 'Current execution belongs to another exact source/report/tool.')
+        if native:
+            require('currentCampaign' not in summary and 'currentCampaignSha256' not in summary, 'Native execution cannot retroactively claim a current receipt.')
+            require(entry.get('status') == 'CompileError' or entry.get('status') == 'Ignored' and entry.get('statusReason') == 'Removed by block already covered filter', 'Native current execution is not eligible for this raw status.')
+        else:
+            require(summary.get('currentCampaignSha256') == repair['receiptSha256'], 'Current execution receipt differs.')
+        require('repairBridge' not in summary and 'repairBridgeSha256' not in summary, 'Current execution cannot claim a repair bridge.')
+    else:
+        require(summary.get('format') == 'exportaramus-independent-mutation-shard' and summary.get('schemaVersion') == '1.1',
+                'Only explicit stage-bound repaired execution summaries are supported.')
+        require(summary['sourceSha256'] == repair['repairedInventory']['sha256']
+                and summary['inventorySha256'] == repair['bridge']['repairedInventory']['sha256']
+                and summary['reportSha256'] == repair['reportHash']
+                and summary['originalSourceSha256'] == repair['originalInventory']['sha256']
+                and summary['executorSha256'] == input_paths['tools/individual-mutation.py']
+                and summary['repairBridgeSha256'] == repair['bridgeSha256'], 'Execution was relabeled or belongs to another stage/campaign.')
     require(summary.get('restoredInputsUnchanged') is True and summary.get('changedInputs') == [], 'Execution inputs were not restored exactly.')
-    for field in (() if cached else ('inventory', 'executor', 'repairBridge', 'report')):
+    fields = ('inventory', 'executor', 'report') if native else ('inventory', 'executor', 'currentCampaign' if current else 'repairBridge', 'report')
+    for field in (() if cached else fields):
         if field == 'report':
-            require(Path(summary[field]).resolve() == repair['run'] / 'combined/mutation-report.json', 'Execution references a different original report.')
+            expected_report = Path(repair['reportPath']).resolve() if current else repair['run'] / 'combined/mutation-report.json'
+            require(Path(summary[field]).resolve() == expected_report, 'Execution references a different original report.')
             require(digest(summary[field]) == summary[field + 'Sha256'], 'Original report changed.')
         else:
-            review_module.verified_artifact(root, summary[field], summary[field + 'Sha256'])
+            verified = review_module.verified_artifact(root, summary[field], summary[field + 'Sha256'])
+            if current and field == 'currentCampaign':
+                require(verified == Path(repair['receiptPath']).resolve(), 'Current receipt path differs.')
     snapshot = Path(summary['snapshot']).resolve()
     require(snapshot.is_relative_to(root / 'development') and snapshot.parent == path.parent,
             'Execution snapshot does not belong to its summary directory.')
     if checked_snapshots is None or snapshot not in checked_snapshots:
-        for relative, sha in repair['repairedPaths'].items():
+        for relative, sha in input_paths.items():
             require(digest(snapshot / relative) == sha, 'Copied execution inputs are no longer restored: ' + relative)
         if checked_snapshots is not None:
             checked_snapshots.add(snapshot)
@@ -245,7 +265,7 @@ def verify_summary(entry, repair, review_module, root, checked_snapshots=None, s
     if cached:
         target = summary.get('suiteBinding', {}).get('target', 'provider')
     else:
-        target = suite_binding.verify_summary(summary, repair['repairedPaths'], sorted({r['file'] for r in results}))
+        target = suite_binding.verify_summary(summary, input_paths, sorted({r['file'] for r in results}))
     dotnet = bound(summary['toolchain']['dotnet'])
     if not cached:
         baseline = summary['baseline']
@@ -256,7 +276,7 @@ def verify_summary(entry, repair, review_module, root, checked_snapshots=None, s
         counts = review_module.execution_counts(root, baseline['tests'], target)
         from repair_bridge import case_names
         require(baseline['tests']['exitCode'] == 0 and counts['failed'] == 0 and counts['passed'] == counts['executed']
-                and case_names(Path(baseline['tests']['trx']), passing=True) == __import__('repair_bridge').stage_cases(repair, target)[1], 'Execution baseline does not contain the complete stage test multiset.')
+                and case_names(Path(baseline['tests']['trx']), passing=True) == execution_cases(repair, target), 'Execution baseline does not contain the complete stage test multiset.')
         bound(summary['toolchain']['csc'])
         for execution, verb in ((baseline['restore'], 'restore'), (baseline['build'], 'build'), (baseline['tests'], 'test')):
             verify_command(execution, verb, snapshot, dotnet, target)
@@ -270,6 +290,13 @@ def verify_summary(entry, repair, review_module, root, checked_snapshots=None, s
     return summary, result, result_path
 
 
+def execution_cases(binding, target):
+    if binding.get('kind') in ('current-campaign', 'measured-native-campaign'):
+        require(target == 'provider', 'Current campaign supports only canonical provider suite.')
+        return binding['cases']
+    return __import__('repair_bridge').stage_cases(binding, target)[1]
+
+
 def validate_kill(result, repair, review_module, root, target='provider'):
     from repair_bridge import case_names
     require(result.get('outcome') == 'Killed' and result['build']['exitCode'] == 0 and not result['build']['timedOut']
@@ -277,7 +304,7 @@ def validate_kill(result, repair, review_module, root, target='provider'):
             'A kill requires normal successful compilation and a normal failing test process.')
     counts = review_module.execution_counts(root, result['tests'], target)
     require(counts['failed'] > 0 and counts['passed'] + counts['failed'] == counts['executed']
-            and case_names(Path(result['tests']['trx'])) == __import__('repair_bridge').stage_cases(repair, target)[1],
+            and case_names(Path(result['tests']['trx'])) == execution_cases(repair, target),
             'A kill requires the complete stage test-case multiset with actual failures.')
 
 
@@ -294,12 +321,12 @@ def validate_survival(result, repair, review_module, root, target='provider'):
             'Equivalence execution requires normal compilation and a complete passing mutant run.')
     counts = review_module.execution_counts(root, result['tests'], target)
     require(counts['failed'] == 0 and counts['passed'] == counts['executed']
-            and case_names(Path(result['tests']['trx']), passing=True) == stage_cases(repair, target)[1],
+            and case_names(Path(result['tests']['trx']), passing=True) == execution_cases(repair, target),
             'Equivalence execution requires the exact complete passing stage case multiset.')
 
 
-def validate_equivalence(proof, entry, result, result_path, stage_id, root, paths):
-    require(equivalence_execution_eligible(result['mutant']), 'Raw status is not eligible for execution-backed equivalence.')
+def validate_equivalence(proof, entry, result, result_path, stage_id, root, paths, current=False):
+    require(equivalence_execution_eligible(result['mutant']) or current and result['mutant'].get('status') == 'Survived', 'Raw status is not eligible for execution-backed equivalence.')
     require(proof.get('format') == 'exportaramus-mutation-equivalence-review'
             and proof.get('schemaVersion') == '1.0' and proof.get('reviewed') is True
             and proof.get('reviewer', '').strip() and proof.get('reason', '').strip(),
