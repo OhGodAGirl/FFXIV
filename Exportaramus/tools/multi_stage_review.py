@@ -192,6 +192,32 @@ def verify_stage_pins(stage, approved):
     return actual
 
 
+_RENDERING_MODULES = {}
+
+def recompute_mutation(root, source, entry, result, summary, input_paths, executor):
+    mode = summary.get('replacementMode')
+    if mode is None:
+        require(result.get('replacementMode') is None and result.get('rendering') is None,
+                'Historical textual execution cannot claim an unbound renderer.')
+        return executor.replace_span(source, entry['location'], entry['replacement'])
+    require(mode == 'roslyn-expression-v1' and result.get('replacementMode') == mode,
+            'Unknown or inconsistent mutation rendering mode.')
+    for name in ('mutation_rendering.py', 'mutation-renderer.cs'):
+        relative = 'tools/' + name
+        require(relative in input_paths and digest(Path(root) / relative) == input_paths[relative],
+                'Mutation renderer is not bound to the execution input inventory: ' + relative)
+    renderer_key = (str((Path(root) / 'tools').resolve()), input_paths['tools/mutation_rendering.py'], input_paths['tools/mutation-renderer.cs'])
+    if renderer_key not in _RENDERING_MODULES:
+        _RENDERING_MODULES[renderer_key] = local_module('mutation_rendering', Path(root) / 'tools')
+    renderer = _RENDERING_MODULES[renderer_key]
+    require(renderer.MODE == mode, 'Loaded mutation rendering mode differs.')
+    rendered, span, receipt = renderer.render_mutation(root, source, entry['location'], entry['replacement'])
+    require(result.get('rendering') == receipt, 'Mutation rendering receipt differs from independent reconstruction.')
+    require(receipt.get('expectedShapeSha256') == receipt.get('renderedShapeSha256'),
+            'Rendered mutation changed its intended syntax tree.')
+    return rendered, span
+
+
 def verify_summary(entry, repair, review_module, root, checked_snapshots=None, summary_cache=None):
     proof = entry['independentExecution']
     path = (root / proof['summary']).resolve()
@@ -257,7 +283,7 @@ def verify_summary(entry, repair, review_module, root, checked_snapshots=None, s
     require(json.loads(result_path.read_bytes()) == result, 'Standalone result and final shard summary disagree.')
     source = review_module.verified_artifact(root, entry['file'], entry['sourceSha256']).read_bytes().decode('utf-8')
     executor = local_module('individual-mutation', root / 'tools')
-    mutated, span = executor.replace_span(source, entry['location'], entry['replacement'])
+    mutated, span = recompute_mutation(root, source, entry, result, summary, input_paths, executor)
     require(result.get('originalSpan') == span, 'Executed original span differs.')
     mutant_path = review_module.verified_artifact(root, result['mutatedSource'], result['mutatedSourceSha256'])
     require(mutant_path.parent == result_path.parent and mutant_path.read_bytes() == mutated.encode('utf-8'), 'Mutated bytes are not the exact replacement.')

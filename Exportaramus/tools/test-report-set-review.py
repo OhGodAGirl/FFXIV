@@ -278,5 +278,70 @@ class ReportSetTests(unittest.TestCase):
                 review.scoped_report(report, self.source, root, {self.source: 'hash'})
 
 
+class FidelityTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(); self.addCleanup(self.tmp.cleanup); self.root = Path(self.tmp.name)
+        self.mutant = {'id': '1', 'location': {'start': {'line': 1, 'column': 1}, 'end': {'line': 1, 'column': 2}}, 'replacement': 'r'}
+        self.report = self.art('report.json', {'files': {'a.cs': {'source': 's', 'mutants': [self.mutant]}}})
+        self.row = dict(file='a.cs', id='1', sourceSha256=hashlib.sha256(b's').hexdigest(), location=self.mutant['location'], replacement='r', audit='SameExpressionTree', expectedShapeSha256='a' * 64, nativeShapeSha256='a' * 64)
+        self.audit = self.art('audit.json', {'reportSha256': self.report['sha256'], 'rows': [self.row]})
+        self.helper = self.art('helper.json', {'code': 'reviewed'})
+        self.descriptor = dict(reviewed=True, reviewer='independent', reason='Exact operator child review', report=self.report, audit=self.audit, helper=self.helper, preservesOriginalOperatorChildren=True, evidence=[self.helper])
+        self.refresh_review()
+        self.entry = dict(file='a.cs', id='1', classification='Equivalent')
+    def art(self, name, value):
+        p = self.root / name; p.write_text(json.dumps(value)); return dict(path=str(p), sha256=review.digest(p))
+    def refresh_review(self):
+        self.descriptor['independentReview'] = self.art('peer.json', dict(reviewed=True, reviewer='peer', reason='Checked pinned factory construction', audit=self.descriptor['audit'], helper=self.helper))
+    def changed_audit(self, rows):
+        self.descriptor['audit'] = self.art('audit.json', {'reportSha256': self.report['sha256'], 'rows': rows}); self.refresh_review()
+    def test_exact_complete_audit_passes_and_missing_duplicate_changed_identity_reject(self):
+        review.validate_mutation_fidelity([self.entry], self.report, self.descriptor)
+        with self.assertRaises(ValueError): review.validate_mutation_fidelity([self.entry], self.report, None)
+        for rows in ([], [self.row, self.row], [dict(self.row, sourceSha256='changed')], [dict(self.row, replacement='other')], [dict(self.row, expectedShapeSha256=None, nativeShapeSha256=None)]):
+            self.changed_audit(rows)
+            with self.assertRaises(ValueError): review.validate_mutation_fidelity([self.entry], self.report, self.descriptor)
+    def test_mismatch_requires_corrected_execution_or_explicit_static_proof(self):
+        self.changed_audit([dict(self.row, audit='DifferentExpressionTree', nativeShapeSha256='b' * 64)])
+        with self.assertRaises((ValueError, KeyError)): review.validate_mutation_fidelity([self.entry], self.report, self.descriptor)
+        proof = self.art('proof.json', dict(reviewed=True, reviewer='source peer', reason='All closed inputs satisfy same intended condition', file='a.cs', id='1', sourceSha256=self.row['sourceSha256'], expectedShapeSha256='a' * 64, reportSha256=self.report['sha256']))
+        entry = dict(self.entry, astReview=proof)
+        review.validate_mutation_fidelity([entry], self.report, self.descriptor)
+        entry['classification'] = 'IndependentlyKilled'
+        with self.assertRaises(ValueError): review.validate_mutation_fidelity([entry], self.report, self.descriptor)
+    def test_raw_absolute_report_paths_are_mapped_only_with_measured_root(self):
+        raw_file = str(self.root / 'sub' / '..' / 'a.cs')
+        self.report = self.art('report.json', {'files': {raw_file: {'source': 's', 'mutants': [self.mutant]}}})
+        self.descriptor['report'] = self.report
+        self.changed_audit([dict(self.row, file=raw_file)])
+        with self.assertRaises(ValueError): review.validate_mutation_fidelity([self.entry], self.report, self.descriptor)
+        review.validate_mutation_fidelity([self.entry], self.report, self.descriptor, report_root=self.root)
+        with self.assertRaises(ValueError): review.validate_mutation_fidelity([self.entry], self.report, self.descriptor, report_root=self.root / 'other')
+
+    def test_corrective_mode_marker_alone_cannot_bypass_rerendering(self):
+        self.changed_audit([dict(self.row, audit='DifferentExpressionTree', nativeShapeSha256='b' * 64)])
+        mutated = self.root / 'mutant.cs'; mutated.write_text('correctly grouped')
+        inventory = self.art('inventory.json', {'files': []})
+        result = dict(file='a.cs', mutant=self.mutant, replacementMode='roslyn-expression-v1', originalSpan='s', mutatedSource=str(mutated), mutatedSourceSha256=review.digest(mutated))
+        summary = self.art('corrected.json', dict(replacementMode='roslyn-expression-v1', results=[result], inventory=inventory['path'], inventorySha256=inventory['sha256'], snapshot=str(self.root)))
+        entry = dict(self.entry, independentExecution={'summary': summary['path'], 'sha256': summary['sha256']})
+        with self.assertRaises(ValueError): review.validate_mutation_fidelity([entry], self.report, self.descriptor)
+        validator = SimpleNamespace(recompute_mutation=lambda *args: ('correctly grouped', 's'))
+        review.validate_mutation_fidelity([entry], self.report, self.descriptor, stage_validator=validator)
+        validator.recompute_mutation = lambda *args: ('different grouping', 's')
+        with self.assertRaises(ValueError): review.validate_mutation_fidelity([entry], self.report, self.descriptor, stage_validator=validator)
+
+    def test_unreviewed_helpers_unknown_nodes_and_legacy_mismatch_fail(self):
+        self.descriptor['preservesOriginalOperatorChildren'] = False
+        with self.assertRaises(ValueError): review.validate_mutation_fidelity([self.entry], self.report, self.descriptor)
+        self.descriptor['preservesOriginalOperatorChildren'] = True
+        self.changed_audit([dict(self.row, audit='NotExactExpression', exactNode=True, nodeKind='Unknown')])
+        with self.assertRaises((ValueError, KeyError)): review.validate_mutation_fidelity([self.entry], self.report, self.descriptor)
+        self.changed_audit([dict(self.row, audit='DifferentExpressionTree', nativeShapeSha256='b' * 64)])
+        summary = self.art('summary.json', {'results': [{'file': 'a.cs', 'mutant': self.mutant}]})
+        entry = dict(self.entry, independentExecution={'summary': summary['path'], 'sha256': summary['sha256']})
+        with self.assertRaises(ValueError): review.validate_mutation_fidelity([entry], self.report, self.descriptor)
+
+
 if __name__ == '__main__':
     unittest.main()

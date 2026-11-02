@@ -144,7 +144,7 @@ class StageChecks(unittest.TestCase):
     def test_v1_allowlist_remains_unchanged(self):
         self.assertEqual(6, len(bridge.BRIDGE_TOOL_FILES))
         self.assertNotIn('tools/multi_stage_review.py', bridge.BRIDGE_TOOL_FILES)
-        self.assertEqual({'tools/multi_stage_review.py', 'tools/test-multi-stage-review.py', 'tools/suite_binding.py', 'tools/test-suite-binding.py', 'tools/test-individual-mutation.py', 'tools/test-mutation-orchestration.py'},
+        self.assertEqual({'tools/multi_stage_review.py', 'tools/test-multi-stage-review.py', 'tools/suite_binding.py', 'tools/test-suite-binding.py', 'tools/test-individual-mutation.py', 'tools/test-mutation-orchestration.py', 'tools/mutation_rendering.py', 'tools/mutation-renderer.cs', 'tools/test-mutation-rendering.py'},
                          bridge.STAGED_BRIDGE_TOOL_FILES - bridge.BRIDGE_TOOL_FILES)
 
     def test_exact_mutation_rejects_changed_raw_fields(self):
@@ -734,6 +734,42 @@ class StageChecks(unittest.TestCase):
             review['launcherReceipt']['sha256'] = approved[str(path)] = stage.digest(path)
             with self.assertRaises(ValueError):
                 stage.validate_environment(*fixture[:5])
+
+
+class MutationRenderingChecks(unittest.TestCase):
+    def test_exact_renderer_receipt_and_inventory_are_required(self):
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); (root / 'tools').mkdir()
+            paths = {}
+            for name in ('mutation_rendering.py', 'mutation-renderer.cs'):
+                p = root / 'tools' / name; p.write_text(name)
+                paths['tools/' + name] = stage.digest(p)
+            receipt = {'expectedShapeSha256': 'same', 'renderedShapeSha256': 'same'}
+            renderer = SimpleNamespace(MODE='roslyn-expression-v1', render_mutation=lambda *args: ('grouped', 'original', receipt))
+            summary = {'replacementMode': renderer.MODE}
+            result = {'replacementMode': renderer.MODE, 'rendering': receipt.copy()}
+            entry = {'location': {}, 'replacement': 'a || b'}
+            with patch.object(stage, 'local_module', return_value=renderer) as loader:
+                self.assertEqual(stage.recompute_mutation(root, 'source', entry, result, summary, paths, None), ('grouped', 'original'))
+                self.assertEqual(stage.recompute_mutation(root, 'source', entry, result, summary, paths, None), ('grouped', 'original'))
+                self.assertEqual(loader.call_count, 1)
+                receipt['renderedShapeSha256'] = 'wrong'
+                with self.assertRaises(ValueError): stage.recompute_mutation(root, 'source', entry, dict(result, rendering=receipt.copy()), summary, paths, None)
+                receipt['renderedShapeSha256'] = 'same'
+                for bad in ({}, {'replacementMode': 'other'}, {'replacementMode': renderer.MODE, 'rendering': {}}):
+                    with self.assertRaises(ValueError): stage.recompute_mutation(root, 'source', entry, bad, summary, paths, None)
+                with self.assertRaises(ValueError): stage.recompute_mutation(root, 'source', entry, result, summary, {}, None)
+                (root / 'tools/mutation-renderer.cs').write_text('changed')
+                with self.assertRaises(ValueError): stage.recompute_mutation(root, 'source', entry, result, summary, paths, None)
+
+    def test_legacy_text_mode_cannot_claim_renderer_and_mismatched_shape_rejects(self):
+        from types import SimpleNamespace
+        executor = SimpleNamespace(replace_span=lambda *args: ('legacy', 'span'))
+        entry = {'location': {}, 'replacement': 'r'}
+        self.assertEqual(stage.recompute_mutation('.', 's', entry, {}, {}, {}, executor), ('legacy', 'span'))
+        with self.assertRaises(ValueError): stage.recompute_mutation('.', 's', entry, {'rendering': {}}, {}, {}, executor)
+        with self.assertRaises(ValueError): stage.recompute_mutation('.', 's', entry, {}, {'replacementMode': 'unknown'}, {}, executor)
 
 
 if __name__ == '__main__':

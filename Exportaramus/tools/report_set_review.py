@@ -249,6 +249,83 @@ def current_outcomes(old_report, historical_unresolved, replacements, accepted=N
             'gatePassed': not unresolved}
 
 
+def validate_mutation_fidelity(entries, report_artifact, descriptor, excluded=(), stage_validator=None, report_root=None):
+    """Bind individually reviewed AST audit evidence to every retained admission."""
+    require(isinstance(descriptor, dict) and descriptor.get('reviewed') is True
+            and descriptor.get('reviewer', '').strip() and descriptor.get('reason', '').strip(),
+            'A reviewed complete mutation fidelity audit is required.')
+    require(descriptor.get('report') == report_artifact, 'Fidelity audit names another report.')
+    report = read(report_artifact); audit = read(descriptor['audit'])
+    require(audit.get('reportSha256') == report_artifact['sha256'], 'Fidelity audit report hash differs.')
+    require(descriptor.get('preservesOriginalOperatorChildren') is True,
+            'Audit must preserve original operator children, not parse replacement text alone.')
+    require(descriptor.get('helper') and descriptor.get('evidence'), 'Fidelity audit implementation and independent review are required.')
+    bound(descriptor['helper'])
+    independent = read(descriptor['independentReview'])
+    require(independent.get('reviewed') is True and independent.get('reviewer', '').strip()
+            and independent.get('reason', '').strip() and independent.get('audit') == descriptor['audit']
+            and independent.get('helper') == descriptor['helper'], 'Independent audit review does not bind this implementation and result.')
+    for artifact in descriptor['evidence']: bound(artifact)
+    originals = {(file, m['id']): (value, m) for file, value in report['files'].items() for m in value['mutants']}
+    rows = {(r['file'], r['id']): r for r in audit['rows']}
+    require(len(rows) == len(audit['rows']) and set(rows) == set(originals), 'Fidelity audit is incomplete or duplicates identities.')
+    if report_root is not None:
+        report_root = Path(report_root).resolve()
+        def canonical(key):
+            path = Path(key[0])
+            resolved = path.resolve() if path.is_absolute() else (report_root / path).resolve()
+            require(resolved.is_relative_to(report_root), 'Fidelity report source lies outside measured root.')
+            return (resolved.relative_to(report_root).as_posix(), key[1])
+        normalized_originals = {canonical(k): v for k, v in originals.items()}
+        normalized_rows = {canonical(k): v for k, v in rows.items()}
+        require(len(normalized_originals) == len(originals) and len(normalized_rows) == len(rows), 'Duplicate normalized fidelity identity.')
+        originals, rows = normalized_originals, normalized_rows
+    safe_statements = {'Block', 'ExpressionStatement', 'ReturnStatement', 'ThrowStatement', 'BreakStatement', 'ContinueStatement', 'YieldReturnStatement', 'YieldBreakStatement'}
+    for entry in entries:
+        if entry['file'] in excluded: continue
+        key = (entry['file'], entry['id']); require(key in rows, 'Accepted identity is absent from fidelity audit.')
+        row = rows[key]; source, mutant = originals[key]
+        require(row['sourceSha256'] == hashlib.sha256(source['source'].encode('utf-8')).hexdigest()
+                and row['location'] == mutant['location'] and row['replacement'] == mutant['replacement'],
+                'Fidelity audit source or mutation identity differs.')
+        valid_shape = lambda value: isinstance(value, str) and len(value) == 64 and all(c in '0123456789abcdef' for c in value)
+        same = row.get('audit') == 'SameExpressionTree' and valid_shape(row.get('expectedShapeSha256')) and row.get('expectedShapeSha256') == row.get('nativeShapeSha256')
+        statement = row.get('audit') == 'NotExactExpression' and row.get('exactNode') is True and row.get('nodeKind') in safe_statements
+        if same or statement: continue
+        require(row.get('audit') == 'DifferentExpressionTree' and valid_shape(row.get('expectedShapeSha256')) and valid_shape(row.get('nativeShapeSha256')),
+                'Fidelity audit lacks exact intended and actual syntax tree hashes.')
+        if entry.get('independentExecution'):
+            execution = entry['independentExecution']
+            require(Path(execution['summary']).is_absolute(), 'Corrective fidelity execution path must be canonical absolute.')
+            summary = json.loads(Path(execution['summary']).read_bytes())
+            require(digest(execution['summary']) == execution['sha256'], 'Corrective execution summary changed.')
+            matches = [r for r in summary['results'] if r['file'] == entry['file'] and r['mutant']['id'] == entry['id']]
+            require(summary.get('replacementMode') == 'roslyn-expression-v1' and len(matches) == 1
+                    and matches[0].get('replacementMode') == 'roslyn-expression-v1',
+                    'Legacy textual execution differs from intended AST and requires faithful replay.')
+            require(stage_validator is not None, 'Corrective execution requires independent current AST verification.')
+            inventory_path = Path(summary['inventory'])
+            require(digest(inventory_path) == summary['inventorySha256'], 'Corrective execution inventory changed.')
+            inputs = {x['path']: x['sha256'] for x in json.loads(inventory_path.read_bytes())['files']}
+            snapshot = Path(summary['snapshot']).resolve()
+            rendered, original_span = stage_validator.recompute_mutation(snapshot, source['source'], entry, matches[0], summary, inputs, None)
+            require(matches[0].get('originalSpan') == original_span, 'Corrective original span differs.')
+            mutated = Path(matches[0]['mutatedSource'])
+            require(digest(mutated) == matches[0]['mutatedSourceSha256'] and mutated.read_bytes() == rendered.encode('utf-8'),
+                    'Corrective mutation is not the independently rendered intended AST.')
+        else:
+            require(isinstance(entry.get('astReview'), dict), 'Static mismatch lacks an intended-AST source review.')
+            proof = read(entry['astReview'])
+            require(entry.get('classification') == 'Equivalent' and proof.get('reviewed') is True
+                    and proof.get('reviewer', '').strip() and proof.get('reason', '').strip()
+                    and proof.get('file') == entry['file'] and proof.get('id') == entry['id']
+                    and proof.get('sourceSha256') == row['sourceSha256']
+                    and proof.get('expectedShapeSha256') == row.get('expectedShapeSha256')
+                    and proof.get('reportSha256') == report_artifact['sha256'],
+                    'Static review must explicitly address the intended mutation AST.')
+    return list(artifacts(descriptor)) + [entry['astReview'] for entry in entries if entry.get('astReview')]
+
+
 def current_review_child(request_path):
     request = json.loads(request_path.read_bytes())
     root = Path(request['root']).resolve()
@@ -260,11 +337,13 @@ def current_review_child(request_path):
     sys.path.insert(0, str(root / 'tools'))
     import current_campaign
     import mutation_review
+    import multi_stage_review
     binding = current_campaign.validate_current_campaign(bound(request['currentCampaign']), root,
         bound(request['inventory']), bound(request['report']))
     ledger = read(request['ledger'])
     accepted = mutation_review.reconcile_current(ledger, binding, read(request['report']), root)
     evidence = list(artifacts(request)) + binding['evidence']
+    fidelity_entries = list(ledger.get('entries', []))
     entry_sets = [(ledger, root, binding['inventoryPaths'])]
     if request.get('nativeLedger'):
         native_ledger = read(request['nativeLedger'])
@@ -274,6 +353,7 @@ def current_review_child(request_path):
         measured_root = Path(read(request['currentCampaign'])['campaignRoot']).resolve()
         measured_paths = {r['path']: r['sha256'] for r in binding['campaignInventory']['files']}
         entry_sets.append((native_ledger, measured_root, measured_paths))
+        fidelity_entries.extend(native_ledger.get('entries', []))
     for ledger_value, origin, input_paths in entry_sets:
       for entry in ledger_value.get('entries', []):
         evidence.extend({'path': str((origin / x['path']).resolve()), 'sha256': x['sha256']} for x in artifacts(entry))
@@ -295,6 +375,7 @@ def current_review_child(request_path):
             elif isinstance(value, list):
                 for child in value: yield from execution_artifacts(child)
         evidence.extend({'path': str((origin / x['path']).resolve()), 'sha256': x['sha256']} for x in execution_artifacts(summary))
+    evidence.extend(validate_mutation_fidelity(fidelity_entries, request['report'], request.get('mutationFidelity'), stage_validator=multi_stage_review, report_root=Path(read(request['currentCampaign'])['campaignRoot'])))
     normalized = {}
     for item in evidence:
         path = Path(item['path'])
@@ -411,6 +492,9 @@ def compose(plan_path, output):
             require(len(accepted) == len(reviewed['accepted']) and not fresh_accepted.intersection(accepted), 'Duplicate current accepted entries.')
             fresh_accepted.update(accepted)
             evidence.extend(run_evidence + reviewed['reviewEvidence'] + [{'path': str(request_path), 'sha256': digest(request_path)}])
+    accepted_historical = {(r['file'], r['id']) for r in receipt['reviewedMutants']}
+    retained_entries = [e for e in json.loads(ledger.read_bytes())['entries'] if (e['file'], e['id']) in accepted_historical]
+    evidence.extend(validate_mutation_fidelity(retained_entries, historical['report'], historical.get('mutationFidelity'), replacements, stage_validator=stage))
     result = current_outcomes(old_report, historical_pending(receipt), replacements, fresh_accepted)
     # Recheck all inputs after potentially long validators and report reads.
     require(bridge.live_paths(final_root, 'current') == final_paths and bridge.live_paths(coverage_root, 'current') == final_paths, 'Inputs changed during composition.')

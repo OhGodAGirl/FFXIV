@@ -17,6 +17,17 @@ class CurrentCampaignTests(unittest.TestCase):
         with self.assertRaises(ValueError):current.tool_transition({path:'old'},{path:'new'},[])
         with self.assertRaises(ValueError):current.tool_transition({path:'old'},{},[change])
 
+    def test_renderer_tools_require_exact_review_and_cannot_be_deleted(self):
+        for name in ('mutation_rendering.py','mutation-renderer.cs','test-mutation-rendering.py','repair_bridge.py','test-repair-bridge.py'):
+            path='tools/'+name
+            change={'path':path,'beforeSha256':'old','afterSha256':'new','reviewed':True,'reviewer':'reviewer','reviewEvidence':{}}
+            with self.subTest(path=path), patch.object(current.report_set,'read',return_value=dict(change,reason='Reviewed exact AST rendering transition')):
+                current.tool_transition({path:'old'},{path:'new'},[change])
+                with self.assertRaises(ValueError): current.tool_transition({path:'old'},{path:'new'},[])
+                with self.assertRaises(ValueError): current.tool_transition({path:'old'},{},[change])
+                bad=dict(change,beforeSha256='forged')
+                with self.assertRaises(ValueError): current.tool_transition({path:'old'},{path:'new'},[bad])
+
     def test_deleted_tool_rejected(self):
         with self.assertRaises(ValueError):current.tool_transition({'tools/individual-mutation.py':'a'}, {},[{'path':'tools/individual-mutation.py','beforeSha256':'a','afterSha256':None,'reviewed':True,'reviewer':'reviewer'}])
     def test_production_change_rejected(self):
