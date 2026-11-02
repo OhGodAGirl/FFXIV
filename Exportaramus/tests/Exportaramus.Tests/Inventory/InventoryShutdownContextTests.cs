@@ -37,6 +37,7 @@ public sealed class InventoryShutdownContextTests
             Assert.NotNull(continuation);
             while (continuation.GetValue(worker) is null)
             {
+                Assert.False(shutdown.IsCompleted);
                 timeout.Token.ThrowIfCancellationRequested();
                 await Task.Delay(1, timeout.Token);
             }

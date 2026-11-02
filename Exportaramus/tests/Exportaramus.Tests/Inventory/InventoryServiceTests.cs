@@ -435,8 +435,16 @@ public sealed class InventoryServiceTests
         while (!predicate())
         {
             timeout.Token.ThrowIfCancellationRequested();
+            var workerField = typeof(InventoryService).GetField("worker",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            var previous = workerField.GetValue(service) as Task;
+            var wasCompleted = previous?.IsCompleted == true;
             service.Pump();
-            if (!predicate()) AssertWorkerScheduled(service);
+            if (!predicate())
+            {
+                AssertWorkerScheduled(service);
+                if (wasCompleted) Assert.NotSame(previous, workerField.GetValue(service));
+            }
             await Task.Delay(1, timeout.Token);
         }
     }
