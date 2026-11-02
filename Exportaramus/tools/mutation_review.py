@@ -183,7 +183,7 @@ def reconcile_current(ledger, binding, report, root, native=False):
         receipt = json.loads(Path(checked['receiptPath']).read_bytes())
         root = Path(receipt['campaignRoot']).resolve()
         measured = checked['campaignInventory']
-        checked = dict(checked, kind='measured-native-campaign', inventoryPaths={r['path']: r['sha256'] for r in measured['files']}, inventorySha256=measured['sha256'], inventoryArtifact=receipt['beforeInventory'], cases=checked['campaignCases'])
+        checked = dict(checked, kind='measured-native-campaign', validatorInventoryPaths=checked['inventoryPaths'], inventoryPaths={r['path']: r['sha256'] for r in measured['files']}, inventorySha256=measured['sha256'], inventoryArtifact=receipt['beforeInventory'], cases=checked['campaignCases'])
         stage_id = 'inventory-current'
     stage.require(report == json.loads(Path(checked['reportPath']).read_bytes()), 'Current parsed report differs from bound raw report.')
     stage.require(ledger.get('schemaVersion') == ('native-current-1.0' if native else 'current-1.0') and ledger.get('reviewer', '').strip()

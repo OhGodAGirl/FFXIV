@@ -440,12 +440,21 @@ class StageChecks(unittest.TestCase):
     def test_native_current_execution_preserves_original_schema_and_status_eligibility(self):
         entry, binding, summary, folder = self.current_fixture()
         binding['kind'] = 'measured-native-campaign'
+        binding['validatorInventoryPaths'] = dict(binding['inventoryPaths'])
         summary['schemaVersion'] = '1.0'
         summary.pop('currentCampaign'); summary.pop('currentCampaignSha256')
         entry.update(status='Ignored', statusReason=legacy.BLOCK_REASON)
         summary['results'][0]['mutant'].update(status='Ignored', statusReason=legacy.BLOCK_REASON)
         fixture = (entry, binding, summary, folder)
-        _, result, _ = self.check_execution(fixture)
+        import suite_binding
+        with patch.object(suite_binding, 'verify_summary', wraps=suite_binding.verify_summary) as verify:
+            _, result, _ = self.check_execution(fixture)
+            self.assertEqual(verify.call_args.kwargs['validator_inventory'], binding['validatorInventoryPaths'])
+            self.assertEqual(verify.call_args.args[1], binding['inventoryPaths'])
+        held = binding.pop('validatorInventoryPaths')
+        with self.assertRaises(ValueError):
+            self.check_execution(fixture)
+        binding['validatorInventoryPaths'] = held
         stage.validate_kill(result, binding, legacy, self.root)
         summary['currentCampaignSha256'] = binding['receiptSha256']
         with self.assertRaises(ValueError):
