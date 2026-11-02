@@ -14,6 +14,7 @@ import subprocess
 import sys
 import time
 import suite_binding
+import mutation_rendering
 import xml.etree.ElementTree as ET
 
 sys.dont_write_bytecode = True
@@ -242,6 +243,10 @@ def main():
         raise ValueError('Duplicate source inventory paths.')
     if paths.get('tools/individual-mutation.py') != digest(Path(__file__).read_bytes()):
         raise ValueError('Executor bytes must match the frozen inventory tool.')
+    for name in ('mutation_rendering.py', 'mutation-renderer.cs'):
+        helper = Path(mutation_rendering.__file__).with_name(name)
+        if paths.get('tools/' + name) != digest(helper.read_bytes()):
+            raise ValueError('Mutation renderer must match frozen inventory: ' + name)
     output.mkdir(parents=True)
     scope_result = execute([sys.executable, root / 'tools/contract-quality-scope.py', '--mutation-report', args.report.resolve(),
                             '--output-dir', output / 'scope'], root, output / 'scope.log', args.build_timeout_seconds)
@@ -308,7 +313,7 @@ def main():
             raise RuntimeError('The repaired full suite removed original test cases.')
     sdk = subprocess.check_output([str(dotnet), '--version'], cwd=snapshot, text=True).strip()
     summary = {'format': 'exportaramus-independent-mutation-shard', 'schemaVersion': '1.0',
-               'testCoveragePolicy': 'baseline-only-v1',
+               'testCoveragePolicy': 'baseline-only-v1', 'replacementMode': mutation_rendering.MODE,
                'sourceSha256': inventory['sha256'], 'inventory': str(args.inventory.resolve()), 'inventorySha256': digest(inventory_bytes),
                'report': str(args.report.resolve()), 'reportSha256': digest(report_bytes),
                'executor': str(Path(__file__).resolve()), 'executorSha256': digest(Path(__file__).read_bytes()),
@@ -332,12 +337,13 @@ def main():
         original = target.read_bytes()
         if digest(original) != paths[relative]:
             raise ValueError('Prior source replacement was not restored exactly.')
-        changed, original_span = replace_span(source, mutant['location'], mutant['replacement'])
+        changed, original_span, rendering = mutation_rendering.render_mutation(root, source, mutant['location'], mutant['replacement'])
         mutated = changed.encode('utf-8')
         (directory / 'mutated-source.cs').write_bytes(mutated)
         value = {'format': 'exportaramus-independent-mutant-result', 'schemaVersion': '1.0', 'file': relative,
                  'sourceSha256': paths[relative], 'mutatedSourceSha256': digest(mutated),
                  'mutatedSource': str((directory / 'mutated-source.cs').resolve()), 'originalSpan': original_span,
+                 'replacementMode': mutation_rendering.MODE, 'rendering': rendering,
                  'mutant': {name: mutant.get(name) for name in ('id', 'status', 'statusReason', 'mutatorName', 'location', 'replacement')}}
         try:
             target.write_bytes(mutated)

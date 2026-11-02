@@ -10,7 +10,9 @@ TOOL_PATHS = frozenset('tools/' + name for name in (
     'current_campaign.py', 'test-current-campaign.py', 'individual-mutation.py',
     'test-individual-mutation.py', 'mutation_review.py', 'multi_stage_review.py',
     'report_set_review.py', 'test-report-set-review.py', 'test-multi-stage-review.py',
-    'test-mutation-orchestration.py', 'suite_binding.py', 'test-suite-binding.py'))
+    'test-mutation-orchestration.py', 'suite_binding.py', 'test-suite-binding.py',
+    'repair_bridge.py', 'test-repair-bridge.py', 'mutation_rendering.py',
+    'mutation-renderer.cs', 'test-mutation-rendering.py'))
 
 
 def tool_transition(before, after, changes):

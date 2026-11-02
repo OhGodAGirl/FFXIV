@@ -31,6 +31,16 @@ class BridgeChecks(unittest.TestCase):
             with self.subTest(path=path), self.assertRaises(ValueError):
                 bridge.validate_differences({path:'old'},{path:'new'},[self.change(path)],self.root)
 
+    def test_staged_renderer_tools_keep_exact_review_requirements(self):
+        for name in ('mutation_rendering.py','mutation-renderer.cs','test-mutation-rendering.py'):
+            path='tools/'+name
+            change=self.change(path);change['kind']='Tooling'
+            with self.subTest(path=path):
+                bridge.validate_differences({path:'old'},{path:'new'},[change],self.root,tool_files=bridge.STAGED_BRIDGE_TOOL_FILES)
+                for entries,after in (([],{path:'new'}),([change],{}),([dict(change,beforeSha256='forged')],{path:'new'})):
+                    with self.assertRaises(ValueError): bridge.validate_differences({path:'old'},after,entries,self.root,tool_files=bridge.STAGED_BRIDGE_TOOL_FILES)
+                with self.assertRaises(ValueError): bridge.validate_differences({path:'old'},{path:'new'},[change],self.root)
+
     def test_exact_diff_hash_review_and_no_deletion_required(self):
         path='tests/Exportaramus.Tests/A.cs'
         for mutate in [lambda x:x.update(beforeSha256='wrong'),lambda x:x.update(afterSha256='wrong'),lambda x:x.update(evidence=[]),lambda x:x.update(preservesExistingAssertions=False),lambda x:x.update(reason=''),lambda x:x.update(kind='Tooling')]:
