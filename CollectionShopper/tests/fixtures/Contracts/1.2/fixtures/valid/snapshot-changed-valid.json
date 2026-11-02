@@ -1,0 +1,17 @@
+{
+  "eventType": "SnapshotChanged",
+  "schemaVersion": "1.2",
+  "providerSessionId": "7be5461e-8975-4c7a-9f13-4bb33af9c82d",
+  "revision": 1,
+  "contentId": "12345678901234567",
+  "capturedAtUtc": "2026-09-06T12:00:00.0000000Z",
+  "changedDataTypes": [
+    "CurrentItemPresence",
+    "Unlocks"
+  ],
+  "changedSources": [
+    "facewear",
+    "inventory",
+    "mounts"
+  ]
+}

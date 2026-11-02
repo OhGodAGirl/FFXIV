@@ -265,7 +265,11 @@ def verify_summary(entry, repair, review_module, root, checked_snapshots=None, s
     if cached:
         target = summary.get('suiteBinding', {}).get('target', 'provider')
     else:
-        target = suite_binding.verify_summary(summary, input_paths, sorted({r['file'] for r in results}))
+        if native:
+            require(isinstance(repair.get('validatorInventoryPaths'), dict), 'Native replay requires the separately validated current tool inventory.')
+            target = suite_binding.verify_summary(summary, input_paths, sorted({r['file'] for r in results}), validator_inventory=repair['validatorInventoryPaths'])
+        else:
+            target = suite_binding.verify_summary(summary, input_paths, sorted({r['file'] for r in results}))
     dotnet = bound(summary['toolchain']['dotnet'])
     if not cached:
         baseline = summary['baseline']

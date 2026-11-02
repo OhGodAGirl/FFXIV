@@ -1,0 +1,87 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <AssemblyName>BetterGlamorPlates.MutationTarget</AssemblyName>
+    <RootNamespace>BetterGlamorPlates</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\src\Features\GlamourPlates\Models.cs"
+             Link="Features\GlamourPlates\Models.cs" />
+    <Compile Include="..\..\src\Features\GlamourPlates\CollectionProviderPolicy.cs"
+             Link="Features\GlamourPlates\CollectionProviderPolicy.cs" />
+    <Compile Include="..\..\src\Features\GlamourPlates\Ports.cs"
+             Link="Features\GlamourPlates\Ports.cs" />
+    <Compile Include="..\..\src\Features\GlamourPlates\CollectionSourceResolver.cs"
+             Link="Features\GlamourPlates\CollectionSourceResolver.cs" />
+    <Compile Include="..\..\src\Features\GlamourPlates\CollectionViewPlanner.cs"
+             Link="Features\GlamourPlates\CollectionViewPlanner.cs" />
+    <Compile Include="..\..\src\Features\GlamourPlates\PlateLibrary.cs"
+             Link="Features\GlamourPlates\PlateLibrary.cs" />
+    <Compile Include="..\..\src\Features\GlamourPlates\PlateLoadPlanner.cs"
+             Link="Features\GlamourPlates\PlateLoadPlanner.cs" />
+    <Compile Include="..\..\src\Features\GlamourPlates\PlateRules.cs"
+             Link="Features\GlamourPlates\PlateRules.cs" />
+    <Compile Include="..\..\src\Features\Main\MainCommand.cs"
+             Link="Features\Main\MainCommand.cs" />
+    <Compile Include="..\..\src\Features\Main\MainViewState.cs"
+             Link="Features\Main\MainViewState.cs" />
+    <Compile Include="..\..\src\Features\Main\MainController.cs"
+             Link="Features\Main\MainController.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionDataContracts.cs"
+             Link="Shared\CollectionData\CollectionDataContracts.cs" />
+    <Compile Include="..\..\src\Shared\Operations\OwnedOperationRegistry.cs"
+             Link="Shared\Operations\OwnedOperationRegistry.cs" />
+    <Compile Include="..\..\src\Shared\Operations\OwnedTeardown.cs"
+             Link="Shared\Operations\OwnedTeardown.cs" />
+    <Compile Include="..\..\src\Shared\Ui\PluginMotion.cs"
+             Link="Shared\Ui\PluginMotion.cs" />
+    <Compile Include="../../src/Features/Main/CompanionPlacementPolicy.cs" Link="Features/Main/CompanionPlacementPolicy.cs" />
+    <Compile Include="../../src/Features/Main/EquipmentSummaryPolicy.cs" Link="Features/Main/EquipmentSummaryPolicy.cs" />
+    <Compile Include="../../src/Features/Main/MainLayoutPolicy.cs" Link="Features/Main/MainLayoutPolicy.cs" />
+    <Compile Include="../../src/Features/GlamourPlates/PlateResultPolicy.cs" Link="Features/GlamourPlates/PlateResultPolicy.cs" />
+    <Compile Include="../../src/Features/GlamourPlates/SavedPlateQuery.cs" Link="Features/GlamourPlates/SavedPlateQuery.cs" />
+    <Compile Include="MutationProbe.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>BetterGlamorPlates.Mutation.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup><ProjectReference Include="../../project/Contracts/1.2/BetterGlamorPlates.Exportaramus.csproj" /><Compile Include="../../src/Features/GlamourPlates/ExportaramusProjection.cs" Link="Features/GlamourPlates/ExportaramusProjection.cs" /></ItemGroup><ItemGroup><Compile Include="../../src/Features/GlamourPlates/OutfitPreviewPolicy.cs" Link="Features/GlamourPlates/OutfitPreviewPolicy.cs" /></ItemGroup><ItemGroup><Compile Include="../../src/Features/Examine/ExaminedOutfitPolicy.cs" Link="Features/Examine/ExaminedOutfitPolicy.cs" /></ItemGroup><ItemGroup><Compile Include="../../src/Features/Diagnostics/DiagnosticJournal.cs" Link="Features/Diagnostics/DiagnosticJournal.cs" /></ItemGroup><ItemGroup><Compile Include="../../src/Features/Examine/ExamineTabPlacement.cs" Link="Features/Examine/ExamineTabPlacement.cs" /></ItemGroup><ItemGroup><Compile Include="../../src/Features/GlamourPlates/PlateDyePlanner.cs" Link="Features/GlamourPlates/PlateDyePlanner.cs" /></ItemGroup><ItemGroup><Compile Include="../../src/Features/Examine/ExamineButtonTheme.cs" Link="Features/Examine/ExamineButtonTheme.cs" /><Compile Include="../../src/Features/Main/DyePaletteOrder.cs" Link="Features/Main/DyePaletteOrder.cs" /></ItemGroup>
+  <ItemGroup>
+    <Compile Include="../../src/Adapters/GameIconCatalogState.cs" Link="Adapters/GameIconCatalogState.cs" />
+    <Compile Include="../../src/Adapters/CollectionData/ExportaramusConsumer.cs" Link="Adapters/CollectionData/ExportaramusConsumer.cs" />
+    <Compile Include="../../src/Features/Examine/ExamineReadPolicy.cs" Link="Features/Examine/ExamineReadPolicy.cs" />
+    <Compile Include="../../src/Features/Examine/ExaminePresentation.cs" Link="Features/Examine/ExaminePresentation.cs" />
+    <Compile Include="../../src/Features/Main/DrawerSession.cs" Link="Features/Main/DrawerSession.cs" />
+    <Compile Include="../../src/Features/Main/LibrarySearchState.cs" Link="Features/Main/LibrarySearchState.cs" />
+    <Compile Include="../../src/Features/Main/IconChoiceFilter.cs" Link="Features/Main/IconChoiceFilter.cs" />
+    <Compile Include="../../src/Features/Main/OutfitInteraction.cs" Link="Features/Main/OutfitInteraction.cs" />
+    <Compile Include="../../src/Shared/Ui/BoundedIconCache.cs" Link="Shared/Ui/BoundedIconCache.cs" />
+    <Compile Include="../../src/Shared/Ui/UiText.cs" Link="Shared/Ui/UiText.cs" />
+    <Compile Include="../../src/Features/GlamourPlates/NativeCollectionProjection.cs" Link="Features/GlamourPlates/NativeCollectionProjection.cs" />
+    <Compile Include="../../src/Bootstrap/CollectionCoordinator.cs" Link="Bootstrap/CollectionCoordinator.cs" />
+    <Compile Include="../../src/Bootstrap/CommandDispatcher.cs" Link="Bootstrap/CommandDispatcher.cs" />
+    <Compile Include="../../src/Bootstrap/CommandExecutionCoordinator.cs" Link="Bootstrap/CommandExecutionCoordinator.cs" />
+    <Compile Include="../../src/Bootstrap/CommandPreviewPolicy.cs" Link="Bootstrap/CommandPreviewPolicy.cs" />
+
+    <Compile Include="../../src/Bootstrap/EditorLifecycle.cs" Link="Bootstrap/EditorLifecycle.cs" />
+    <Compile Include="../../src/Bootstrap/ExamineSaveCoordinator.cs" Link="Bootstrap/ExamineSaveCoordinator.cs" />
+    <Compile Include="../../src/Bootstrap/PreviewCoordinator.cs" Link="Bootstrap/PreviewCoordinator.cs" />
+    <Compile Include="../../src/Bootstrap/ThemeObserver.cs" Link="Bootstrap/ThemeObserver.cs" />
+    <Compile Include="../../src/Features/GlamourPlates/PlateApplyExecution.cs" Link="Features/GlamourPlates/PlateApplyExecution.cs" />
+    <Compile Include="../../src/Features/GlamourPlates/PlateCaptureExecution.cs" Link="Features/GlamourPlates/PlateCaptureExecution.cs" />
+    <Compile Include="../../src/Features/GlamourPlates/PlateDyeExecution.cs" Link="Features/GlamourPlates/PlateDyeExecution.cs" />
+    <Compile Include="../../src/Features/GlamourPlates/PlatePreviewExecution.cs" Link="Features/GlamourPlates/PlatePreviewExecution.cs" />
+    <Compile Include="../../src/Adapters/ExamineView.cs" Link="Adapters/ExamineView.cs" />
+  </ItemGroup>
+<ItemGroup><Compile Include="../../src/Bootstrap/ConfigurationStore.cs" Link="Bootstrap/ConfigurationStore.cs" /><Compile Include="../../src/Bootstrap/Configuration.cs" Link="Bootstrap/Configuration.cs" /></ItemGroup><PropertyGroup><DalamudLibPath Condition="'$(DalamudLibPath)' == '' and '$(DALAMUD_HOME)' != ''">$(DALAMUD_HOME)/</DalamudLibPath><DalamudLibPath Condition="'$(DalamudLibPath)' == ''">$(AppData)/XIVLauncher/addon/Hooks/dev/</DalamudLibPath></PropertyGroup><ItemGroup><Reference Include="Dalamud" HintPath="$(DalamudLibPath)Dalamud.dll" Private="true" /></ItemGroup><ItemGroup><Compile Include="../../src/Bootstrap/RuntimeUiPolicy.cs" Link="src/Bootstrap/RuntimeUiPolicy.cs" /><Compile Include="../../src/Features/GlamourPlates/DyePreparation.cs" Link="src/Features/GlamourPlates/DyePreparation.cs" /></ItemGroup><ItemGroup><Compile Include="../../src/Bootstrap/IconCatalogPublication.cs" Link="src/Bootstrap/IconCatalogPublication.cs" /><Compile Include="../../src/Shared/Operations/OwnedResourcePair.cs" Link="src/Shared/Operations/OwnedResourcePair.cs" /></ItemGroup><ItemGroup><Compile Include="../../src/Features/GlamourPlates/NativeDyeStatePolicy.cs" Link="Features/GlamourPlates/NativeDyeStatePolicy.cs" /></ItemGroup></Project>
+
+
+
+
+
+

@@ -119,6 +119,28 @@ class SuiteChecks(unittest.TestCase):
             else: wrong['testCoveragePolicy'] = 'none'
             with self.assertRaises(ValueError): suite.verify_summary(wrong, paths, ['src/provider.cs'])
 
+    def test_reviewed_validator_inventory_does_not_replace_execution_inputs(self):
+        root = self.root
+        settings = root/'tests/coverage.runsettings'
+        settings.write_text('<RunSettings><DataCollectionRunSettings><DataCollectors><DataCollector friendlyName="XPlat Code Coverage"/></DataCollectors></DataCollectionRunSettings></RunSettings>')
+        paths = {'tools/suite_binding.py': 'historical-validator',
+                 'tests/coverage.runsettings': hashlib.sha256(settings.read_bytes()).hexdigest()}
+        validators = {'tools/suite_binding.py': hashlib.sha256(Path(suite.__file__).read_bytes()).hexdigest()}
+        def execution(phase):
+            return {'command': suite.command('dotnet', 'test', root, 'provider', root/'results', phase),
+                    'workingDirectory': str(root), 'trx': str(root/'results/tests.trx')}
+        summary = {'testCoveragePolicy': 'baseline-only-v1', 'snapshot': str(root),
+                   'toolchain': {'dotnet': {'path': 'dotnet'}},
+                   'baseline': {'tests': execution('baseline')}, 'results': [{'tests': execution('mutant')}]}
+        with self.assertRaises(ValueError): suite.verify_summary(summary, paths, ['src/provider.cs'])
+        self.assertEqual('provider', suite.verify_summary(summary, paths, ['src/provider.cs'], validators))
+        for wrong in ({}, {'tools/suite_binding.py': 'wrong'}):
+            with self.assertRaises(ValueError): suite.verify_summary(summary, paths, ['src/provider.cs'], wrong)
+        settings.write_text(settings.read_text().replace('/>', ' enabled="true"/>'))
+        validators['tests/coverage.runsettings'] = hashlib.sha256(settings.read_bytes()).hexdigest()
+        with self.assertRaisesRegex(ValueError, 'runsettings differ'):
+            suite.verify_summary(summary, paths, ['src/provider.cs'], validators)
+
     def test_historical_reviewer_does_not_require_new_phase_argument(self):
         from types import SimpleNamespace
         called = []

@@ -196,6 +196,31 @@ class StageChecks(unittest.TestCase):
         return dict(outcome='Error', errorKind='CompilerRejected', tests=None, file='src/A.cs',
                     build=dict(exitCode=1, timedOut=False, workingDirectory=str(self.root), log=log['path'], logSha256=log['sha256'], compilerDiagnosticCodes=['CS8602']))
 
+    def test_current_nonviability_requires_actual_source_compiler_rejection(self):
+        for status in ('Survived', 'Timeout', 'NoCoverage', 'CompileError'):
+            mutant = dict(status=status)
+            self.assertEqual(['CS8602'], legacy.validate_current_nonviability(mutant, self.compiler_result(), self.root))
+            for change in (lambda r: r['build'].update(exitCode=0),
+                           lambda r: r['build'].update(timedOut=True),
+                           lambda r: r.update(tests={}),
+                           lambda r: r['build'].update(logSha256='wrong')):
+                result = self.compiler_result()
+                change(result)
+                with self.subTest(status=status), self.assertRaises(ValueError):
+                    legacy.validate_current_nonviability(mutant, result, self.root)
+
+    def test_current_nonviability_does_not_broaden_native_or_unrelated_labels(self):
+        for status in ('Survived', 'Timeout', 'NoCoverage'):
+            with self.subTest(status=status), self.assertRaises(ValueError):
+                legacy.validate_current_nonviability(dict(status=status), self.compiler_result(), self.root, native=True)
+        for native in (False, True):
+            for mutant in (dict(status='Killed'), dict(status='Unknown'), dict(status='Ignored'),
+                           dict(status='Ignored', statusReason='another exclusion')):
+                with self.subTest(native=native, mutant=mutant), self.assertRaises(ValueError):
+                    legacy.validate_current_nonviability(mutant, self.compiler_result(), self.root, native=native)
+            for mutant in (dict(status='CompileError'), dict(status='Ignored', statusReason=legacy.BLOCK_REASON)):
+                self.assertEqual(['CS8602'], legacy.validate_current_nonviability(mutant, self.compiler_result(), self.root, native=native))
+
     def test_compiler_rejection_is_distinct_from_kill(self):
         result = self.compiler_result()
         self.assertEqual(['CS8602'], stage.validate_nonviability(result, self.root))
@@ -440,12 +465,21 @@ class StageChecks(unittest.TestCase):
     def test_native_current_execution_preserves_original_schema_and_status_eligibility(self):
         entry, binding, summary, folder = self.current_fixture()
         binding['kind'] = 'measured-native-campaign'
+        binding['validatorInventoryPaths'] = dict(binding['inventoryPaths'])
         summary['schemaVersion'] = '1.0'
         summary.pop('currentCampaign'); summary.pop('currentCampaignSha256')
         entry.update(status='Ignored', statusReason=legacy.BLOCK_REASON)
         summary['results'][0]['mutant'].update(status='Ignored', statusReason=legacy.BLOCK_REASON)
         fixture = (entry, binding, summary, folder)
-        _, result, _ = self.check_execution(fixture)
+        import suite_binding
+        with patch.object(suite_binding, 'verify_summary', wraps=suite_binding.verify_summary) as verify:
+            _, result, _ = self.check_execution(fixture)
+            self.assertEqual(verify.call_args.kwargs['validator_inventory'], binding['validatorInventoryPaths'])
+            self.assertEqual(verify.call_args.args[1], binding['inventoryPaths'])
+        held = binding.pop('validatorInventoryPaths')
+        with self.assertRaises(ValueError):
+            self.check_execution(fixture)
+        binding['validatorInventoryPaths'] = held
         stage.validate_kill(result, binding, legacy, self.root)
         summary['currentCampaignSha256'] = binding['receiptSha256']
         with self.assertRaises(ValueError):
