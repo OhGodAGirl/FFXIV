@@ -21,6 +21,47 @@ class ReportSetTests(unittest.TestCase):
     def report(self, mutants=None):
         return {'files': {self.source: {'source': 'new source', 'mutants': mutants or [self.mutant()]}}}
 
+    def test_final_report_tool_changes_are_exact_and_do_not_expand_bridge(self):
+        import repair_bridge as bridge
+        import multi_stage_review as stage
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            path = 'tools/current_campaign.py'
+            file = root / path; file.parent.mkdir(); file.write_text('new')
+            evidence = root / 'review.txt'; evidence.write_text('independent review')
+            old = {path: hashlib.sha256(b'old').hexdigest()}
+            new = {path: review.digest(file)}
+            change = dict(path=path, beforeSha256=old[path], afterSha256=new[path], kind='Tooling',
+                          reason='Exact reviewed validator correction', reviewed=True, reviewer='independent',
+                          evidence=[dict(path=str(evidence), sha256=review.digest(evidence))])
+            prior_allowlist = set(bridge.STAGED_BRIDGE_TOOL_FILES)
+            review.validate_final_strengthening(old, new, [change], root, bridge, stage)
+            self.assertEqual(prior_allowlist, set(bridge.STAGED_BRIDGE_TOOL_FILES))
+            with self.assertRaises(ValueError):
+                stage.validate_strengthening(old, new, [change], root, bridge, multi_suite=True)
+            for field, value in [('reviewed', False), ('reviewer', ''), ('reason', ''),
+                                 ('beforeSha256', '0' * 64), ('afterSha256', '0' * 64),
+                                 ('kind', 'TestStrengthening'), ('evidence', [])]:
+                bad = dict(change, **{field: value})
+                with self.subTest(field=field), self.assertRaises(ValueError):
+                    review.validate_final_strengthening(old, new, [bad], root, bridge, stage)
+            for changes in ([], [change, change]):
+                with self.assertRaises(ValueError):
+                    review.validate_final_strengthening(old, new, changes, root, bridge, stage)
+            with self.assertRaises(ValueError):
+                review.validate_final_strengthening({}, new, [dict(change, beforeSha256=None)], root, bridge, stage)
+            with self.assertRaises(ValueError):
+                review.validate_final_strengthening(old, {}, [dict(change, afterSha256=None)], root, bridge, stage)
+            file.write_text('tampered')
+            with self.assertRaises(ValueError):
+                review.validate_final_strengthening(old, new, [change], root, bridge, stage)
+            for forbidden in ('src/Product.cs', 'tests/config.json', 'tools/arbitrary.py'):
+                actual = root / forbidden; actual.parent.mkdir(parents=True, exist_ok=True); actual.write_text('new')
+                before = {forbidden: old[path]}; after = {forbidden: review.digest(actual)}
+                entry = dict(change, path=forbidden, beforeSha256=before[forbidden], afterSha256=after[forbidden])
+                with self.subTest(path=forbidden), self.assertRaises(ValueError):
+                    review.validate_final_strengthening(before, after, [entry], root, bridge, stage)
+
     def test_only_whole_file_scope_is_allowed(self):
         a = self.config()
         b = copy.deepcopy(a)
