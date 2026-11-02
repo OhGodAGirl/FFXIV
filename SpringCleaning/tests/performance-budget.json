@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "status": "provisional",
+  "pluginVersion": "1.0.0.0",
+  "sourceState": "8A959CFBC2AFB2C6653AF03068A5EABCAEB083801B75E5704BC67CD8231B1B73",
+  "context": {
+    "scope": "Local managed microbenchmarks. Absolute elapsed-time budgets are calibrated for a dedicated development run, not shared CI hardware.",
+    "measurementTool": "SpringCleaning.Performance Release console harness on .NET 10.0.11; Stopwatch.GetTimestamp and GC.GetAllocatedBytesForCurrentThread; 60 samples x 100 operations after 20 warmups"
+  },
+  "scenarios": [
+    {
+      "name": "Migration batch planning at 800 entries",
+      "kind": "deterministic local microbenchmark",
+      "context": "Largest native dresser snapshot; 800 entries with 1-11 components and 140 available slots",
+      "sampleCount": 60,
+      "budget": {
+        "maxMeanMilliseconds": 0.08,
+        "maxP95Milliseconds": 0.25,
+        "maxAllocatedBytesPerOperation": 64
+      }
+    },
+    {
+      "name": "Prism budget planning at 40 outfits and 140 items",
+      "kind": "deterministic local microbenchmark",
+      "context": "Largest supported outfit/item planning snapshot; 40 eleven-piece outfits plus 140 individual items",
+      "sampleCount": 60,
+      "budget": {
+        "maxMeanMilliseconds": 0.02,
+        "maxP95Milliseconds": 0.04,
+        "maxAllocatedBytesPerOperation": 1600
+      }
+    },
+    {
+      "name": "Duplicate safety filtering at 140 inventory entries",
+      "kind": "deterministic local microbenchmark",
+      "context": "Maximum carried-inventory duplicate snapshot with mixed eligible and blocked safety classifications",
+      "sampleCount": 60,
+      "budget": {
+        "maxMeanMilliseconds": 0.02,
+        "maxP95Milliseconds": 0.04,
+        "maxAllocatedBytesPerOperation": 1024
+      }
+    },
+    {
+      "name": "Visible-window preview refresh update decision",
+      "kind": "deterministic local microbenchmark",
+      "context": "Hot framework-update policy decision with a visible preview, idle controller, and an elapsed refresh deadline",
+      "sampleCount": 60,
+      "budget": {
+        "maxMeanMilliseconds": 0.001,
+        "maxP95Milliseconds": 0.005,
+        "maxAllocatedBytesPerOperation": 0
+      }
+    },
+    {
+      "name": "Review filtering at 800 Dresser entries",
+      "kind": "deterministic local microbenchmark",
+      "context": "Maximum Glamour Dresser snapshot with mixed recognized-outfit membership and carried duplicate candidates",
+      "sampleCount": 60,
+      "budget": {
+        "maxMeanMilliseconds": 0.08,
+        "maxP95Milliseconds": 0.25,
+        "maxAllocatedBytesPerOperation": 8192
+      }
+    },
+    {
+      "name": "Collection ownership planning at 20,000 items per source",
+      "kind": "deterministic local microbenchmark",
+      "context": "Fresh Collector's Compendium inventory and Dresser sources at the per-source item bound",
+      "sampleCount": 60,
+      "budget": {
+        "maxMeanMilliseconds": 0.01,
+        "maxP95Milliseconds": 0.03,
+        "maxAllocatedBytesPerOperation": 0
+      }
+    },
+    {
+      "name": "Five-tab native-window occlusion clipping",
+      "kind": "deterministic local microbenchmark",
+      "context": "One complete Dresser rail clipped against three overlapping higher native windows",
+      "sampleCount": 60,
+      "budget": {
+        "maxMeanMilliseconds": 0.02,
+        "maxP95Milliseconds": 0.05,
+        "maxAllocatedBytesPerOperation": 4096
+      }
+    },
+    {
+      "name": "Stored restoration eligibility at 800 entries",
+      "kind": "deterministic local microbenchmark",
+      "context": "Complete native Dresser capacity, every entry retained in a 20000-item Armoire source; runs at most twice per second",
+      "sampleCount": 60,
+      "budget": {
+        "maxMeanMilliseconds": 4.0,
+        "maxP95Milliseconds": 8.0,
+        "maxAllocatedBytesPerOperation": 400000
+      },
+      "baselineContext": "First measurement of this new scenario on 1.0.2.32; no historical baseline exists."
+    },
+    {
+      "name": "Restored-copy attribution across 140 slots",
+      "kind": "deterministic local microbenchmark",
+      "context": "70 existing copies plus 70 newly restored copies, complete 140-slot Inventory; polled at most 4 Hz during bounded restoration",
+      "sampleCount": 60,
+      "budget": {
+        "maxMeanMilliseconds": 0.5,
+        "maxP95Milliseconds": 1.0,
+        "maxAllocatedBytesPerOperation": 65536
+      },
+      "baselineContext": "First measurement of this new scenario on 1.0.2.32; no historical baseline exists."
+    },
+    {
+      "name": "Cached duplicate drawer filtering at 1024 copies and 800 entries",
+      "kind": "deterministic local microbenchmark",
+      "context": "1024 inventory copies, 800 Dresser entries, half with outfit components, 100 ignored IDs. UI drawing and native adapters excluded.",
+      "sampleCount": 60,
+      "baselineContext": "Former draw filtering reproduced beside the production cache in performance-agent-final.json; source 554F3948E75BDEBF1B1E9649737DE127DBC789D9AAB0B2DFC093576BA56443E7.",
+      "budget": {
+        "maxMeanMilliseconds": 0.01,
+        "maxP95Milliseconds": 0.03,
+        "maxAllocatedBytesPerOperation": 0
+      }
+    },
+    {
+      "name": "Duplicate drawer cache refresh at 1024 copies and 800 entries",
+      "kind": "deterministic local microbenchmark",
+      "context": "1024 inventory copies, 800 Dresser entries, half with outfit components, 100 ignored IDs. UI drawing and native adapters excluded.",
+      "sampleCount": 60,
+      "baselineContext": "Former draw filtering reproduced beside the production cache in performance-agent-final.json; source 554F3948E75BDEBF1B1E9649737DE127DBC789D9AAB0B2DFC093576BA56443E7.",
+      "budget": {
+        "maxMeanMilliseconds": 0.2,
+        "maxP95Milliseconds": 0.4,
+        "maxAllocatedBytesPerOperation": 65536
+      }
+    },
+    {
+      "name": "HQ/NQ outfit batching at 140 candidates and 800 destinations",
+      "kind": "deterministic local microbenchmark",
+      "context": "140 carried candidates of both qualities, two overlapping set memberships each, 800 existing destinations split by quality. Initial baseline and provisional budget; no historical performance comparison.",
+      "sampleCount": 60,
+      "budget": {
+        "maxMeanMilliseconds": 0.5,
+        "maxP95Milliseconds": 1.0,
+        "maxAllocatedBytesPerOperation": 262144
+      }
+    }
+  ],
+  "caches": [
+    {
+      "name": "Dresser preview candidate snapshot",
+      "maximumEntries": 800,
+      "maximumLifetimeSeconds": 0.5,
+      "invalidation": "Replaced on the next visible idle preview cadence; refresh requests, station/page changes, configuration changes, and completed actions pull the deadline forward."
+    },
+    {
+      "name": "Duplicate preview candidate snapshot",
+      "maximumEntries": 1024,
+      "maximumLifetimeSeconds": 0.5,
+      "invalidation": "Replaced on the next visible duplicate-page idle cadence and after discard completion, cancellation, or stale-slot detection."
+    },
+    {
+      "name": "Duplicate discard operation queue",
+      "maximumEntries": 1024,
+      "maximumLifetimeSeconds": null,
+      "invalidation": "Cleared on cancellation, terminal failure, completion, command replacement, and plugin unload; each active item has a 10-second native-operation deadline."
+    },
+    {
+      "name": "Exportaramus ownership snapshot",
+      "maximumEntries": 140000,
+      "maximumLifetimeSeconds": null,
+      "invalidation": "At most 20000 sorted item IDs per each of seven collection sources; replaced on provider/session revision and cleared on character withdrawal."
+    },
+    {
+      "name": "Diagnostic activity log",
+      "maximumEntries": 150,
+      "maximumLifetimeSeconds": null,
+      "invalidation": "Oldest entries are trimmed immediately above capacity; explicit Clear and plugin unload remove the retained log."
+    },
+    {
+      "name": "Remembered dresser and armoire station identities",
+      "maximumEntries": 512,
+      "maximumLifetimeSeconds": null,
+      "invalidation": "Each of the two sets is capped at 256 identities and released with the controller on plugin unload."
+    },
+    {
+      "name": "Duplicate review presentation",
+      "maximumEntries": 1824,
+      "maximumLifetimeSeconds": null,
+      "invalidation": "One All/Visible plan pair, rebuilt when either immutable input snapshot reference or ignored-ID membership changes; cleared on presentation withdrawal and disposal. Each pair contains at most 1024 inventory references and 800 Dresser references per plan. One copied ignored-ID set is bounded by the saved configuration count; no history is retained."
+    }
+  ],
+  "cachePolicy": "Immutable provider snapshots and native-domain preview/operation collections are bounded. Visible previews refresh at most 2 Hz; restoration observes at most 4 Hz with a 15-second deadline. Duplicate queues reject more than 1024 physical candidates rather than truncating. The native Dresser queue is bounded by 800 entries. Character/provider withdrawal clears authority. Native live rendering and adapter cost still require in-game verification.",
+  "liveValidationRequired": true,
+  "measurementReport": "development/release-qualification-20260916/performance-first.json",
+  "qualificationReport": "development/gap-audit-performance.json",
+  "measuredAtUtc": "2026-10-14T22:03:06.0000000Z"
+}

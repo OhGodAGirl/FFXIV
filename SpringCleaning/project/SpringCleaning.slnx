@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SpringCleaning.csproj" />
+  <Project Path="../tests/SpringCleaning.Domain/SpringCleaning.Domain.csproj" />
+  <Project Path="../tests/SpringCleaning.Performance/SpringCleaning.Performance.csproj" />
+  <Project Path="../tests/SpringCleaning.Tests/SpringCleaning.Tests.csproj" />
+</Solution>

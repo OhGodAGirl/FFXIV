@@ -1,0 +1,55 @@
+name: Spring Cleaning
+on:
+  push:
+    branches: [main]
+    paths: ['SpringCleaning/**', '.github/workflows/springcleaning-ci.yml']
+  pull_request:
+    paths: ['SpringCleaning/**', '.github/workflows/springcleaning-ci.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: springcleaning-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: Build and verify
+    runs-on: windows-2025
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: SpringCleaning
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      DOTNET_NOLOGO: '1'
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: SpringCleaning/global.json
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Prepare verified build dependencies
+        run: |
+          ./tools/Get-BuildDependencies.ps1 -Destination "$env:RUNNER_TEMP/springcleaning-dalamud"
+          "DALAMUD_HOME=$env:DALAMUD_HOME" >> $env:GITHUB_ENV
+      - name: Verify source, build, tests, coverage, and package
+        run: ./tests/run-quality.ps1 -Lane Stabilization
+      - name: Verify package reproduction
+        run: ./tools/Verify-Reproducibility.ps1
+      - name: Preserve verification results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: springcleaning-verification
+          path: |
+            SpringCleaning/tests/TestResults
+            SpringCleaning/project/bin/Release/SpringCleaning/latest.zip
+          if-no-files-found: warn
+          retention-days: 7

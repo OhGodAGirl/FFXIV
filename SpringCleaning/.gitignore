@@ -1,0 +1,14 @@
+**/bin/
+**/obj/
+**/TestResults/
+**/StrykerOutput/
+**/__pycache__/
+development/
+publish/
+artifacts/
+.tools/
+.venv/
+.vs/
+*.user
+*.suo
+*.log

@@ -1,0 +1,19 @@
+{
+  "Author": "OhGodAGirl",
+  "Name": "Spring Cleaning",
+  "InternalName": "SpringCleaning",
+  "Description": "Your very own spring-cleaning fairy, kupo! Spring Cleaning keeps your glamour collection tidy: sweep eligible gear from your Inventory and Armoury Chest into the Glamour Dresser or Armoire; move anything that belongs in the Armoire out of your Dresser; and find and clear unwanted duplicates—all with configurable protections for the things you want to keep.",
+  "ApplicableVersion": "any",
+  "DalamudApiLevel": 15,
+  "RepoUrl": "https://github.com/OhGodAGirl/FFXIV/tree/main/SpringCleaning",
+  "Punchline": "Automatic dresser and armoire management.",
+  "Tags": [
+    "glamour",
+    "dresser",
+    "armoire",
+    "inventory",
+    "qol"
+  ],
+  "IconUrl": "https://raw.githubusercontent.com/OhGodAGirl/FFXIV/main/SpringCleaning/images/icon.png",
+  "AcceptsFeedback": false
+}

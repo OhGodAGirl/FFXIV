@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <Version>1.0.0.0</Version>
+    <ProductName>Spring Cleaning</ProductName>
+    <Author>OhGodAGirl</Author>
+    <Name>Spring Cleaning</Name>
+    <Punchline>Automatic dresser and armoire management.</Punchline>
+    <Description>Your very own spring-cleaning fairy, kupo! Spring Cleaning keeps your glamour collection tidy: sweep eligible gear from your Inventory and Armoury Chest into the Glamour Dresser or Armoire; move anything that belongs in the Armoire out of your Dresser; and find and clear unwanted duplicates—all with configurable protections for the things you want to keep.</Description>
+    <RepoUrl>https://github.com/OhGodAGirl/FFXIV</RepoUrl>
+    <Tags>glamour;dresser;armoire;inventory;qol</Tags>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../src/**/*.cs" Exclude="../src/Contracts/**/*.cs" />
+    <Compile Include="../src/Contracts/1.2/*.cs" Exclude="../src/Contracts/1.2/CollectionDataIpcClient.cs;../src/Contracts/1.2/CollectionDataGateBindings.Dalamud.cs" />
+    <EmbeddedResource Include="../data/Contracts/1.2/schemas/*.json" LogicalName="$(RootNamespace).reference.ConsumerKit._1._2.schemas.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="../data/Contracts/1.2/resources/*.json" LogicalName="$(RootNamespace).reference.ConsumerKit._1._2.resources.%(Filename)%(Extension)" />
+    <InternalsVisibleTo Include="SpringCleaning.Tests" />
+    <Content Include="../images/icon.png" Link="images/icon.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

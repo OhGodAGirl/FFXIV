@@ -1,0 +1,175 @@
+{
+  "format": "exportaramus-ffxiv-collect-identifier-mappings",
+  "schemaVersion": "1.0",
+  "upstreamRepository": "https://github.com/skyborn-industries/ffxiv-collect",
+  "upstreamCommit": "7eda07857e89b7dba81453135b44bc33bf3457b1",
+  "validatedGameDataVersion": "2026.08.11.0000.0000",
+  "entries": [
+    {
+      "key": "armoires",
+      "inputKey": "armoires",
+      "inputIdentifier": "Cabinet.RowId",
+      "destinationIdentifier": "Armoire.id",
+      "transform": "CabinetRowPlusOne",
+      "exceptions": [],
+      "upstreamFiles": ["lib/tasks/armoire.rake"],
+      "runtimeValidationRequired": false
+    },
+    {
+      "key": "bardings",
+      "inputKey": "bardings",
+      "inputIdentifier": "BuddyEquip.RowId",
+      "destinationIdentifier": "Barding.id",
+      "transform": "Identity",
+      "exceptions": [],
+      "upstreamFiles": ["lib/tasks/bardings.rake"],
+      "runtimeValidationRequired": false
+    },
+    {
+      "key": "cards",
+      "inputKey": "cards",
+      "inputIdentifier": "TripleTriadCard.RowId",
+      "destinationIdentifier": "Card.id",
+      "transform": "Identity",
+      "exceptions": [],
+      "upstreamFiles": ["lib/tasks/triad/cards.rake"],
+      "runtimeValidationRequired": false
+    },
+    {
+      "key": "fashions",
+      "inputKey": "fashions",
+      "inputIdentifier": "Ornament.RowId",
+      "destinationIdentifier": "Fashion.id",
+      "transform": "Identity",
+      "exceptions": [
+        { "operation": "Exclude", "ids": [22, 25, 26, 32], "reasonCode": "MigratedToFacewear" }
+      ],
+      "upstreamFiles": ["lib/tasks/fashions.rake", "config/fashions.yml"],
+      "runtimeValidationRequired": false
+    },
+    {
+      "key": "field_records",
+      "inputKey": "field_records",
+      "inputIdentifier": "MYCWarResultNotebook.Number",
+      "destinationIdentifier": "FieldRecord.id",
+      "transform": "Identity",
+      "exceptions": [],
+      "upstreamFiles": ["lib/tasks/field_records.rake"],
+      "runtimeValidationRequired": true
+    },
+    {
+      "key": "frames",
+      "inputKey": "frames",
+      "inputIdentifier": "BannerCondition.RowId",
+      "destinationIdentifier": "Frame.id",
+      "transform": "Identity",
+      "exceptions": [
+        { "operation": "Exclude", "ids": [299, 346], "reasonCode": "UpstreamCuratedExclusion" },
+        { "operation": "Include", "ids": [573], "reasonCode": "UpstreamCuratedInclusion" }
+      ],
+      "upstreamFiles": ["lib/tasks/frames.rake"],
+      "runtimeValidationRequired": false
+    },
+    {
+      "key": "hairstyles",
+      "inputKey": "hairstyles",
+      "inputIdentifier": "CharaMakeCustomize.UnlockLink",
+      "destinationIdentifier": "Hairstyle.id",
+      "transform": "Identity",
+      "exceptions": [
+        { "operation": "Include", "ids": [228], "reasonCode": "ItemlessUnlockLink" }
+      ],
+      "upstreamFiles": ["lib/tasks/hairstyles.rake"],
+      "runtimeValidationRequired": false
+    },
+    {
+      "key": "leves",
+      "inputKey": "leves",
+      "inputIdentifier": "Leve.RowId",
+      "destinationIdentifier": "Leve.id",
+      "transform": "Identity",
+      "exceptions": [
+        { "operation": "Exclude", "ids": [502, 508, 514, 519, 525, 531, 542, 544, 552, 554, 562, 564, 582, 597, 822, 827, 832], "reasonCode": "UpstreamCuratedExclusion" }
+      ],
+      "upstreamFiles": ["lib/tasks/leves.rake"],
+      "runtimeValidationRequired": false
+    },
+    {
+      "key": "npcs",
+      "inputKey": "npcs",
+      "inputIdentifier": "TripleTriad.RowId",
+      "destinationIdentifier": "NPC.id",
+      "transform": "Identity",
+      "exceptions": [],
+      "upstreamFiles": ["lib/tasks/triad/npcs.rake"],
+      "runtimeValidationRequired": false
+    },
+    {
+      "key": "occult_records",
+      "inputKey": "occult_records",
+      "inputIdentifier": "MKDLore.RowId",
+      "destinationIdentifier": "OccultRecord.id",
+      "transform": "Identity",
+      "exceptions": [],
+      "upstreamFiles": ["lib/tasks/occult_records.rake"],
+      "runtimeValidationRequired": false
+    },
+    {
+      "key": "orchestrions",
+      "inputKey": "orchestrions",
+      "inputIdentifier": "Orchestrion.RowId",
+      "destinationIdentifier": "Orchestrion.id",
+      "transform": "Identity",
+      "exceptions": [],
+      "upstreamFiles": ["lib/tasks/orchestrion.rake"],
+      "runtimeValidationRequired": false
+    },
+    {
+      "key": "outfits",
+      "inputKey": "outfits",
+      "inputIdentifier": "MirageStoreSetItem.RowId",
+      "destinationIdentifier": "Outfit.id",
+      "transform": "DerivedIdentity",
+      "exceptions": [],
+      "upstreamFiles": ["lib/tasks/outfits.rake"],
+      "runtimeValidationRequired": false
+    },
+    {
+      "key": "relics",
+      "inputKey": "relics",
+      "inputIdentifier": "Item.RowId",
+      "destinationIdentifier": "Relic.id",
+      "transform": "DerivedIdentity",
+      "exceptions": [],
+      "upstreamFiles": [
+        "lib/tasks/relics.rake",
+        "lib/tasks/relics/armor.rake",
+        "lib/tasks/relics/garo.rake",
+        "lib/tasks/relics/tools.rake",
+        "lib/tasks/relics/ultimate.rake",
+        "lib/tasks/relics/weapons.rake"
+      ],
+      "runtimeValidationRequired": false
+    },
+    {
+      "key": "spells",
+      "inputKey": "spells",
+      "inputIdentifier": "AozAction.RowId",
+      "destinationIdentifier": "Spell.id",
+      "transform": "Identity",
+      "exceptions": [],
+      "upstreamFiles": ["lib/tasks/spells.rake"],
+      "runtimeValidationRequired": false
+    },
+    {
+      "key": "survey_records",
+      "inputKey": "survey_records",
+      "inputIdentifier": "VVDNotebookContents.RowId",
+      "destinationIdentifier": "SurveyRecord.id",
+      "transform": "Identity",
+      "exceptions": [],
+      "upstreamFiles": ["lib/tasks/survey_records.rake"],
+      "runtimeValidationRequired": true
+    }
+  ]
+}

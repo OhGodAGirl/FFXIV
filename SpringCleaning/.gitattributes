@@ -1,0 +1,12 @@
+* text=auto eol=lf
+*.cs text eol=crlf
+/src/** -text whitespace=cr-at-eol
+/docs/engineering/history/** -text whitespace=cr-at-eol
+*.ps1 text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+/src/Contracts/** -text whitespace=cr-at-eol
+/data/Contracts/** -text whitespace=cr-at-eol
+/tests/fixtures/** -text whitespace=cr-at-eol
+/project/Contracts/** -text whitespace=cr-at-eol
+/reference/** -text whitespace=cr-at-eol

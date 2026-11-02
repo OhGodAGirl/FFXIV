@@ -1,0 +1,336 @@
+{
+  "minimumLineCoverage": 100,
+  "minimumBranchCoverage": 100,
+  "includedProductionFiles": [
+    "src/Features/Inventory/Policies/DresserRestorationPolicy.cs",
+    "src/Shared/Ui/DrawerPlacementPolicy.cs",
+    "src/Features/Inventory/Controllers/DresserCleanupController.cs",
+    "src/Features/Inventory/Policies/RestoredCopyPolicy.cs",
+    "src/Shared/Ui/PresentationRefreshPolicy.cs",
+    "src/Shared/Diagnostics/UiFlickerTrace.cs",
+    "src/Bootstrap/PluginCommandRouter.cs",
+    "src/Bootstrap/RuntimeRegistrationSet.cs",
+    "src/Features/Armoire/Policies/ArmoireBookmarkPlacementPolicy.cs",
+    "src/Features/Dresser/Policies/DresserArmoireOverlayPolicy.cs",
+    "src/Features/Dresser/Policies/DresserPrismAvailability.cs",
+    "src/Features/Dresser/Policies/DresserPrismBudgetPlanner.cs",
+    "src/Features/Dresser/Policies/DresserPrismPolicy.cs",
+    "src/Features/Dresser/Policies/DresserStationVisibilityPolicy.cs",
+    "src/Features/Inventory/Controllers/DuplicateDiscardController.cs",
+    "src/Features/Inventory/Policies/InventoryDuplicatePlanner.cs",
+    "src/Features/Inventory/Policies/InventoryItemSafetyPlanner.cs",
+    "src/Features/Inventory/Policies/InventoryOutfitSetPlanner.cs",
+    "src/Features/Inventory/Policies/InventoryRoutingPlanner.cs",
+    "src/Features/Inventory/Policies/ReviewPlan.cs",
+    "src/Features/Inventory/Policies/ReviewPlanner.cs",
+    "src/Features/Inventory/Policies/DuplicateReviewCache.cs",
+    "src/Features/Migration/Models/EligibleDresserItem.cs",
+    "src/Features/Migration/Policies/DiscardConfirmationPolicy.cs",
+    "src/Features/Migration/Policies/ExistingOutfitConfirmationPolicy.cs",
+    "src/Features/Migration/Policies/MigrationBatchPlanner.cs",
+    "src/Features/Migration/Policies/NativePhaseDeadline.cs",
+    "src/Features/Migration/Policies/OutfitPieceSelectionPolicy.cs",
+    "src/Features/Migration/Policies/OutfitSelectionBoundsPolicy.cs",
+    "src/Features/Migration/Policies/PreviewRefreshPolicy.cs",
+    "src/Shared/CollectionData/CollectionDataClient.cs",
+    "src/Shared/CollectionData/CollectionDataParseResult.cs",
+    "src/Shared/CollectionData/CollectionDataRefreshController.cs",
+    "src/Shared/CollectionData/CollectionDataSnapshot.cs",
+    "src/Shared/CollectionData/CollectionDataSnapshotParser.cs",
+    "src/Shared/CollectionData/CollectionDataSourceDiagnostic.cs",
+    "src/Shared/CollectionData/CollectionDataStatusPolicy.cs",
+    "src/Shared/CollectionData/CollectionDataStatusSnapshot.cs",
+    "src/Shared/CollectionData/CollectionDataWireContract.cs",
+    "src/Shared/CollectionData/CollectionOwnershipPolicy.cs",
+    "src/Shared/CollectionData/DresserCompositionPolicy.cs",
+    "src/Shared/Diagnostics/DiagnosticActivityLog.cs",
+    "src/Shared/Diagnostics/DiagnosticObservation.cs",
+    "src/Shared/Diagnostics/DiagnosticVisibilityPolicy.cs",
+    "src/Shared/Diagnostics/MigrationDiagnosticSnapshot.cs",
+    "src/Shared/Infrastructure/StationIdentityPolicy.cs",
+    "src/Shared/Inventory/InventoryContract.cs",
+    "src/Shared/Inventory/InventoryCopyAuthority.cs",
+    "src/Shared/Inventory/InventoryPresenceAuthority.cs",
+    "src/Shared/Ui/NativeWindowFocusPolicy.cs",
+    "src/Shared/Ui/NativeWindowOcclusionPolicy.cs",
+    "src/Shared/Ui/PluginMotion.cs",
+    "src/Shared/Ui/WindowPlacementPolicy.cs",
+    "src/Shared/Diagnostics/SupportDiagnostics.cs",
+    "src/Bootstrap/Configuration.cs",
+    "src/Features/Armoire/Policies/ArmoireThemeState.cs"
+  ],
+  "excludedProductionFiles": [
+    {
+      "path": "src/Features/Inventory/Adapters/DresserCleanupRuntime.cs",
+      "reason": "Native restoration adapter; exact physical-copy attribution and bounded sequencing are covered in RestoredCopyPolicy and DresserCleanupController. Native Armoire and bag visibility require live verification."
+    },
+    {
+      "path": "src/Features/Migration/Ui/MigrationWindow.Drawer.cs",
+      "reason": "Direct ImGui drawer rendering and deliberate command adapter; sequencing and attribution are tested in extracted controller and policy."
+    },
+    {
+      "path": "src/Shared/Diagnostics/UiDrawObservation.cs",
+      "reason": "Read-only ImGui frame and style adapter for bounded flicker tracing; requires a live ImGui context. Trace lifetime, report caps and frame-gap interpretation are tested separately."
+    },
+    {
+      "path": "src/Adapters/CollectionData/DalamudCollectionDataTransport.cs",
+      "reason": "Thin optional Dalamud IPC transport adapter with defensive provider-failure translation."
+    },
+    {
+      "path": "src/Bootstrap/PluginIdentity.cs",
+      "reason": "Compile-time identity constants produce no executable lines for coverage instrumentation."
+    },
+    {
+      "path": "src/Bootstrap/Plugin.cs",
+      "reason": "Dalamud composition root and lifecycle wiring."
+    },
+    {
+      "path": "src/Bootstrap/CollectionDataRefreshCompletion.cs",
+      "reason": "Dalamud composition root and lifecycle wiring."
+    },
+    {
+      "path": "src/Features/Armoire/Ui/QuickStoreWindow.cs",
+      "reason": "Direct ImGui and native Armoire companion adapter."
+    },
+    {
+      "path": "src/Features/Dresser/Services/DresserScanner.cs",
+      "reason": "Irreducible FFXIVClientStructs memory reader; reusable routing and safety decisions are extracted into covered planners."
+    },
+    {
+      "path": "src/Features/Dresser/Services/OutfitAutofillService.cs",
+      "reason": "Direct Dalamud addon-lifecycle and native UI adapter."
+    },
+    {
+      "path": "src/Features/Dresser/Ui/DresserArmoireOverlayWindow.cs",
+      "reason": "Direct ImGui overlay and native addon positioning adapter."
+    },
+    {
+      "path": "src/Features/Dresser/Ui/DresserBookmarkWindow.cs",
+      "reason": "Direct ImGui bookmark and native addon positioning adapter."
+    },
+    {
+      "path": "src/Features/Inventory/Adapters/DuplicateDiscardRuntime.cs",
+      "reason": "Thin Dalamud condition and native inventory adapter; the complete discard state machine is extracted into the covered controller."
+    },
+    {
+      "path": "src/Features/Migration/Interop/NativeUi.cs",
+      "reason": "Irreducible FFXIVClientStructs native-addon and agent adapter."
+    },
+    {
+      "path": "src/Features/Migration/Services/MigrationController.cs",
+      "reason": "Live FFXIV native-addon automation boundary; state decisions require further extraction before this exclusion can be retired."
+    },
+    {
+      "path": "src/Features/Migration/Ui/MigrationWindow.cs",
+      "reason": "Direct ImGui rendering adapter; discard sequencing and safety decisions are extracted into the covered duplicate controller."
+    },
+    {
+      "path": "src/Shared/CollectionData/ICollectionDataTransport.cs",
+      "reason": "Owned transport interface; no executable implementation."
+    },
+    {
+      "path": "src/Shared/Diagnostics/DiagnosticWindow.cs",
+      "reason": "Direct ImGui and native addon sidecar adapter; reusable diagnostic decisions are extracted into covered helpers."
+    },
+    {
+      "path": "src/Shared/Infrastructure/VNavmeshIpc.cs",
+      "reason": "Thin optional Dalamud IPC adapter with defensive exception translation."
+    },
+    {
+      "path": "src/Shared/Ui/SettingsWindow.cs",
+      "reason": "Direct ImGui configuration adapter."
+    },
+    {
+      "path": "src/Shared/Ui/NativeWindowFocusTracker.cs",
+      "reason": "Thin Dalamud addon-focus lifecycle adapter; focus matching is extracted into the covered native-window focus policy."
+    },
+    {
+      "path": "src/Shared/Ui/NativeWindowOcclusion.cs",
+      "reason": "Thin FFXIVClientStructs adapter that inventories visible native windows; draw-order and clipping decisions are extracted into the covered occlusion policy."
+    },
+    {
+      "path": "src/Shared/Ui/SpringCleaningUi.cs",
+      "reason": "Direct ImGui drawing and texture adapter."
+    },
+    {
+      "path": "src/Contracts/1.2/CollectionDataContracts.cs",
+      "reason": "Unmodified pinned ConsumerKit 1.2 source; verified by checksum and exercised by owned integration tests. Not owned-code coverage."
+    },
+    {
+      "path": "src/Contracts/1.2/CollectionDataGates.cs",
+      "reason": "Unmodified pinned ConsumerKit 1.2 source; verified by checksum and exercised by owned integration tests. Not owned-code coverage."
+    },
+    {
+      "path": "src/Contracts/1.2/CollectionDataJsonContext.cs",
+      "reason": "Unmodified pinned ConsumerKit 1.2 source; verified by checksum and exercised by owned integration tests. Not owned-code coverage."
+    },
+    {
+      "path": "src/Contracts/1.2/CollectionDataSemanticValidator.cs",
+      "reason": "Unmodified pinned ConsumerKit 1.2 source; verified by checksum and exercised by owned integration tests. Not owned-code coverage."
+    },
+    {
+      "path": "src/Contracts/1.2/ContractSchemaRegistry.cs",
+      "reason": "Unmodified pinned ConsumerKit 1.2 source; verified by checksum and exercised by owned integration tests. Not owned-code coverage."
+    },
+    {
+      "path": "src/Contracts/1.2/ExactJsonNumber.cs",
+      "reason": "Unmodified pinned ConsumerKit 1.2 source; verified by checksum and exercised by owned integration tests. Not owned-code coverage."
+    },
+    {
+      "path": "src/Shared/Inventory/InventoryLocation.cs",
+      "reason": "Pure positional record declaration with no handwritten body, initializer or default. The unchanged coverage collector excludes generated members and auto-properties; coverage-second reports no sequence points. Construction and every field participate in parser/reconciliation regressions."
+    },
+    {
+      "path": "src/Shared/Inventory/InventoryQuantity.cs",
+      "reason": "Pure positional record declaration with no handwritten body, initializer or default. The unchanged coverage collector excludes generated members and auto-properties; coverage-second reports no sequence points. Construction and every field participate in parser/reconciliation regressions."
+    },
+    {
+      "path": "src/Shared/Inventory/InventorySnapshot.cs",
+      "reason": "Pure positional record declaration with no handwritten body, initializer or default. The unchanged coverage collector excludes generated members and auto-properties; coverage-second reports no sequence points. Construction and every field participate in parser/reconciliation regressions."
+    },
+    {
+      "path": "src/Shared/Ui/SettingsPanel.cs",
+      "reason": "Original SettingsWindow rendering extracted verbatim; no resource ownership. Exact body/string mapping is checked by style-review."
+    },
+    {
+      "path": "src/Shared/Diagnostics/DiagnosticStatePanel.cs",
+      "reason": "Original DiagnosticWindow rendering/field formatting extracted verbatim; source-specific native/ImGui boundary retained."
+    },
+    {
+      "path": "src/Features/Migration/Interop/DresserNativeControls.cs",
+      "reason": "Original native gear-set/category/alignment control bodies extracted verbatim; source-specific native boundary, no new planning decisions."
+    },
+    {
+      "path": "src/Bootstrap/PluginCommandDestination.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Dresser/Policies/DresserPrismBudgetPlan.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Inventory/Controllers/IDuplicateDiscardRuntime.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/CabinetInventoryItem.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/DresserAlertEntry.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/DresserAlertKind.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/DresserStorageSource.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/EligibleDresserComponent.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/InventoryDresserCandidate.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/InventoryDresserComponent.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/InventoryDresserItem.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/InventoryDresserOutfit.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/InventoryDuplicateDisposition.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/InventoryDuplicateItem.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/InventoryItemSafety.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/MigrationMode.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/MigrationPhase.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/PendingDeposit.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/PendingDresserItem.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/PendingDresserOutfit.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/PendingWithdrawal.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Models/SpringCleaningPage.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Features/Migration/Policies/OutfitPieceSelection.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Shared/CollectionData/CollectionDataFailure.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Shared/CollectionData/CollectionDataObservation.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Shared/CollectionData/CollectionDataRefreshRequest.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Shared/CollectionData/CollectionDresserComponent.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Shared/CollectionData/CollectionDresserEntry.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Shared/CollectionData/CollectionOwnershipFact.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Shared/CollectionData/CollectionSourceName.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Shared/CollectionData/CollectionSourceSnapshot.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Shared/CollectionData/CollectionSourceStatus.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    },
+    {
+      "path": "src/Shared/Diagnostics/DiagnosticObservationKind.cs",
+      "reason": "Enum/interface or positional record declaration. No handwritten method/accessor body. Existing generated-member and auto-property exclusions are unchanged; named source split does not remove executable coverage points. Source-bound syntax and measured no-point evidence: development/exportaramus-migration-20260913/coverage-declarations.json."
+    }
+  ]
+}

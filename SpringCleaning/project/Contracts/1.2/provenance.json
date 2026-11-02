@@ -1,0 +1,440 @@
+{
+  "contractVersion": "1.2",
+  "upstreamRepository": "https://github.com/OhGodAGirl/FFXIV",
+  "upstreamManifest": "Exportaramus/project/ConsumerKit/1.2/SHA256SUMS",
+  "upstreamManifestSha256": "24df77189f072cdf8607a152624e8c8792cd1d569e588354318f1ec045a27d55",
+  "sourceIntegrationManifestSha256": "543ef842a8f5f2a55196e88c6395bc84716707fe00039fbccb92e7d4a46bd63d",
+  "files": {
+    "data/Contracts/1.2/resources/derived-inputs.json": {
+      "upstreamPath": "data/Contracts/1.2/resources/derived-inputs.json",
+      "sha256": "427cb8fb922eb82e5134c6ffee604fa6012aa6b40fbede0df38e6f90d8291d22"
+    },
+    "data/Contracts/1.2/resources/derived-inputs.schema.json": {
+      "upstreamPath": "data/Contracts/1.2/resources/derived-inputs.schema.json",
+      "sha256": "05b81ad693ba4947f1809eba6946465ee2cc4890b68c05a1a074168080ee8971"
+    },
+    "data/Contracts/1.2/resources/ffxiv-collect-import.schema.json": {
+      "upstreamPath": "data/Contracts/1.2/resources/ffxiv-collect-import.schema.json",
+      "sha256": "dd251c98da9f6869b98ce0de17292895ee86316e396d7fc9ad6780eed5d939b7"
+    },
+    "data/Contracts/1.2/resources/identifier-mappings.json": {
+      "upstreamPath": "data/Contracts/1.2/resources/identifier-mappings.json",
+      "sha256": "847b4d36d43487f8dd7b477fc1748f2c9f72bb3d646f1e0d95b388a187cfe90e"
+    },
+    "data/Contracts/1.2/resources/recognized-ids.json": {
+      "upstreamPath": "data/Contracts/1.2/resources/recognized-ids.json",
+      "sha256": "08fa5dcb9fe89a458b0ed66633bcaaa4df9c4f182d90c1d378d6d516b49f4000"
+    },
+    "data/Contracts/1.2/schemas/capabilities.schema.json": {
+      "upstreamPath": "data/Contracts/1.2/schemas/capabilities.schema.json",
+      "sha256": "c36556d6a97c4728eaafce72d7874a5b6259f74426c6f4e050897a36e7058f76"
+    },
+    "data/Contracts/1.2/schemas/collection-data.schema.json": {
+      "upstreamPath": "data/Contracts/1.2/schemas/collection-data.schema.json",
+      "sha256": "a9fbd3bd24d2a3fb62e304ee7ec7de7967521403148f7ca132b6b32e5f60a29e"
+    },
+    "data/Contracts/1.2/schemas/common.schema.json": {
+      "upstreamPath": "data/Contracts/1.2/schemas/common.schema.json",
+      "sha256": "e4932b6f078d3a9ce13c7651408db6cc151a827a9c35171b5eb867f4ae2717c2"
+    },
+    "data/Contracts/1.2/schemas/exportaramus-snapshot.schema.json": {
+      "upstreamPath": "data/Contracts/1.2/schemas/exportaramus-snapshot.schema.json",
+      "sha256": "52506abb4bc769768cf0511ccb272aa4b146623307d404cb8a0bc1039f4ce2d6"
+    },
+    "data/Contracts/1.2/schemas/snapshot-changed.schema.json": {
+      "upstreamPath": "data/Contracts/1.2/schemas/snapshot-changed.schema.json",
+      "sha256": "ffd5284ff61c831e8f50c7bf1c1287e91d4d2d07092144d333d96514f847ce1e"
+    },
+    "data/Contracts/1.2/schemas/snapshot-withdrawn.schema.json": {
+      "upstreamPath": "data/Contracts/1.2/schemas/snapshot-withdrawn.schema.json",
+      "sha256": "4d20e4255451072d388905abfa5c07eb43ad69c8adb246f7fddad85e2cf9e1af"
+    },
+    "src/Contracts/1.2/CollectionDataContracts.cs": {
+      "upstreamPath": "src/Contracts/1.2/CollectionDataContracts.cs",
+      "sha256": "0e38b312d1161044f6409f9e767411356d19cf929af8e33e649017076baecb04"
+    },
+    "src/Contracts/1.2/CollectionDataGates.cs": {
+      "upstreamPath": "src/Contracts/1.2/CollectionDataGates.cs",
+      "sha256": "2f16d28da5e8d615efa4228947746c468ee7b54d9d4f0d0b9cd99d47ca11a256"
+    },
+    "src/Contracts/1.2/CollectionDataJsonContext.cs": {
+      "upstreamPath": "src/Contracts/1.2/CollectionDataJsonContext.cs",
+      "sha256": "e7f995bc355c8ec5b9d44da162f8bdeddb49a6eba03d11bbc16b8bfeeb23e45f"
+    },
+    "src/Contracts/1.2/CollectionDataSemanticValidator.cs": {
+      "upstreamPath": "src/Contracts/1.2/CollectionDataSemanticValidator.cs",
+      "sha256": "0c58b02de447b91b80a2c039225168cc79e74fd948fc7a90ea3dbdea87d93b2e"
+    },
+    "src/Contracts/1.2/ContractSchemaRegistry.cs": {
+      "upstreamPath": "src/Contracts/1.2/ContractSchemaRegistry.cs",
+      "sha256": "6b5ce34328967f4cb6f0ff5b4d23a1e062dd996566b52f23eb7bd4d09918806a"
+    },
+    "src/Contracts/1.2/ExactJsonNumber.cs": {
+      "upstreamPath": "src/Contracts/1.2/ExactJsonNumber.cs",
+      "sha256": "25d1d29b467f6eb47a73510061383fdf2bf0a70d0abae27c1d081dd7c2ce08fa"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/capabilities-invalid-beasts-key-missing.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/capabilities-invalid-beasts-key-missing.json",
+      "sha256": "524eb903a74d375883202c1ba44c58ba6ddda92037ede478f571dd6fef666e95"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/capabilities-invalid-beasts-missing.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/capabilities-invalid-beasts-missing.json",
+      "sha256": "23086fb26979ad2c7490fea5e0d6f53e2274562972eab5574d7f34e28476dc44"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/capabilities-invalid-beasts-quantity.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/capabilities-invalid-beasts-quantity.json",
+      "sha256": "8ac5f6bc4c43bf49fd7c188dd9c0db92c448ca87c7b3457c3daf10ac07aa0e42"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/capabilities-invalid-gate.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/capabilities-invalid-gate.json",
+      "sha256": "28b8a6d431709f7b50b86f1299cb10c6c37e4c59b985e694d2da8eb8928762ef"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/capabilities-invalid-hash.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/capabilities-invalid-hash.json",
+      "sha256": "91a24d5ff58c8651f966b089e5c8773ce14f979d2de7a6c645a0feff04582e82"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/capabilities-invalid-version.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/capabilities-invalid-version.json",
+      "sha256": "19af1032612b52319cb0962702bf9f14e12ab85aa5b7b8dc5712e2723e4a4825"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-capability-datatype.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-capability-datatype.json",
+      "sha256": "ebbe0ff709f0d713fa2254756ac0f845762b4da167dba57352f825cd3d18678f"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-capability-mismatch.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-capability-mismatch.json",
+      "sha256": "1960810d9cebadb748cb6661d88e9d726453692200717d79f08dc1d74aa8b204"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-contentid-overflow.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-contentid-overflow.json",
+      "sha256": "f71f47d3123f7fd621585c24801e8baad76d4e659ed7263a330c038bfb5631ec"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-health-captureGeneration-2.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-captureGeneration-2.json",
+      "sha256": "1b429b34f0ca1c7c5def958649c4b7b7838b83bac06d4e182db6b1bf578fe3ca"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-health-completeness-Partial.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-completeness-Partial.json",
+      "sha256": "1877983ce3af20338b195f4bd25668137f8662841ba3a56cf8b2441d159260b7"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-health-completeness-Unknown.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-completeness-Unknown.json",
+      "sha256": "f8a92c646fead9412b6d1c9ccf0efcb06c97221aeac4179331f7437c2cf18ad2"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-health-dataType-CurrentItemPresence.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-dataType-CurrentItemPresence.json",
+      "sha256": "5ab693a2830191bdc31a7f0a01a361d188481166063f4bfe46d82b369a0d3801"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-health-observedAtUtc-2026-09-07T12-00-00Z.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-observedAtUtc-2026-09-07T12-00-00Z.json",
+      "sha256": "48dae8d0d3660650f40fc23ed01157a2170785eda61e270ba4626f060d8e3638"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-health-provenanceType-Derived.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-provenanceType-Derived.json",
+      "sha256": "1bf5e96d1bc34b52bc8d524c28aecec7a011edcb18f12a59bda3a9229fec86b0"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-health-provenanceType-Reported.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-provenanceType-Reported.json",
+      "sha256": "10c133ebf69efda151ceeaeec1ad904f2b3932a530032bc0906b72b14f714c5f"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-health-provenanceType-Restored.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-provenanceType-Restored.json",
+      "sha256": "e9b8114e259e846bece436ea791f4eab5bd5a178d6e42660938e878fbba00579"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-health-sourceStatus-Unavailable.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-health-sourceStatus-Unavailable.json",
+      "sha256": "6806a6d2c09f61b504ee97b40eb22311b9dfb0a1cc78ff2bbc6ab805ed4fa432"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-ids-duplicate.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-duplicate.json",
+      "sha256": "cc114491ca077d25d37a19e4c2734dda68e0a20e1cea296ee6c51b7d16837321"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-ids-fraction.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-fraction.json",
+      "sha256": "36b90e74a906ea80c3c53d4cff837d2602f7bb3d3d6a55043d7857b593d71aa3"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-ids-negative.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-negative.json",
+      "sha256": "ee1d0115798f9019bfe4dd5beec4dea8df2b8723315c620936a9069c8638b17a"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-ids-overflow.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-overflow.json",
+      "sha256": "6a94da5c080374ab2face60635b3cbc5273ce419a7d6c20515612e8001b9ec17"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-ids-too-many.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-too-many.json",
+      "sha256": "38e960cf9448b3e68d820cdd7843fee3aae68813331c2b93cac6ebfc3a586022"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-ids-unknown.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-unknown.json",
+      "sha256": "b7c1f2ee30b6e9c8f0fd906af4c1d09049c1f482cb1186cff2262dcd6e9562a7"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-ids-unsorted.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-unsorted.json",
+      "sha256": "ec04ff2ae2b121f84fba8347098bd3439f24d64d6566aa17d9c49bef913e9c04"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-ids-zero.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-ids-zero.json",
+      "sha256": "2f01110396df5a1ef328bdac25b8a32036f0f510f65d2b0558de938dfa66f776"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-missing-capability.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-missing-capability.json",
+      "sha256": "e05882a43225228db061ea3b43d7896d4f5c5940bea7fd8aba728683808322aa"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-missing-health.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-missing-health.json",
+      "sha256": "cd79de94fa19b46db7c97c35303a402592cfe522757e4a15d89d65dc18264063"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-missing-set.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-missing-set.json",
+      "sha256": "246d410ec2f62d97ed9e37bb867c3d3abb7a163aaa9400ef8295f9ef7fe75a1c"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-no-observation-time.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-no-observation-time.json",
+      "sha256": "ce938c66e6142b303af824b94d68588ae2b6c601c0e906e0ecf360e890c575f6"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-quantity.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-quantity.json",
+      "sha256": "5614cf470db0e3da9150d73de85045f75ef063bd941ff54a570f649802f96aea"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-revision.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-revision.json",
+      "sha256": "284104ad226832e6af00f95a69a753bdc6184e6edb1df7f29dd4307aaccd08ca"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-session.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-session.json",
+      "sha256": "a3ec867882939872dc3593bfb76d2391543bf933b918402f5af49263a81f4aea"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-stale-coherent.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-stale-coherent.json",
+      "sha256": "739985880e5c76d983240c27f5c03852a166d3cda8c978169657c3e5f6268125"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-stale-no-reason.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-stale-no-reason.json",
+      "sha256": "5b53b46303f9a2500dcd483c21c51042e4b9cb43169a45c4d1b35778154d9a91"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-unavailable-empty.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-unavailable-empty.json",
+      "sha256": "40a24f386ef72fdf58e5ef2db73c514e53b9eae381a4dc01db3abd83e7d46952"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-unvalidated-set.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-unvalidated-set.json",
+      "sha256": "2e7e910107d96b19b0c6b600c55a4b34af2747d95e7d0ad64c8a2723ce6e428f"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-beasts-version.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-beasts-version.json",
+      "sha256": "2c85d3b833b0fff6a2ffeebc8632fb65ce9e75785363b613e39f8f7c754c1d07"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-dresser-aggregate-correlation.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-dresser-aggregate-correlation.json",
+      "sha256": "27ac8d6954e908a66773fbc7ef4d7d51910082faaaa820a05aa99e2449019281"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-duplicate-entry-index.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-duplicate-entry-index.json",
+      "sha256": "f0fe335e186d0f3fe3a4ff01c67aa7aa5388210d771bec06caf6ae7575b46d86"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-facewear-health-missing.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-facewear-health-missing.json",
+      "sha256": "4412f1431e4f7f7ca48785d981dcaa122dc0aca86d2d717e11d3d768b2cb3d68"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/compact-invalid-partial-facewear-included.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/compact-invalid-partial-facewear-included.json",
+      "sha256": "3f906e91ac885cfe9716b86ed980a062fd8f0d121b01e9ae256e97c61170b5a1"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/expanded-invalid-beasts-health-reported.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/expanded-invalid-beasts-health-reported.json",
+      "sha256": "2ffaaeab5da00e142b647348835a13ad5d76dbcbb25875eba2fed3d690307165"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/expanded-invalid-beasts-missing-health.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/expanded-invalid-beasts-missing-health.json",
+      "sha256": "d73d1770c6b68a7a62b0f96f14131e70399688cd23951ccbd0652c27b666b08f"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/expanded-invalid-beasts-reported-proves-owned.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/expanded-invalid-beasts-reported-proves-owned.json",
+      "sha256": "5e91fd89dc90391335c36cd9d0e372113ea9e5996ef56ae398776b83cf73fa0e"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/expanded-invalid-beasts-unknown-id.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/expanded-invalid-beasts-unknown-id.json",
+      "sha256": "d05e64e461ac20e0db4602d51a7867200b8205ad78134b90d3c5fdf496f4d3c5"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/ffxiv-collect-invalid-beasts-duplicate-ids.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-duplicate-ids.json",
+      "sha256": "af71f7568a0926f4f8e3a560070b463564dbfec86183224d65e73849ffa5ce91"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/ffxiv-collect-invalid-beasts-empty-root.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-empty-root.json",
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/ffxiv-collect-invalid-beasts-fractional-id.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-fractional-id.json",
+      "sha256": "f05ce4ece45fa0111f5dbe68a98fc0b31a86ca1d18ed6af1028488438bc0fa0b"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/ffxiv-collect-invalid-beasts-key-order.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-key-order.json",
+      "sha256": "bc6d111c60e9a30c9a28dcb96f80212b082855f1e491941c4bab6135ce74714c"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/ffxiv-collect-invalid-beasts-negative-id.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-negative-id.json",
+      "sha256": "64422d5758528540a0f2a567bfd247d23f9e40a82791d2b27fc504fac513a640"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/ffxiv-collect-invalid-beasts-overflow-id.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-overflow-id.json",
+      "sha256": "287c0261c8339546b710d80b1cff658a1d6fa22efbab7290b4efaf2fa5c8daf7"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/ffxiv-collect-invalid-beasts-root-version.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-root-version.json",
+      "sha256": "f42206d7cd2d9b79ed6660b45e759dd09dac98e40301ae6ded1d8bf1db471d3d"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/ffxiv-collect-invalid-beasts-unknown-id.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-unknown-id.json",
+      "sha256": "2948da5ea7525272256c224a2b6e482a513b33198becac5ee61cecd68a93c17d"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/ffxiv-collect-invalid-beasts-unknown-key.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-unknown-key.json",
+      "sha256": "c3ac082a6108641d25db4361624d61b8daef957a17ce39cbdd7c591352b9a3af"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/ffxiv-collect-invalid-beasts-unsorted-ids.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-unsorted-ids.json",
+      "sha256": "329651729901f3b1f8d115f56b7672b33e0b705a5d2d8148bc92f0ac1e162ec1"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/ffxiv-collect-invalid-beasts-zero-id.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/ffxiv-collect-invalid-beasts-zero-id.json",
+      "sha256": "90c82f11cbc4e4d801705c522b2f648bee5ccbdccded0b58b228c60a169f7138"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/snapshot-changed-invalid-correlation.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-changed-invalid-correlation.json",
+      "sha256": "5f9c65915a93a18e2ac1d28676c7c404da73677343882b5597a2f2be8127d079"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/snapshot-changed-invalid-duplicate.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-changed-invalid-duplicate.json",
+      "sha256": "68c3dc503c6660b52de28f8b5b83f2e5920f587c01241dc1cca9ba5bb71d317b"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/snapshot-changed-invalid-generation.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-changed-invalid-generation.json",
+      "sha256": "7d2b0c1d7f5b75f018eff2c8672bd4c89b5fb11d66e63179b669f692e4f01442"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/snapshot-changed-invalid-identity.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-changed-invalid-identity.json",
+      "sha256": "9c7d2607945cff687a43f8d4ba5d2b294006fa8d9af295c82bd09dba59350fb0"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/snapshot-changed-invalid-unknown.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-changed-invalid-unknown.json",
+      "sha256": "e107006744175d9630225a859a02ccde585b871a0263278cc62f7682ce3ab7cc"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/snapshot-changed-invalid-version.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-changed-invalid-version.json",
+      "sha256": "14ce108ec1ae7fa88b61f371ab09622480e952fd23cc119e9a5157eadc0b425d"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/snapshot-withdrawn-invalid-identity.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-withdrawn-invalid-identity.json",
+      "sha256": "f91a8f9e21f1b8dd5d79dda08b8475547a8453eef60f283fb28fd8fb58925459"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/snapshot-withdrawn-invalid-session.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-withdrawn-invalid-session.json",
+      "sha256": "8569e1471447393071cac3bc4376d516b74fa90b6e50cbb1762317ec286db307"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/snapshot-withdrawn-invalid-timestamp.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-withdrawn-invalid-timestamp.json",
+      "sha256": "aa2dfe47aae3e6ceac843352a20ae562c1503b812a512eb6e547494546db0137"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/invalid/snapshot-withdrawn-invalid-version.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/invalid/snapshot-withdrawn-invalid-version.json",
+      "sha256": "08c0b17682fdf9597d14a3b9dc2d6850b151a198dbe3e80b0339771f198ec575"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/capabilities-valid.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/capabilities-valid.json",
+      "sha256": "a303c10ba707e55b0b4adb6bcc630fa6f981ee54460caf4b51018bfb627f5ef2"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/compact-valid-beasts-degraded.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-beasts-degraded.json",
+      "sha256": "4ef988fb4ecd3e61235253505cd1b4e9a427a596555f6811b688b2215c685853"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/compact-valid-beasts-empty.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-beasts-empty.json",
+      "sha256": "d9eb5d8f3bdbd2838ce9f0b099901ad70c76bb2c4395ccb1874d2362c145b2f6"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/compact-valid-beasts-populated.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-beasts-populated.json",
+      "sha256": "1781d9d66b17af387beb8e26053ef2ff353e7541e24167fe282268266a4852b0"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/compact-valid-beasts-stale-observed.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-beasts-stale-observed.json",
+      "sha256": "b53560da22afb588465dcb1907cff855ebb1043570508718bc82ac5bbe85e662"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/compact-valid-beasts-stale-restored.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-beasts-stale-restored.json",
+      "sha256": "58d631c8c126fe3c6c78cfa3d90a60a2d759b2375126c56e47ab09dc337b689e"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/compact-valid-beasts-unknown-field.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-beasts-unknown-field.json",
+      "sha256": "d5330117b4c4eb4c7a8be4d25c8a15cd43059718a5b314343542b436108f0820"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/compact-valid-empty-dresser.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-empty-dresser.json",
+      "sha256": "a05ac32ee8566f35c4babfe2b0fa46ea7dcf67bcab20f1bc739612d4dcf8a442"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/compact-valid-empty-facewear.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-empty-facewear.json",
+      "sha256": "28d1bfebf47a6b2484248e0ab550718f95e447cdda4758a73b19d69a17d720a0"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/compact-valid-facewear-unavailable.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-facewear-unavailable.json",
+      "sha256": "6dd7b4ad0b66c4e59e761f453f2d35839d245efc39d500850df02e0444d9466c"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/compact-valid-full.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-full.json",
+      "sha256": "74c4c1a73b5020ac8260419e35f301d3b2f6ba93e0acf994049660db28c4a205"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/compact-valid-legacy-restored-composition-unknown.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/compact-valid-legacy-restored-composition-unknown.json",
+      "sha256": "b060e0c0799cae4ba8186ad199ab580a4a92678444a3d75e25e79c4332d1abc0"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/expanded-valid-beasts-empty.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/expanded-valid-beasts-empty.json",
+      "sha256": "92cfb426e9e21d8942afb9c1189695073e5ef4047ddfc44c896bc62378b2bbd1"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/expanded-valid-beasts-populated.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/expanded-valid-beasts-populated.json",
+      "sha256": "9ce65e76b490568b4bb6fdb7f7764be2163de8d579a0f591791f04e63d90ba8c"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/ffxiv-collect-valid-beasts-all-collections.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/ffxiv-collect-valid-beasts-all-collections.json",
+      "sha256": "b3f415c1c304b21f9083f1c76a548e5dfcc185e1b9726a581297c94584ba8a0a"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/ffxiv-collect-valid-beasts-complete-empty.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/ffxiv-collect-valid-beasts-complete-empty.json",
+      "sha256": "d85cb4d974ef8451fb8cb05b30f37e02892b9a82b972d96731f0ab2567942284"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/ffxiv-collect-valid-beasts-omitted.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/ffxiv-collect-valid-beasts-omitted.json",
+      "sha256": "208836f45635b9eec2eedfdef510bfaa33dfc2ce4aaaeb49bfc673fdc38ced00"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/ffxiv-collect-valid-beasts-populated.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/ffxiv-collect-valid-beasts-populated.json",
+      "sha256": "53b24e41419e11087b1e8f8849e2032055cc78354e2bfff4eda8e36ea89450ca"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/snapshot-changed-valid-beasts.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/snapshot-changed-valid-beasts.json",
+      "sha256": "487926369114ed17d9dfd872dcc2158d21b7f56fae0a1b693ca8989ce17434c1"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/snapshot-changed-valid.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/snapshot-changed-valid.json",
+      "sha256": "cb0fb03e683f7497aff9539f6ac55fc9fd1916e163fb2493a515a2bf2b9ca6f0"
+    },
+    "tests/fixtures/Contracts/1.2/fixtures/valid/snapshot-withdrawn-valid.json": {
+      "upstreamPath": "tests/Exportaramus.ConsumerKit.Tests/fixtures/valid/snapshot-withdrawn-valid.json",
+      "sha256": "62b85e0613157f4aef0cd8cbf250298a2d26ee018398b8aeeb9385e8461c8bda"
+    }
+  },
+  "omittedFiles": [
+    {
+      "path": "CollectionDataIpcClient.cs",
+      "reason": "Unused reference consumer; Spring Cleaning owns its IPC lifecycle."
+    },
+    {
+      "path": "CollectionDataGateBindings.Dalamud.cs",
+      "reason": "Unused reference consumer; Spring Cleaning owns its IPC lifecycle."
+    }
+  ],
+  "runtime": "Contracts are compiled into SpringCleaning.dll. The separate Inventory V1 parser and IPC lifecycle are owned by Spring Cleaning."
+}

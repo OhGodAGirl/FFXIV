@@ -1,0 +1,106 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>SpringCleaning.Domain</AssemblyName>
+    <RootNamespace>SpringCleaning</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../src/Bootstrap/Configuration.cs" Link="src/Bootstrap/Configuration.cs" />
+    <Compile Include="../../src/Features/Armoire/Policies/ArmoireThemeState.cs" Link="src/Features/Armoire/Policies/ArmoireThemeState.cs" />
+
+    <Compile Include="..\..\src\Features\Migration\Policies\ExistingOutfitConfirmationPolicy.cs" Link="Features\Migration\Policies\ExistingOutfitConfirmationPolicy.cs" />
+    <Compile Include="..\..\src\Features\Inventory\Policies\DuplicateReviewCache.cs" Link="Features\Inventory\Policies\DuplicateReviewCache.cs" />
+    <Compile Include="..\..\src\Shared\Diagnostics\SupportDiagnostics.cs" Link="Shared\Diagnostics\SupportDiagnostics.cs" />
+    <Compile Include="..\..\src\Features\Inventory\Policies\DresserRestorationPolicy.cs" Link="Features\Inventory\Policies\DresserRestorationPolicy.cs" />
+    <Compile Include="..\..\src\Shared\Ui\DrawerPlacementPolicy.cs" Link="Shared\Ui\DrawerPlacementPolicy.cs" />
+    <Compile Include="..\..\src\Features\Inventory\Controllers\DresserCleanupController.cs" Link="Features\Inventory\Controllers\DresserCleanupController.cs" />
+    <Compile Include="..\..\src\Features\Inventory\Policies\RestoredCopyPolicy.cs" Link="Features\Inventory\Policies\RestoredCopyPolicy.cs" />
+    <Compile Include="..\..\src\Shared\Ui\PresentationRefreshPolicy.cs" Link="Shared\Ui\PresentationRefreshPolicy.cs" />
+    <Compile Include="..\..\src\Shared\Diagnostics\UiFlickerTrace.cs" Link="Shared\Diagnostics\UiFlickerTrace.cs" />
+    <Compile Include="..\..\src\Features\Migration\Policies\NativePhaseDeadline.cs" Link="Features\Migration\Policies\NativePhaseDeadline.cs" />
+    <Compile Include="..\..\src\Features\Migration\Policies\OutfitPieceSelection.cs" Link="Features\Migration\Policies\OutfitPieceSelection.cs" />
+    <Compile Include="..\..\src\Features\Migration\Policies\OutfitPieceSelectionPolicy.cs" Link="Features\Migration\Policies\OutfitPieceSelectionPolicy.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\DresserCompositionPolicy.cs" Link="Shared\CollectionData\DresserCompositionPolicy.cs" />
+    <Compile Include="..\..\src\Contracts\1.2\*.cs" Exclude="..\..\src\Contracts\1.2\CollectionDataIpcClient.cs;..\..\src\Contracts\1.2\*.Dalamud.cs" Link="ConsumerKit\%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\data\Contracts\1.2\schemas\*.json" LogicalName="$(RootNamespace).%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\data\Contracts\1.2\resources\*.json" LogicalName="$(RootNamespace).%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\Shared\Inventory\*.cs" Link="Shared\Inventory\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionDataClient.cs" Link="Shared\CollectionData\CollectionDataClient.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\ICollectionDataTransport.cs" Link="Shared\CollectionData\ICollectionDataTransport.cs" />
+    <InternalsVisibleTo Include="SpringCleaning.Tests" />
+    <InternalsVisibleTo Include="SpringCleaning.Performance" />
+    <Compile Include="..\..\src\Bootstrap\PluginIdentity.cs" Link="Bootstrap\PluginIdentity.cs" />
+    <Compile Include="..\..\src\Bootstrap\PluginCommandDestination.cs" Link="Bootstrap\PluginCommandDestination.cs" />
+    <Compile Include="..\..\src\Bootstrap\PluginCommandRouter.cs" Link="Bootstrap\PluginCommandRouter.cs" />
+    <Compile Include="..\..\src\Bootstrap\RuntimeRegistrationSet.cs" Link="Bootstrap\RuntimeRegistrationSet.cs" />
+    <Compile Include="..\..\src\Features\Armoire\Policies\ArmoireBookmarkPlacementPolicy.cs" Link="Features\Armoire\Policies\ArmoireBookmarkPlacementPolicy.cs" />
+    <Compile Include="..\..\src\Features\Dresser\Policies\DresserArmoireOverlayPolicy.cs" Link="Features\Dresser\Policies\DresserArmoireOverlayPolicy.cs" />
+    <Compile Include="..\..\src\Features\Dresser\Policies\DresserPrismBudgetPlan.cs" Link="Features\Dresser\Policies\DresserPrismBudgetPlan.cs" />
+    <Compile Include="..\..\src\Features\Dresser\Policies\DresserPrismBudgetPlanner.cs" Link="Features\Dresser\Policies\DresserPrismBudgetPlanner.cs" />
+    <Compile Include="..\..\src\Features\Dresser\Policies\DresserPrismAvailability.cs" Link="Features\Dresser\Policies\DresserPrismAvailability.cs" />
+    <Compile Include="..\..\src\Features\Dresser\Policies\DresserPrismPolicy.cs" Link="Features\Dresser\Policies\DresserPrismPolicy.cs" />
+    <Compile Include="..\..\src\Features\Dresser\Policies\DresserStationVisibilityPolicy.cs" Link="Features\Dresser\Policies\DresserStationVisibilityPolicy.cs" />
+    <Compile Include="..\..\src\Features\Inventory\Controllers\IDuplicateDiscardRuntime.cs" Link="Features\Inventory\Controllers\IDuplicateDiscardRuntime.cs" />
+    <Compile Include="..\..\src\Features\Inventory\Controllers\DuplicateDiscardController.cs" Link="Features\Inventory\Controllers\DuplicateDiscardController.cs" />
+    <Compile Include="..\..\src\Features\Inventory\Policies\InventoryDuplicatePlanner.cs" Link="Features\Inventory\Policies\InventoryDuplicatePlanner.cs" />
+    <Compile Include="..\..\src\Features\Inventory\Policies\InventoryItemSafetyPlanner.cs" Link="Features\Inventory\Policies\InventoryItemSafetyPlanner.cs" />
+    <Compile Include="..\..\src\Features\Inventory\Policies\InventoryOutfitSetPlanner.cs" Link="Features\Inventory\Policies\InventoryOutfitSetPlanner.cs" />
+    <Compile Include="..\..\src\Features\Inventory\Policies\InventoryRoutingPlanner.cs" Link="Features\Inventory\Policies\InventoryRoutingPlanner.cs" />
+    <Compile Include="..\..\src\Features\Inventory\Policies\ReviewPlan.cs" Link="Features\Inventory\Policies\ReviewPlan.cs" />
+    <Compile Include="..\..\src\Features\Inventory\Policies\ReviewPlanner.cs" Link="Features\Inventory\Policies\ReviewPlanner.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\SpringCleaningPage.cs" Link="Features\Migration\Models\SpringCleaningPage.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\MigrationMode.cs" Link="Features\Migration\Models\MigrationMode.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\DresserStorageSource.cs" Link="Features\Migration\Models\DresserStorageSource.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\MigrationPhase.cs" Link="Features\Migration\Models\MigrationPhase.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\EligibleDresserComponent.cs" Link="Features\Migration\Models\EligibleDresserComponent.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\EligibleDresserItem.cs" Link="Features\Migration\Models\EligibleDresserItem.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\DresserAlertKind.cs" Link="Features\Migration\Models\DresserAlertKind.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\DresserAlertEntry.cs" Link="Features\Migration\Models\DresserAlertEntry.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\CabinetInventoryItem.cs" Link="Features\Migration\Models\CabinetInventoryItem.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\InventoryItemSafety.cs" Link="Features\Migration\Models\InventoryItemSafety.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\InventoryDuplicateDisposition.cs" Link="Features\Migration\Models\InventoryDuplicateDisposition.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\InventoryDuplicateItem.cs" Link="Features\Migration\Models\InventoryDuplicateItem.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\InventoryDresserComponent.cs" Link="Features\Migration\Models\InventoryDresserComponent.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\InventoryDresserCandidate.cs" Link="Features\Migration\Models\InventoryDresserCandidate.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\InventoryDresserOutfit.cs" Link="Features\Migration\Models\InventoryDresserOutfit.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\InventoryDresserItem.cs" Link="Features\Migration\Models\InventoryDresserItem.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\PendingWithdrawal.cs" Link="Features\Migration\Models\PendingWithdrawal.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\PendingDeposit.cs" Link="Features\Migration\Models\PendingDeposit.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\PendingDresserOutfit.cs" Link="Features\Migration\Models\PendingDresserOutfit.cs" />
+    <Compile Include="..\..\src\Features\Migration\Models\PendingDresserItem.cs" Link="Features\Migration\Models\PendingDresserItem.cs" />
+    <Compile Include="..\..\src\Features\Migration\Policies\DiscardConfirmationPolicy.cs" Link="Features\Migration\Policies\DiscardConfirmationPolicy.cs" />
+    <Compile Include="..\..\src\Features\Migration\Policies\MigrationBatchPlanner.cs" Link="Features\Migration\Policies\MigrationBatchPlanner.cs" />
+    <Compile Include="..\..\src\Features\Migration\Policies\OutfitSelectionBoundsPolicy.cs" Link="Features\Migration\Policies\OutfitSelectionBoundsPolicy.cs" />
+    <Compile Include="..\..\src\Features\Migration\Policies\PreviewRefreshPolicy.cs" Link="Features\Migration\Policies\PreviewRefreshPolicy.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionDataWireContract.cs" Link="Shared\CollectionData\CollectionDataWireContract.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionSourceStatus.cs" Link="Shared\CollectionData\CollectionSourceStatus.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionSourceName.cs" Link="Shared\CollectionData\CollectionSourceName.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionSourceSnapshot.cs" Link="Shared\CollectionData\CollectionSourceSnapshot.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionDataSnapshot.cs" Link="Shared\CollectionData\CollectionDataSnapshot.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionDresserComponent.cs" Link="Shared\CollectionData\CollectionDresserComponent.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionDresserEntry.cs" Link="Shared\CollectionData\CollectionDresserEntry.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionDataFailure.cs" Link="Shared\CollectionData\CollectionDataFailure.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionDataParseResult.cs" Link="Shared\CollectionData\CollectionDataParseResult.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionOwnershipFact.cs" Link="Shared\CollectionData\CollectionOwnershipFact.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionOwnershipPolicy.cs" Link="Shared\CollectionData\CollectionOwnershipPolicy.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionDataRefreshRequest.cs" Link="Shared\CollectionData\CollectionDataRefreshRequest.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionDataObservation.cs" Link="Shared\CollectionData\CollectionDataObservation.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionDataRefreshController.cs" Link="Shared\CollectionData\CollectionDataRefreshController.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionDataSnapshotParser.cs" Link="Shared\CollectionData\CollectionDataSnapshotParser.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionDataStatusPolicy.cs" Link="Shared\CollectionData\CollectionDataStatusPolicy.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionDataSourceDiagnostic.cs" Link="Shared\CollectionData\CollectionDataSourceDiagnostic.cs" />
+    <Compile Include="..\..\src\Shared\CollectionData\CollectionDataStatusSnapshot.cs" Link="Shared\CollectionData\CollectionDataStatusSnapshot.cs" />
+    <Compile Include="..\..\src\Shared\Diagnostics\DiagnosticActivityLog.cs" Link="Shared\Diagnostics\DiagnosticActivityLog.cs" />
+    <Compile Include="..\..\src\Shared\Diagnostics\DiagnosticObservationKind.cs" Link="Shared\Diagnostics\DiagnosticObservationKind.cs" />
+    <Compile Include="..\..\src\Shared\Diagnostics\DiagnosticObservation.cs" Link="Shared\Diagnostics\DiagnosticObservation.cs" />
+    <Compile Include="..\..\src\Shared\Diagnostics\DiagnosticVisibilityPolicy.cs" Link="Shared\Diagnostics\DiagnosticVisibilityPolicy.cs" />
+    <Compile Include="..\..\src\Shared\Diagnostics\MigrationDiagnosticSnapshot.cs" Link="Shared\Diagnostics\MigrationDiagnosticSnapshot.cs" />
+    <Compile Include="..\..\src\Shared\Infrastructure\StationIdentityPolicy.cs" Link="Shared\Infrastructure\StationIdentityPolicy.cs" />
+    <Compile Include="..\..\src\Shared\Ui\PluginMotion.cs" Link="Shared\Ui\PluginMotion.cs" />
+    <Compile Include="..\..\src\Shared\Ui\NativeWindowFocusPolicy.cs" Link="Shared\Ui\NativeWindowFocusPolicy.cs" />
+    <Compile Include="..\..\src\Shared\Ui\NativeWindowOcclusionPolicy.cs" Link="Shared\Ui\NativeWindowOcclusionPolicy.cs" />
+    <Compile Include="..\..\src\Shared\Ui\WindowPlacementPolicy.cs" Link="Shared\Ui\WindowPlacementPolicy.cs" />
+  </ItemGroup>
+</Project>
