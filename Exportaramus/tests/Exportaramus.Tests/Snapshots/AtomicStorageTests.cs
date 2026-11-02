@@ -72,7 +72,8 @@ public sealed class AtomicStorageTests : IDisposable
         var history = Directory.GetFiles(Path.Combine(root, "snapshots"), "*-snapshot-*.json");
         Assert.Equal(25, history.Length);
         Assert.False(File.Exists(Path.Combine(root, "snapshots", "manual-snapshot-20260906-000000-000.json")));
-        await Assert.ThrowsAsync<IOException>(() => storage.CommitAsync(1, "{}", "{}", null, true, true, now.AddSeconds(26), default));
+        var error = await Assert.ThrowsAsync<IOException>(() => storage.CommitAsync(1, "{}", "{}", null, true, true, now.AddSeconds(26), default));
+        Assert.Equal("History timestamp collision.", error.Message);
         Assert.Equal("{\"revision\":26}", await storage.ReadAsync(1, false, default));
     }
 
@@ -85,7 +86,8 @@ public sealed class AtomicStorageTests : IDisposable
         await Assert.ThrowsAsync<OutputSizeLimitException>(() => storage.CommitAsync(1, oversized, null, null, false, false, now, default));
         Assert.Equal("{}", await storage.ReadAsync(1, false, default));
         await File.WriteAllTextAsync(storage.CharacterPath(1), oversized);
-        await Assert.ThrowsAsync<InvalidDataException>(() => storage.ReadAsync(1, false, default));
+        var error = await Assert.ThrowsAsync<InvalidDataException>(() => storage.ReadAsync(1, false, default));
+        Assert.Equal("Stored snapshot exceeds its byte limit.", error.Message);
         await File.WriteAllBytesAsync(storage.CharacterPath(1), [0xc3, 0x28]);
         await Assert.ThrowsAsync<DecoderFallbackException>(() => storage.ReadAsync(1, false, default));
     }
@@ -150,7 +152,8 @@ public sealed class AtomicStorageTests : IDisposable
         Directory.CreateDirectory(root);
         await File.WriteAllTextAsync(path, "keep");
         WriteRecovery(false, (path, path + "." + new string('f', 32) + ".tmp", false, false));
-        await Assert.ThrowsAsync<InvalidDataException>(() => new AtomicSnapshotStorage(root).ReadAsync(1, false, default));
+        var error = await Assert.ThrowsAsync<InvalidDataException>(() => new AtomicSnapshotStorage(root).ReadAsync(1, false, default));
+        Assert.Equal("Recovery paths are invalid.", error.Message);
         Assert.Equal("keep", await File.ReadAllTextAsync(path));
         Assert.True(File.Exists(Path.Combine(root, "state", "write-recovery.json")));
     }
@@ -198,7 +201,8 @@ public sealed class AtomicStorageTests : IDisposable
         var original = new AtomicSnapshotStorage(root);
         await original.CommitAsync(1, "{}", null, null, false, false, now, default);
         var storage = new AtomicSnapshotStorage(root, new FaultFiles { Read = _ => new GrowingStream(new byte[4194305]) });
-        await Assert.ThrowsAsync<InvalidDataException>(() => storage.ReadAsync(1, false, default));
+        var error = await Assert.ThrowsAsync<InvalidDataException>(() => storage.ReadAsync(1, false, default));
+        Assert.Equal("Stored snapshot exceeds its byte limit.", error.Message);
     }
 
     [Fact]
@@ -268,7 +272,8 @@ public sealed class AtomicStorageTests : IDisposable
         var directory = Path.Combine(root, "snapshots");
         for (int i = 0; i < 90; i++)
             await File.WriteAllTextAsync(Path.Combine(directory, $"manual-snapshot-20260905-000000-{i:000}.json"), "{}");
-        await Assert.ThrowsAsync<InvalidDataException>(() => storage.CommitAsync(1, "{}", "{}", null, true, false, now, default));
+        var error = await Assert.ThrowsAsync<InvalidDataException>(() => storage.CommitAsync(1, "{}", "{}", null, true, false, now, default));
+        Assert.Equal("Recovery record exceeds its limit.", error.Message);
         Assert.Equal("{\"old\":true}", await storage.ReadAsync(1, false, default));
     }
 
