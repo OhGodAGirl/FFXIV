@@ -1,0 +1,414 @@
+{
+  "schemaVersion": 1,
+  "status": "complete",
+  "propertyFuzz": {
+    "applicable": true,
+    "invariantInventory": [
+      {
+        "id": "PROP-PLATE-SHAPE-LENGTH",
+        "requirement": "Every legacy plate array length from 0 through 64 normalizes to exactly twelve native slots.",
+        "test": "PlateLibraryTests.GeneratedLegacyShapesPreserveTheSupportedPrefix"
+      },
+      {
+        "id": "PROP-PLATE-SHAPE-PREFIX",
+        "requirement": "Shape normalization preserves every supported source slot in order.",
+        "test": "PlateLibraryTests.GeneratedLegacyShapesPreserveTheSupportedPrefix"
+      },
+      {
+        "id": "PROP-PLATE-SHAPE-PADDING",
+        "requirement": "Shape normalization pads every missing supported slot with null and discards only unsupported overflow.",
+        "test": "PlateLibraryTests.GeneratedLegacyShapesPreserveTheSupportedPrefix"
+      },
+      {
+        "id": "PROP-NAME-IDEMPOTENT",
+        "requirement": "Normalizing an already normalized generated name never changes it.",
+        "test": "PlateLibraryTests.GeneratedNamesNormalizeIdempotently"
+      },
+      {
+        "id": "PROP-NAME-NONBLANK",
+        "requirement": "Every generated input normalizes to a nonblank local plate name.",
+        "test": "PlateLibraryTests.GeneratedNamesNormalizeIdempotently"
+      },
+      {
+        "id": "PROP-NAME-TRIMMED",
+        "requirement": "Every generated normalized name has no surrounding whitespace.",
+        "test": "PlateLibraryTests.GeneratedNamesNormalizeIdempotently"
+      },
+      {
+        "id": "PROP-SOURCE-APPEARANCE",
+        "requirement": "Generated decoys never resolve an item identifier or dye pair different from the saved appearance.",
+        "test": "CollectionSourceResolverTests.GeneratedDecoysNeverResolveTheWrongAppearance"
+      },
+      {
+        "id": "PROP-SOURCE-PREFERENCE",
+        "requirement": "Generated exact Dresser sources win, while Armoire is eligible only for an undyed exact appearance.",
+        "test": "CollectionSourceResolverTests.GeneratedDecoysNeverResolveTheWrongAppearance"
+      },
+      {
+        "id": "PROP-VIEW-SLOT",
+        "requirement": "Broad collection views contain only items compatible with the requested plate slot.",
+        "test": "CollectionViewPlannerTests.CreateIsBoundedSortedFilteredAndSkipsUnknownItemFacts"
+      },
+      {
+        "id": "PROP-VIEW-FILTER",
+        "requirement": "Broad collection views never leak an item that misses the active case-insensitive filter.",
+        "test": "CollectionViewPlannerTests.CreateIsBoundedSortedFilteredAndSkipsUnknownItemFacts"
+      },
+      {
+        "id": "PROP-VIEW-BOUND",
+        "requirement": "Generated and broad collection views never exceed the explicit 2000-item bound.",
+        "test": "CollectionViewPlannerTests.CreateIsBoundedSortedFilteredAndSkipsUnknownItemFacts; CollectionViewPlannerTests.GeneratedSnapshotsPreserveSourceStatusAndDeduplicationInvariants"
+      },
+      {
+        "id": "PROP-VIEW-DEDUPE",
+        "requirement": "Generated canonical ownership snapshots produce at most one visible entry per item identifier.",
+        "test": "CollectionViewPlannerTests.GeneratedSnapshotsPreserveSourceStatusAndDeduplicationInvariants; CollectionViewPlannerTests.DuplicateValuesWithinOneSourceRemainDeduplicated"
+      },
+      {
+        "id": "PROP-VIEW-DETERMINISTIC",
+        "requirement": "Generated canonical snapshots preserve deterministic Fresh-over-Stale and Dresser tie-breaking.",
+        "test": "CollectionViewPlannerTests.GeneratedSnapshotsPreserveSourceStatusAndDeduplicationInvariants; CollectionViewPlannerTests.FreshEvidenceWinsStaleAndDresserWinsEqualFreshness"
+      },
+      {
+        "id": "PROP-VIEW-SORTED",
+        "requirement": "Collection views remain name-then-item sorted under broad and equal-name input.",
+        "test": "CollectionViewPlannerTests.CreateIsBoundedSortedFilteredAndSkipsUnknownItemFacts; CollectionViewPlannerTests.EqualNamesSortByAscendingItemId"
+      },
+      {
+        "id": "PROP-ACTION-VALIDATION-HINT-FRESH",
+        "requirement": "Action-validation context appears only when at least one relevant Exportaramus source has a Fresh matching item ID.",
+        "test": "CollectionProviderPolicyTests.ActionValidationHintRequiresFreshMatchingOwnership"
+      },
+      {
+        "id": "PROP-NATIVE-DYE-FLAGS",
+        "requirement": "Replacing dye capabilities preserves all unrelated bits for 256 byte flag combinations and four channel counts.",
+        "test": "NativeDyeStatePolicyTests.CapabilityFlagsPreserveUnrelatedState"
+      }
+    ],
+    "command": ".\\tests\\test-focused.ps1 -Filter 'FullyQualifiedName~GeneratedLegacyShapesPreserveTheSupportedPrefix|FullyQualifiedName~GeneratedNamesNormalizeIdempotently|FullyQualifiedName~GeneratedDecoysNeverResolveTheWrongAppearance|FullyQualifiedName~GeneratedSnapshotsPreserveSourceStatusAndDeduplicationInvariants|FullyQualifiedName~CreateIsBoundedSortedFilteredAndSkipsUnknownItemFacts|FullyQualifiedName~ActionValidationHintRequiresFreshMatchingOwnership' -Configuration Release",
+    "notApplicableReason": "",
+    "lastRun": {
+      "completedAtUtc": "2026-10-14T22:33:27.1356728+00:00",
+      "declared": 16,
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "command": "tests/test-quality.ps1 -ReviewCandidate (final ordinary TRX; copy, format and source-bound mutation gates passed)",
+      "report": "unpublished-historical-evidence",
+      "reportSha256": "2CA6AE9EAA476F3911618E2DDEC42585101F474A5F56A2B4483AD20CB74A5811",
+      "generatedCases": 1639
+    }
+  },
+  "regression": {
+    "defectInventory": [
+      {
+        "id": "REG-ICON-ALPHA-PADDING",
+        "requirement": "The repaired icon retains zero nontransparent pixels in required edge padding; the historical 5411-pixel violation cannot return.",
+        "test": "Test-PluginIcon.ps1 -IconPath images/icon.png"
+      },
+      {
+        "id": "REG-COPY-REVIEW-DRIFT",
+        "requirement": "Contextual copy approval remains bound to the exact current deterministic inventory instead of the stale 177-item review.",
+        "test": "Test-PlayerCopy.ps1 -PluginPath ."
+      },
+      {
+        "id": "REG-CANONICAL-FORMAT",
+        "requirement": "The repaired CRLF and indentation finding remains canonical under formatter verification.",
+        "test": "dotnet format BetterGlamorPlates.slnx --no-restore --verify-no-changes --exclude src/Contracts"
+      },
+      {
+        "id": "REG-COVERAGE-HARNESS-SCOPE",
+        "requirement": "The test-only mutation harness cannot be enumerated as a shipped-plugin coverage project.",
+        "test": "QualityHarnessRegressionTests.CoverageEnumerationExcludesTheMutationHarness"
+      },
+      {
+        "id": "REG-MUTATION-FALSE-GREEN",
+        "requirement": "Mutation success requires a killed loaded-assembly probe, the complete deterministic target inventory, and zero undetected mutants.",
+        "test": "QualityHarnessRegressionTests.MutationRunnerRejectsFalseGreenInstrumentationAndPartialTargets; MutationProbeTests.IsPositiveHonorsTheZeroBoundary"
+      },
+      {
+        "id": "REG-STATIC-SERVICE-LOCATOR",
+        "requirement": "The removed mutable static Dalamud service locator cannot return.",
+        "test": "ArchitectureContractTests.PluginHasNoMutableStaticServiceLocatorAndSymmetricSubscriptions"
+      },
+      {
+        "id": "REG-RECURRING-COLLECTION-SCAN",
+        "requirement": "The framework update callback cannot restore recurring full native collection work.",
+        "test": "ArchitectureContractTests.FrameworkUpdateDoesNotPerformRecurringCollectionWork"
+      },
+      {
+        "id": "REG-UI-POLICY-LEAKAGE",
+        "requirement": "The window cannot regain collection, persistence, time, identifier, or plate-library policy.",
+        "test": "ArchitectureContractTests.WindowOnlyRendersStateAndEmitsCommands"
+      },
+      {
+        "id": "REG-NATIVE-ADAPTER-POLICY",
+        "requirement": "The native mechanism cannot regain load planning, collection scanning, or persistence policy.",
+        "test": "ArchitectureContractTests.NativeAdapterDoesNotOwnPlanningOrCollectionPolicy"
+      },
+      {
+        "id": "REG-SHARED-COLLECTION-BACKGROUND-PARSE",
+        "requirement": "Shared collection invoke and parse work must stay off RunOnTick so only the small publish step reaches the framework thread.",
+        "test": "ArchitectureContractTests.SharedCollectionParsingRunsOffFrameworkThread"
+      },
+      {
+        "id": "REG-OPERATION-START-LOCK",
+        "requirement": "Owned operation schedulers must not be invoked while the registry lock is held.",
+        "test": "ArchitectureContractTests.OperationRegistryDoesNotInvokeSchedulersWhileHoldingItsGate"
+      },
+      {
+        "id": "REG-SHARED-COLLECTION-STALE-PUBLISH",
+        "requirement": "Cancelled, stale, disposed, busy, or content-drifted shared refresh results cannot publish back into framework state.",
+        "test": "LifecycleStressTests.SharedCollectionPublicationRejectsStaleCancellationAndContentDrift"
+      },
+      {
+        "id": "REG-STALE-DISPOSED-COMMAND",
+        "requirement": "Queued commands arriving after controller disposal cannot mutate or persist local library state.",
+        "test": "MainControllerTests.DisposedControllerRejectsStaleQueuedCommands; LifecycleStressTests.StaleCompletionCannotMutateDisposedController"
+      },
+      {
+        "id": "REG-EXPORTARAMUS-SOLE-OWNERSHIP",
+        "requirement": "Collection views, filtering, and ownership labels cannot regain native scans, Collection Exporter reads, or a second retained snapshot cache.",
+        "test": "ArchitectureContractTests.CollectionOwnershipHasOneCanonicalSourceAndNoLegacyExporter; MainControllerTests.RefreshCollectionUsesOnlyExportaramusOwnership"
+      },
+      {
+        "id": "REG-ACTION-TIME-NATIVE-VALIDATION",
+        "requirement": "Native Dresser and Armoire reads remain limited to one deliberate load and cannot authorize collection views.",
+        "test": "ArchitectureContractTests.LoadActiveUsesOneShotNativeValidationOnlyAtActionTime; MainControllerTests.LoadActiveIgnoresSharedCollectionDataForNativeValidation"
+      },
+      {
+        "id": "REG-UNKNOWN-STALE-PRESERVATION",
+        "requirement": "Stale ownership stays labelled and unavailable or never-observed sources remain unknown rather than becoming empty ownership evidence.",
+        "test": "CollectionViewPlannerTests.UnknownSourcesNeverBecomeEmptyOwnershipEvidence; CollectionProviderPolicyTests.LastKnownSharedSnapshotRemainsOperationalAndClearlyLabelled"
+      },
+      {
+        "id": "REG-PERSISTENCE-ROLLBACK",
+        "requirement": "A failed persistent action cannot leak into a later successful save.",
+        "test": "StabilizationRegressionTests.FailedPersistenceCannotLeakIntoLaterSave"
+      },
+      {
+        "id": "REG-REENTRANT-FAILED-START",
+        "requirement": "Disposal during synchronously failing start releases deferred resources exactly once.",
+        "test": "StabilizationRegressionTests.DisposeDuringThrowingStartReleasesOnce"
+      },
+      {
+        "id": "REG-CLEAR-NATIVE-FAILURE",
+        "requirement": "Clear-items unexpected failures disclose potentially partial native changes.",
+        "test": "StabilizationRegressionTests.ClearItemsFailureUsesNativeWarning"
+      },
+      {
+        "id": "REG-DRAFT-CLOSE-RESET",
+        "requirement": "Unsaved clears reset on close; saved outfits survive reopen and partial load skips missing only.",
+        "test": "StabilizationRegressionTests.SavedOutfitJourneyResetsEditsThenLoadsOnlyAvailableItems"
+      },
+      {
+        "id": "REG-COMPOSED-DRAWER-PREVIEW",
+        "requirement": "Real drawer actions still edit the real controller after preview toggles; persistence requires explicit Save.",
+        "test": "OutfitWorkflowTests.DrawerActionsAfterPreviewTogglePersistOnlyOnSave"
+      },
+      {
+        "id": "REG-COMPOSED-UNSAVED-CLEAR",
+        "requirement": "Right-click command bindings revert unsaved item removal on reset, close or plate switch.",
+        "test": "OutfitWorkflowTests.LeavingAnUnsavedClearRestoresTheStoredItem"
+      }
+    ],
+    "noKnownDefectsReason": "",
+    "command": "Full ordinary test suite; tests/test-mutation.ps1; dotnet format BetterGlamorPlates.slnx --no-restore --verify-no-changes --exclude src/Contracts",
+    "lastRun": {
+      "completedAtUtc": "2026-09-16T01:58:58.479539-07:00",
+      "declared": 20,
+      "passed": 19,
+      "failed": 1,
+      "skipped": 0,
+      "command": "dotnet test BetterGlamorPlates.slnx -c Release --no-build --no-restore --logger \"trx;LogFileName=final.trx\" --results-directory tests/TestResults/stabilization-final; tests/test-mutation.ps1 -Configuration Release; dotnet format BetterGlamorPlates.slnx --no-restore --verify-no-changes --exclude src/Contracts --verbosity minimal",
+      "report": "unpublished-historical-evidence",
+      "failedEntries": [
+        {
+          "id": "REG-ICON-ALPHA-PADDING",
+          "reason": "The invoked shared icon validator rejects the user-approved artwork for translucent interior pixels and old colour anchors. The full validator remains failed; package PNG validity and exact bytes passed separately."
+        }
+      ]
+    },
+    "releaseCandidateLastRun": {
+      "completedAtUtc": "2026-10-14T22:33:27.1467610+00:00",
+      "declared": 21,
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "command": "tests/test-quality.ps1 -ReviewCandidate (final ordinary TRX; copy, format and source-bound mutation gates passed)",
+      "report": "unpublished-historical-evidence",
+      "reportSha256": "2CA6AE9EAA476F3911618E2DDEC42585101F474A5F56A2B4483AD20CB74A5811"
+    }
+  },
+  "lifecycle": {
+    "scenarioInventory": [
+      {
+        "id": "LIFE-REVERSE-IDEMPOTENT",
+        "requirement": "Repeated full teardown releases registrations in reverse ownership order exactly once.",
+        "test": "LifecycleStressTests.TeardownIsReverseOrderedAndIdempotentAcrossRepeatedLifecycles"
+      },
+      {
+        "id": "LIFE-PARTIAL-INIT-FAILURE",
+        "requirement": "Partial-initialization cleanup continues after one release callback fails and reports the failure.",
+        "test": "LifecycleStressTests.PartialInitializationCleanupContinuesAfterReleaseFailure"
+      },
+      {
+        "id": "LIFE-TEARDOWN-OWNERSHIP",
+        "requirement": "Teardown rejects null or post-disposal registrations and clears owned callback references.",
+        "test": "LifecycleStressTests.TeardownRejectsNullAndLateRegistrationsAndClearsOwnership"
+      },
+      {
+        "id": "LIFE-ACTIVE-CANCELLATION",
+        "requirement": "Disposal during active work cancels the owned token, observes completion, releases the source, and rejects new work.",
+        "test": "LifecycleStressTests.DisposalCancelsActiveWorkAndObservesCompletion"
+      },
+      {
+        "id": "LIFE-FAULT-OBSERVATION",
+        "requirement": "An asynchronously faulted owned operation is observed and reported exactly once.",
+        "test": "LifecycleStressTests.FaultedWorkIsObservedExactlyOnce"
+      },
+      {
+        "id": "LIFE-IDLE-TRANSITION",
+        "requirement": "Active ownership remains counted until the completion callback transitions the registry to idle.",
+        "test": "LifecycleStressTests.ActiveWorkIsTrackedUntilItsCompletionCallbackRuns"
+      },
+      {
+        "id": "LIFE-REPORTER-OWNERSHIP",
+        "requirement": "The operation registry rejects a missing required error reporter.",
+        "test": "LifecycleStressTests.RegistryRejectsNullErrorReporter"
+      },
+      {
+        "id": "LIFE-IDLE-DISPOSAL",
+        "requirement": "Idle disposal immediately releases cancellation ownership and remains idempotent.",
+        "test": "LifecycleStressTests.IdleDisposalReleasesTheCancellationSourceImmediately"
+      },
+      {
+        "id": "LIFE-SYNCHRONOUS-START-FAILURE",
+        "requirement": "A synchronously throwing scheduler is reported, rejected, and leaves the registry idle.",
+        "test": "LifecycleStressTests.SynchronousSchedulerFailureIsReportedAndRejected"
+      },
+      {
+        "id": "LIFE-NULL-SCHEDULED-TASK",
+        "requirement": "A scheduler returning no task is reported, rejected, and leaves operation ownership idle.",
+        "test": "LifecycleStressTests.NullScheduledTaskIsReportedAndRejected"
+      },
+      {
+        "id": "LIFE-LATE-RELEASE",
+        "requirement": "A dependency registered after shutdown is released immediately and any release failure is reported.",
+        "test": "LifecycleStressTests.LateReleaseRunsImmediatelyAndReportsFailure"
+      },
+      {
+        "id": "LIFE-MULTIPLE-OPERATIONS",
+        "requirement": "Deferred dependency disposal waits until every owned operation has completed.",
+        "test": "LifecycleStressTests.MultipleOperationsReleaseIdleOnlyAfterTheLastCompletion"
+      },
+      {
+        "id": "LIFE-BLOCKED-REFRESH-DEPENDENCY-LIFETIME",
+        "requirement": "Blocked owned work retains deferred dependency disposal until the registry observes idle after release.",
+        "test": "LifecycleStressTests.BlockedRefreshRetainsDeferredDependencyDisposalUntilObservedIdle"
+      },
+      {
+        "id": "LIFE-SHARED-PUBLICATION-GATE",
+        "requirement": "Repeated stale, cancelled, disposed, busy, or drifted shared refresh completions remain rejected before publication.",
+        "test": "LifecycleStressTests.SharedCollectionPublicationRejectsStaleCancellationAndContentDrift"
+      },
+      {
+        "id": "LIFE-STALE-COMMANDS",
+        "requirement": "One hundred stale post-disposal commands cannot mutate persisted controller state.",
+        "test": "LifecycleStressTests.StaleCompletionCannotMutateDisposedController"
+      },
+      {
+        "id": "LIFE-DISPOSED-SHARED-UPDATES",
+        "requirement": "Late shared-snapshot publications and clears cannot mutate a disposed controller.",
+        "test": "LifecycleStressTests.SharedCollectionUpdatesCannotMutateDisposedController"
+      }
+    ],
+    "command": ".\\tests\\test-focused.ps1 -Filter 'FullyQualifiedName~LifecycleStressTests' -Configuration Release",
+    "lastRun": {
+      "completedAtUtc": "2026-10-14T22:33:27.1412774+00:00",
+      "declared": 16,
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "command": "tests/test-quality.ps1 -ReviewCandidate (final ordinary TRX; copy, format and source-bound mutation gates passed)",
+      "report": "unpublished-historical-evidence",
+      "reportSha256": "2CA6AE9EAA476F3911618E2DDEC42585101F474A5F56A2B4483AD20CB74A5811",
+      "stressIterations": 450
+    }
+  },
+  "stabilization20260916": {
+    "status": "historical-offline-qualified-icon-pending",
+    "note": "Historical lastRun objects above do not qualify current source. Final evidence is STABILIZATION_TESTS_2026-09-16.md.",
+    "offlineJourney": "StabilizationRegressionTests.SavedOutfitJourneyResetsEditsThenLoadsOnlyAvailableItems",
+    "nativeEndToEnd": "Requires supervised FFXIV session; fake native plan execution is not live end-to-end testing.",
+    "ordinaryTests": 625,
+    "ordinaryPassed": 625,
+    "functionalCoverageTests": 617,
+    "configuredCoverageFiles": 25,
+    "configuredLineCoverage": 100,
+    "configuredBranchCoverage": 100,
+    "validMutationScore": 100,
+    "rawMutationScore": 99.271523,
+    "knownTemplateBlocker": "REG-ICON-ALPHA-PADDING remains failed; shared conformance has separate obsolete contract requirements."
+  },
+  "historicalEvidence": {
+    "2026-09-02": {
+      "propertyFuzz": {
+        "completedAtUtc": "2026-09-02T20:04:52Z",
+        "declared": 15,
+        "passed": 15,
+        "failed": 0,
+        "skipped": 0,
+        "command": ".\\tests\\test-focused.ps1 -Filter 'FullyQualifiedName~GeneratedLegacyShapesPreserveTheSupportedPrefix|FullyQualifiedName~GeneratedNamesNormalizeIdempotently|FullyQualifiedName~GeneratedDecoysNeverResolveTheWrongAppearance|FullyQualifiedName~GeneratedSnapshotsPreserveSourceStatusAndDeduplicationInvariants|FullyQualifiedName~CreateIsBoundedSortedFilteredAndSkipsUnknownItemFacts|FullyQualifiedName~ActionValidationHintRequiresFreshMatchingOwnership' -Configuration Release",
+        "generatedCases": 632
+      },
+      "regression": {
+        "completedAtUtc": "2026-09-02T20:04:52Z",
+        "declared": 16,
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0,
+        "command": ".\\tests\\test-fast.ps1 -Configuration Release; .\\tests\\test-mutation.ps1 -Configuration Release; copy and icon checks; dotnet format --verify-no-changes"
+      },
+      "lifecycle": {
+        "completedAtUtc": "2026-09-02T20:04:52Z",
+        "declared": 16,
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0,
+        "command": ".\\tests\\test-focused.ps1 -Filter 'FullyQualifiedName~LifecycleStressTests' -Configuration Release",
+        "stressIterations": 450
+      }
+    }
+  },
+  "componentExpansion20260916": {
+    "status": "historical-offline-qualified-icon-pending",
+    "report": "unpublished-historical-evidence",
+    "passedTests": 970,
+    "skippedTests": 0,
+    "functionalCoverageTests": 962,
+    "configuredCoverageFiles": 53,
+    "configuredLineCoverage": 100,
+    "configuredBranchCoverage": 100,
+    "validMutationScore": 100,
+    "rawMutationScore": 99.3006993006993,
+    "knownTemplateBlocker": "Declared icon regression remains failed under shared criteria; conformance stops at that failed inventory entry. No promotion.",
+    "nativeEndToEnd": "Pending supervised FFXIV acceptance; offline journey and native-port tests do not prove live end-to-end operation."
+  },
+  "residualGapClosure20260916": {
+    "status": "historical-offline-qualified-icon-pending",
+    "report": "unpublished-historical-evidence",
+    "passedTests": 986,
+    "skippedTests": 0,
+    "functionalCoverageTests": 978,
+    "configuredCoverageFiles": 54,
+    "configuredLineCoverage": 100,
+    "configuredBranchCoverage": 100,
+    "killedMutants": 2432,
+    "reviewedEquivalentMutants": 18,
+    "uncoveredMutants": 0,
+    "timedOutMutants": 0,
+    "nativeEndToEnd": "Pending supervised FFXIV acceptance."
+  }
+}
+

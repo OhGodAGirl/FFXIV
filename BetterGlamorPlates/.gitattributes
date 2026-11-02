@@ -1,0 +1,2 @@
+# Preserve pinned source and fixture bytes across Windows and Linux checkouts.
+* -text

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>BetterGlamorPlates.Exportaramus</AssemblyName>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../src/Contracts/1.2/**/*.cs" Exclude="../../../src/Contracts/1.2/Consumer/*.Dalamud.cs" />
+    <EmbeddedResource Include="../../../data/Contracts/1.2/schemas/*.json" LogicalName="BetterGlamorPlates.Exportaramus._1._2.schemas.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="../../../data/Contracts/1.2/resources/*.json" LogicalName="BetterGlamorPlates.Exportaramus._1._2.resources.%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>
+

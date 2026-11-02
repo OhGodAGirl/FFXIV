@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="BetterGlamorPlates.csproj" />
+  <Project Path="project/Contracts/1.2/BetterGlamorPlates.Exportaramus.csproj" />
+  <Project Path="tests/BetterGlamorPlates.Tests/BetterGlamorPlates.Tests.csproj" />
+</Solution>
+
