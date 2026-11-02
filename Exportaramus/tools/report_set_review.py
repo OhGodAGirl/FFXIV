@@ -480,7 +480,36 @@ def validate_final_campaign(artifact, root, inventory_artifact, report_artifact)
     return current_campaign.validate_current_campaign(bound(artifact), root, bound(inventory_artifact), bound(report_artifact), 'provider')
 
 
-def measurement_context(item, final_root, final_inventory, final_paths, final_artifact, bridge):
+def validate_final_campaign_isolated(artifact, root, inventory_artifact, report_artifact, output):
+    require(not output.exists(), 'Final binding validation output must be new.')
+    output.mkdir(parents=True)
+    request = {'root': str(root), 'receipt': artifact, 'inventory': inventory_artifact, 'report': report_artifact,
+               'validators': {p.name: {'path': str(p.resolve()), 'sha256': digest(p)} for p in (root / 'tools').glob('*.py')}}
+    request_path = output / 'request.json'
+    request_path.write_text(json.dumps(request, indent=2), encoding='utf-8')
+    script = output / 'validate.py'
+    script.write_text("import sys,json,hashlib\nfrom pathlib import Path\nr=json.loads(Path(sys.argv[1]).read_bytes());root=Path(r['root']).resolve()\n"
+        "def check():\n for n,a in r['validators'].items():\n  p=Path(a['path']).resolve();assert p==root/'tools'/n and hashlib.sha256(p.read_bytes()).hexdigest()==a['sha256']\n"
+        "check();sys.path.insert(0,str(root/'tools'))\nimport current_campaign as c\nassert Path(c.__file__).resolve()==root/'tools/current_campaign.py'\n"
+        "v=c.validate_current_campaign(Path(r['receipt']['path']),root,Path(r['inventory']['path']),Path(r['report']['path']),'provider')\ncheck()\n"
+        "print(json.dumps(v,default=lambda x:sorted(x) if isinstance(x,set) else str(x)))\n", encoding='utf-8')
+    # Verify requested artifacts before process creation; the child independently
+    # validates their contents and the exact frozen validator closure.
+    for item in (artifact, inventory_artifact, report_artifact): bound(item)
+    generated = [{'path': str(p.resolve()), 'sha256': digest(p)} for p in (script, request_path, Path(sys.executable))]
+    run, evidence = recorded_run([sys.executable, '-I', str(script), str(request_path)], root, output / 'execution', timeout=1800)
+    for value in generated: bound(value)
+    require(run.returncode == 0, 'Pinned final current validator failed; diagnostics preserved.')
+    result = json.loads(run.stdout)
+    require(result['receiptSha256'] == artifact['sha256'] and result['reportHash'] == report_artifact['sha256'], 'Final binding child returned different artifacts.')
+    require(isinstance(result['sourcePaths'], list) and len(set(result['sourcePaths'])) == len(result['sourcePaths']), 'Invalid final binding source set.')
+    result['sourcePaths'] = set(result['sourcePaths'])
+    for value in request['validators'].values(): bound(value)
+    result['evidence'].extend(evidence + list(request['validators'].values()) + generated)
+    return result
+
+
+def measurement_context(item, final_root, final_inventory, final_paths, final_artifact, bridge, validator_output=None):
     before, before_paths = bridge.inventory(bound(item['measurementBefore']))
     after, after_paths = bridge.inventory(bound(item['measurementAfter']))
     require(before == after and before_paths == after_paths, 'Measurement inputs changed during mutation execution.')
@@ -494,7 +523,8 @@ def measurement_context(item, final_root, final_inventory, final_paths, final_ar
         require(isinstance(successor, dict), 'Changed final inputs require a validated current-campaign successor.')
         receipt = read(successor)
         require(Path(receipt['campaignRoot']).resolve() == root, 'Successor names another measured root.')
-        binding = validate_final_campaign(successor, final_root, final_artifact, item['report'])
+        binding = (validate_final_campaign(successor, final_root, final_artifact, item['report']) if validator_output is None else
+                   validate_final_campaign_isolated(successor, final_root, final_artifact, item['report'], validator_output))
         require(binding['inventory'] == final_inventory and binding['inventoryPaths'] == final_paths,
                 'Successor final inventory differs.')
         require(binding['campaignInventory'] == before and binding['campaignInventorySha256'] == before['sha256'],
@@ -593,7 +623,7 @@ def compose(plan_path, output):
         require(not item.get('ledger'), 'A bare fresh ledger is unsupported; use an independently validated currentReview descriptor.')
         replacement_config(read(item['canonicalConfig']), read(item['executionConfig']), source)
         require(digest(bound(item['canonicalConfig'])) == old_paths[item['canonicalConfigPath']], 'Canonical config is not historical canonical input.')
-        measured = measurement_context(item, final_root, final_inventory, final_paths, plan['finalInventory'], bridge)
+        measured = measurement_context(item, final_root, final_inventory, final_paths, plan['finalInventory'], bridge, output / ('final-binding-' + str(len(replacements))))
         measurement_contexts.append(measured)
         evidence.extend(measured['evidence'])
         measured_root = measured['root']

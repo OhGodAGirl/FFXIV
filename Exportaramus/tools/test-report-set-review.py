@@ -533,5 +533,35 @@ class CurrentReviewUnionTests(unittest.TestCase):
                 with self.assertRaises(ValueError):review.current_review_compatibility(request,changed,final,bridge)
 
 
+class IsolatedFinalBindingTests(unittest.TestCase):
+    def test_mixed_parent_module_does_not_replace_pinned_child(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);(root/'tools').mkdir()
+            def art(name):
+                p=root/name;p.write_text('{}');return {'path':str(p),'sha256':review.digest(p)}
+            receipt,inventory,report=art('receipt.json'),art('inventory.json'),art('report.json')
+            module=root/'tools/current_campaign.py'
+            module.write_text("import hashlib\ndef validate_current_campaign(receipt,root,inventory,report,target):\n assert target=='provider'\n return {'receiptSha256':hashlib.sha256(receipt.read_bytes()).hexdigest(),'reportHash':hashlib.sha256(report.read_bytes()).hexdigest(),'sourcePaths':{'src/exact.cs'},'evidence':[]}\n")
+            wrong=SimpleNamespace(__file__=str(root/'wrong.py'),validate_current_campaign=lambda *x: (_ for _ in ()).throw(AssertionError('Wrong module called')))
+            with patch.dict('sys.modules',{'current_campaign':wrong}):
+                with self.assertRaises(ValueError):review.validate_final_campaign(receipt,root,inventory,report)
+                result=review.validate_final_campaign_isolated(receipt,root,inventory,report,root/'isolated')
+            self.assertEqual(result['sourcePaths'],{'src/exact.cs'})
+            self.assertTrue(any(x['path'].endswith('validate.py') for x in result['evidence']))
+            self.assertTrue(any(x['path'].endswith('current_campaign.py') for x in result['evidence']))
+            with self.assertRaises(ValueError):review.validate_final_campaign_isolated(receipt,root,inventory,report,root/'isolated')
+            original_run=review.recorded_run
+            for filename in ('validate.py','request.json'):
+                def changed_run(command,root,prefix,timeout):
+                    result=original_run(command,root,prefix,timeout)
+                    path=prefix.parent/filename;path.write_text(path.read_text()+' ')
+                    return result
+                with patch.object(review,'recorded_run',side_effect=changed_run), self.assertRaises(ValueError):
+                    review.validate_final_campaign_isolated(receipt,root,inventory,report,root/('changed-'+filename))
+            module.write_text('raise ValueError("reject invalid current receipt")')
+            with self.assertRaises(ValueError):review.validate_final_campaign_isolated(receipt,root,inventory,report,root/'failure')
+            self.assertIn('reject invalid', (root/'failure/execution.log').read_text())
+
+
 if __name__ == '__main__':
     unittest.main()
