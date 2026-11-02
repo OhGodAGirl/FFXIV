@@ -11,6 +11,37 @@ namespace Exportaramus.Tests.Snapshots;
 
 public sealed class RestorationClockBoundaryTests
 {
+    [Fact]
+    public async Task UnchangedTargetedCompletionClearsRestorationFailure()
+    {
+        var fixture = SnapshotFixture.Create();
+        var path = Path.Combine(AppContext.BaseDirectory, "restore-targeted", Guid.NewGuid().ToString("N"));
+        var store = new AtomicSnapshotStorage(path);
+        await store.CommitAsync(123, CollectionDataSerializer.CompactV12(fixture, 7), null, null, false, false, SnapshotFixture.Now, default);
+        var port = new Port();
+        using var controller = new SnapshotController(port, store, null);
+        var now = SnapshotFixture.Now.AddHours(-1);
+        try
+        {
+            await Pump(controller, now, 0, () => controller.Reports.Available && !controller.Busy);
+            Assert.Contains("could not be restored", Assert.IsType<string>(controller.Error));
+            var previous = new CollectionDataPublisher(store, null).Prepare(fixture, "Fixture", 8, null, false, false, default).Bundle;
+            controller.Publication.Accept(previous);
+            controller.HintSource("orchestrions", 123, 0);
+            controller.Update(123, "Fixture", false, false, double.NaN, now);
+            await Pump(controller, now, 0, () => !controller.Busy);
+            Assert.Equal(1, port.TargetedBeginCount);
+            Assert.Same(previous, controller.Publication.Current);
+            Assert.Null(controller.Error);
+        }
+        finally
+        {
+            controller.Dispose();
+            await controller.ShutdownTask.WaitAsync(TimeSpan.FromSeconds(5));
+            if (Directory.Exists(path)) Directory.Delete(path, true);
+        }
+    }
+
     [Theory]
     [InlineData("1.0", false)]
     [InlineData("1.1", false)]
@@ -108,6 +139,16 @@ public sealed class RestorationClockBoundaryTests
                 {
                     Health = CaptureReadPolicy.Health(DataType.CurrentItemPresence, generation, now, ReasonCode.None)
                 }), state.Quests);
+        }
+        public bool SupportsTargetedCapture => true;
+        public int TargetedBeginCount
+        {
+            get; private set;
+        }
+        public void BeginTargeted(ImmutableArray<string> sources, ulong contentId, long generation, DateTimeOffset now)
+        {
+            TargetedBeginCount++;
+            result = new(ImmutableDictionary<string, PermanentUnlockState>.Empty, ImmutableDictionary<string, CurrentItemPresenceState>.Empty, []);
         }
         public bool Advance() => true;
         public RawCaptureBatch? TakeResult() => result;
