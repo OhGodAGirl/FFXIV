@@ -449,5 +449,48 @@ class MeasurementSuccessorTests(unittest.TestCase):
             with self.assertRaises(ValueError):review.validate_final_campaign({},self.final,{}, {})
 
 
+class CurrentReviewLauncherTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        def art(name, data):
+            path = self.root / name; path.write_text(data)
+            return {'path': str(path), 'sha256': review.digest(path)}
+        self.art = art
+        self.tool = self.root / 'report_set_review.py'; self.tool.write_text('validator')
+        self.launcher = art('launcher.py', 'launcher')
+        self.peer = art('peer.json', json.dumps({'reviewed': True, 'reviewer': 'independent', 'reason': 'Read-only exact prefix only.', 'launcherSha256': self.launcher['sha256']}))
+        self.descriptor = {'format': 'exportaramus-read-only-longpath-launcher', 'launcher': self.launcher, 'review': self.peer, 'script': {'path': str(self.tool), 'sha256': review.digest(self.tool)}}
+        self.request = self.root / 'request.json'; self.prefix = self.root / 'child'
+    def command(self):
+        return review.current_review_command(self.tool, self.request, self.prefix, self.descriptor)
+    def test_command_is_fixed_and_default_is_unchanged(self):
+        command, evidence, record = self.command()
+        self.assertEqual(command[-2:], ['--current-request', str(self.request)])
+        self.assertEqual(command[command.index('--script')+1], str(self.tool))
+        self.assertEqual(len(evidence), 3)
+        ordinary, evidence, record = review.current_review_command(self.tool, self.request, self.prefix)
+        self.assertEqual(ordinary, [review.sys.executable, '-I', str(self.tool), '--current-request', str(self.request)])
+        self.assertEqual(evidence, []); self.assertIsNone(record)
+    def test_unreviewed_tampered_wrong_script_or_arguments_rejected(self):
+        original = copy.deepcopy(self.descriptor)
+        for alteration in ('unreviewed', 'tampered', 'script', 'arguments'):
+            self.descriptor = copy.deepcopy(original)
+            if alteration == 'unreviewed': self.descriptor['review'] = self.art('bad.json', json.dumps({'reviewed': False}))
+            if alteration == 'tampered': self.descriptor['launcher']['sha256'] = '0'*64
+            if alteration == 'script': self.descriptor['script'] = self.art('other.py', 'validator')
+            if alteration == 'arguments': self.descriptor['arguments'] = ['--skip-review']
+            with self.subTest(alteration=alteration), self.assertRaises(ValueError): self.command()
+    def test_execution_record_checks_exact_bindings_and_semantics(self):
+        _, _, record = self.command()
+        valid = {'format':'exportaramus-read-only-longpath-launch', 'script':str(self.tool), 'scriptSha256':review.digest(self.tool), 'launcher':self.launcher['path'], 'launcherSha256':self.launcher['sha256'], 'arguments':['--current-request',str(self.request)], 'exitCode':0, 'error':None, 'writeCallsUnchanged':True, 'pathNormalizationApplied':False, 'mappedReads':[]}
+        record.write_text(json.dumps(valid))
+        self.assertEqual(len(review.validate_current_review_launch(record,self.descriptor,self.tool,self.request)),1)
+        for key, value in [('arguments',['--skip-review']), ('scriptSha256','0'*64), ('launcherSha256','0'*64), ('exitCode',1), ('writeCallsUnchanged',False), ('pathNormalizationApplied',True), ('mappedReads',[{'original':'short','extended':'wrong'}])]:
+            record.write_text(json.dumps(dict(valid, **{key:value})))
+            with self.subTest(key=key), self.assertRaises(ValueError): review.validate_current_review_launch(record,self.descriptor,self.tool,self.request)
+        with self.assertRaises(ValueError): self.command()
+
+
 if __name__ == '__main__':
     unittest.main()
