@@ -492,5 +492,33 @@ class CurrentReviewLauncherTests(unittest.TestCase):
         with self.assertRaises(ValueError): self.command()
 
 
+class CurrentReviewUnionTests(unittest.TestCase):
+    def test_explicit_union_and_legacy_routes(self):
+        a, b = {'root':'old'}, {'root':'new'}
+        self.assertEqual(review.current_review_requests({'currentReview':a}),[a])
+        self.assertEqual(review.current_review_requests({'currentReviews':[a,b]}),[a,b])
+        for item in [{'currentReview':a,'currentReviews':[b]}, {'currentReview':None,'currentReviews':[b]}, {'currentReview':a,'currentReviews':[]}, {'currentReview':{},'currentReviews':None}, {'currentReviews':[]}, {'currentReviews':[a]*9}, {'currentReviews':['not a descriptor']}]:
+            with self.assertRaises(ValueError):review.current_review_requests(item)
+    def test_same_measurement_and_all_prior_cases_required(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary)
+            def art(name,value):
+                p=root/name;p.write_text(json.dumps(value));return {'path':str(p),'sha256':review.digest(p)}
+            report=art('report.json',{})
+            campaign={'source':'src/one.cs','measurement':{'report':report},'baselines':{t:art(t+'.json',{}) for t in ('provider','consumerkit12','inventoryreader')}}
+            request={'currentCampaign':art('campaign.json',campaign)};item={'source':'src/one.cs','report':report}
+            import repair_bridge
+            bridge=SimpleNamespace(canonical_trx=lambda p,t:[t+'-old',t+'-old'],preserves_cases=repair_bridge.preserves_cases)
+            final={t:[t+'-old',t+'-old',t+'-new'] for t in campaign['baselines']}
+            one_missing=copy.deepcopy(final);one_missing['provider'].remove('provider-old')
+            with self.assertRaises(ValueError):review.current_review_compatibility(request,item,one_missing,bridge)
+            self.assertEqual(len(review.current_review_compatibility(request,item,final,bridge)),3)
+            for target in final:
+                missing=copy.deepcopy(final);missing[target]=[target+'-new']
+                with self.subTest(target=target),self.assertRaises(ValueError):review.current_review_compatibility(request,item,missing,bridge)
+            for changed in [dict(item,source='src/two.cs'),dict(item,report=art('different-report.json',{'changed':True}))]:
+                with self.assertRaises(ValueError):review.current_review_compatibility(request,changed,final,bridge)
+
+
 if __name__ == '__main__':
     unittest.main()

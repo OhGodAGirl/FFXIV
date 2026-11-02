@@ -103,6 +103,28 @@ def recorded_run(command, root, prefix, timeout=120):
     return run, [{'path': str(p), 'sha256': digest(p)} for p in (log, execution)]
 
 
+def current_review_requests(item):
+    require(not ('currentReview' in item and 'currentReviews' in item), 'Use one current review descriptor form.')
+    if 'currentReviews' not in item:
+        return [item['currentReview']] if item.get('currentReview') else []
+    values = item['currentReviews']
+    require(isinstance(values, list) and 1 <= len(values) <= 8, 'Current review union must contain one to eight descriptors.')
+    require(all(isinstance(value, dict) for value in values), 'Invalid current review union descriptor.')
+    return values
+
+
+def current_review_compatibility(request, item, final_cases, bridge):
+    campaign = read(request['currentCampaign'])
+    require(campaign.get('source') == item['source'] and campaign['measurement']['report'] == item['report'], 'Current review belongs to another measured source/report.')
+    evidence = []
+    for target in ('provider', 'consumerkit12', 'inventoryreader'):
+        baseline = campaign['baselines'][target]
+        cases = bridge.canonical_trx(bound(baseline), target)
+        require(bridge.preserves_cases(cases, final_cases[target]), 'Final baseline omitted prior current-review cases.')
+        evidence.append(baseline)
+    return evidence
+
+
 def current_review_command(tool, request_path, prefix, descriptor=None):
     command = [sys.executable, '-I', str(tool), '--current-request', str(request_path)]
     if descriptor is None:
@@ -580,13 +602,12 @@ def compose(plan_path, output):
         normalization_path.write_text(json.dumps(normalization, indent=2), encoding='utf-8')
         normalizations.append({'path': str(normalization_path), 'sha256': digest(normalization_path)})
         evidence.extend(normalizations[-1:])
-        if item.get('currentReview'):
-            request = item['currentReview']
+        for review_index, request in enumerate(current_review_requests(item)):
             require(request['report'] == item['report'], 'Current reviews name another fresh report.')
-            request_path = output / ('current-request-' + str(len(normalizations)) + '.json')
+            request_path = output / ('current-request-' + str(len(normalizations)) + '-' + str(review_index) + '.json')
             request_path.write_text(json.dumps(request, indent=2), encoding='utf-8')
             tool = bound(request['validatorFiles']['report_set_review.py'])
-            prefix = output / ('current-review-' + str(len(normalizations)))
+            prefix = output / ('current-review-' + str(len(normalizations)) + '-' + str(review_index))
             launcher_descriptor = item.get('currentReviewLauncher')
             command, launcher_evidence, launch_record = current_review_command(tool, request_path, prefix, launcher_descriptor)
             run, run_evidence = recorded_run(command, Path(request['root']), prefix, timeout=1800)
@@ -595,6 +616,7 @@ def compose(plan_path, output):
             require(run.returncode == 0, 'Fresh current review failed; diagnostics preserved.')
             reviewed = json.loads(run.stdout)
             require(reviewed['reportSha256'] == item['report']['sha256'] and reviewed['currentCampaignSha256'] == request['currentCampaign']['sha256'], 'Current reviewer returned different bindings.')
+            evidence.extend(current_review_compatibility(request, item, baseline_cases, bridge))
             accepted = {tuple(x) for x in reviewed['accepted']}
             require(len(accepted) == len(reviewed['accepted']) and not fresh_accepted.intersection(accepted), 'Duplicate current accepted entries.')
             fresh_accepted.update(accepted)
