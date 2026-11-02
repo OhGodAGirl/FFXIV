@@ -504,6 +504,16 @@ def validate_final_campaign_isolated(artifact, root, inventory_artifact, report_
     require(result['receiptSha256'] == artifact['sha256'] and result['reportHash'] == report_artifact['sha256'], 'Final binding child returned different artifacts.')
     require(isinstance(result['sourcePaths'], list) and len(set(result['sourcePaths'])) == len(result['sourcePaths']), 'Invalid final binding source set.')
     result['sourcePaths'] = set(result['sourcePaths'])
+    normalized = []
+    for value in result['evidence']:
+        path = Path(value['path'])
+        if not path.is_absolute():
+            path = root / path
+            require(path.resolve().is_relative_to(root.resolve()), 'Relative final binding evidence escapes its frozen root.')
+        item = dict(value, path=str(path.resolve()))
+        bound(item)
+        normalized.append(item)
+    result['evidence'] = normalized
     for value in request['validators'].values(): bound(value)
     result['evidence'].extend(evidence + list(request['validators'].values()) + generated)
     return result

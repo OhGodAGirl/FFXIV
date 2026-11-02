@@ -541,12 +541,13 @@ class IsolatedFinalBindingTests(unittest.TestCase):
                 p=root/name;p.write_text('{}');return {'path':str(p),'sha256':review.digest(p)}
             receipt,inventory,report=art('receipt.json'),art('inventory.json'),art('report.json')
             module=root/'tools/current_campaign.py'
-            module.write_text("import hashlib\ndef validate_current_campaign(receipt,root,inventory,report,target):\n assert target=='provider'\n return {'receiptSha256':hashlib.sha256(receipt.read_bytes()).hexdigest(),'reportHash':hashlib.sha256(report.read_bytes()).hexdigest(),'sourcePaths':{'src/exact.cs'},'evidence':[]}\n")
+            module.write_text("import hashlib\ndef validate_current_campaign(receipt,root,inventory,report,target):\n assert target=='provider'\n return {'receiptSha256':hashlib.sha256(receipt.read_bytes()).hexdigest(),'reportHash':hashlib.sha256(report.read_bytes()).hexdigest(),'sourcePaths':{'src/exact.cs'},'evidence':[{'path':'inventory.json','sha256':hashlib.sha256(inventory.read_bytes()).hexdigest()}]}\n")
             wrong=SimpleNamespace(__file__=str(root/'wrong.py'),validate_current_campaign=lambda *x: (_ for _ in ()).throw(AssertionError('Wrong module called')))
             with patch.dict('sys.modules',{'current_campaign':wrong}):
                 with self.assertRaises(ValueError):review.validate_final_campaign(receipt,root,inventory,report)
                 result=review.validate_final_campaign_isolated(receipt,root,inventory,report,root/'isolated')
             self.assertEqual(result['sourcePaths'],{'src/exact.cs'})
+            self.assertEqual(result['evidence'][0]['path'],str((root/'inventory.json').resolve()))
             self.assertTrue(any(x['path'].endswith('validate.py') for x in result['evidence']))
             self.assertTrue(any(x['path'].endswith('current_campaign.py') for x in result['evidence']))
             with self.assertRaises(ValueError):review.validate_final_campaign_isolated(receipt,root,inventory,report,root/'isolated')
@@ -558,6 +559,11 @@ class IsolatedFinalBindingTests(unittest.TestCase):
                     return result
                 with patch.object(review,'recorded_run',side_effect=changed_run), self.assertRaises(ValueError):
                     review.validate_final_campaign_isolated(receipt,root,inventory,report,root/('changed-'+filename))
+            good_module=module.read_text()
+            module.write_text(good_module.replace("'path':'inventory.json'", "'path':'../inventory.json'"))
+            with self.assertRaisesRegex(ValueError,'Relative final binding evidence'):review.validate_final_campaign_isolated(receipt,root,inventory,report,root/'escaped-evidence')
+            module.write_text(good_module.replace("'path':'inventory.json'", "'path':'missing.json'"))
+            with self.assertRaises(ValueError):review.validate_final_campaign_isolated(receipt,root,inventory,report,root/'missing-evidence')
             module.write_text('raise ValueError("reject invalid current receipt")')
             with self.assertRaises(ValueError):review.validate_final_campaign_isolated(receipt,root,inventory,report,root/'failure')
             self.assertIn('reject invalid', (root/'failure/execution.log').read_text())
