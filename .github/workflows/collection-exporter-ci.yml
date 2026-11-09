@@ -22,10 +22,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           global-json-file: CollectionExporter/global.json
 
@@ -48,7 +48,7 @@ jobs:
         run: dotnet test .\CollectionExporter.slnx --configuration Release --no-build --no-restore
 
       - name: Store plugin package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: CollectionExporter
           path: CollectionExporter/bin/Release/CollectionExporter/latest.zip
